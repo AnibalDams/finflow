@@ -55,6 +55,14 @@
 
 	const remaining = $derived(Math.max(0, data.total - data.items.length));
 
+	const accountFilterName = $derived(
+		data.accounts.find((account) => account.id === accountFilter)?.name ?? 'Todas las cuentas'
+	);
+	const categoryFilterName = $derived(
+		data.categories.find((category) => category.id === categoryFilter)?.name ??
+			'Todas las categorías'
+	);
+
 	function signedTotal(total: number): string {
 		if (total === 0) return '';
 		return `${total > 0 ? '+' : '−'}${formatMoney(Math.abs(total))}`;
@@ -242,33 +250,128 @@
 			/>
 		</div>
 
-		<label class="block space-y-1.5">
-			<span class="text-label-sm font-medium text-on-surface-variant">Cuenta</span>
-			<select
-				name="cuenta"
-				bind:value={accountFilter}
-				class="h-12 w-full rounded-xl border border-hairline bg-surface-container-lowest px-3 text-body text-ink focus:border-secondary focus:ring-3 focus:ring-secondary/12 focus:outline-none"
-			>
-				<option value="">Todas las cuentas</option>
-				{#each data.accounts as account (account.id)}
-					<option value={account.id}>{account.name}</option>
-				{/each}
-			</select>
-		</label>
+		<div class="space-y-1.5">
+			<span class="block text-label-sm font-medium text-on-surface-variant">Cuenta</span>
+			<details class="group overflow-hidden rounded-xl border border-hairline bg-surface-container-lowest">
+				<summary
+					class="flex h-12 cursor-pointer list-none items-center gap-2 px-3 text-body text-ink [&::-webkit-details-marker]:hidden"
+				>
+					<Icon name="account_balance" size={18} class="text-muted-soft" />
+					<span class="min-w-0 flex-1 truncate">{accountFilterName}</span>
+					<Icon
+						name="expand_more"
+						size={20}
+						class="text-muted transition-transform group-open:rotate-180"
+					/>
+				</summary>
 
-		<label class="block space-y-1.5">
-			<span class="text-label-sm font-medium text-on-surface-variant">Categoría</span>
-			<select
-				name="categoria"
-				bind:value={categoryFilter}
-				class="h-12 w-full rounded-xl border border-hairline bg-surface-container-lowest px-3 text-body text-ink focus:border-secondary focus:ring-3 focus:ring-secondary/12 focus:outline-none"
-			>
-				<option value="">Todas las categorías</option>
-				{#each data.categories as category (category.id)}
-					<option value={category.id}>{category.name}</option>
-				{/each}
-			</select>
-		</label>
+				<div class="max-h-56 overflow-y-auto border-t border-hairline p-1.5">
+					<label
+						class="flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 transition hover:bg-level-1/60 {accountFilter ===
+						''
+							? 'bg-primary/8'
+							: ''}"
+					>
+						<input type="radio" name="cuenta" value="" bind:group={accountFilter} class="sr-only" />
+						<Icon name="apps" size={18} class="text-muted" />
+						<span class="min-w-0 flex-1 truncate text-body-sm text-ink">Todas las cuentas</span>
+						{#if accountFilter === ''}
+							<Icon name="check" size={18} class="text-primary" />
+						{/if}
+					</label>
+
+					{#each data.accounts as account (account.id)}
+						<label
+							class="flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 transition hover:bg-level-1/60 {accountFilter ===
+							account.id
+								? 'bg-primary/8'
+								: ''}"
+						>
+							<input
+								type="radio"
+								name="cuenta"
+								value={account.id}
+								bind:group={accountFilter}
+								class="sr-only"
+							/>
+							<Icon name={account.icon} size={18} class="text-muted" />
+							<span class="min-w-0 flex-1 truncate text-body-sm text-ink">{account.name}</span>
+							{#if accountFilter === account.id}
+								<Icon name="check" size={18} class="text-primary" />
+							{/if}
+						</label>
+					{/each}
+				</div>
+			</details>
+		</div>
+
+		<div class="space-y-1.5">
+			<span class="block text-label-sm font-medium text-on-surface-variant">Categoría</span>
+			<details class="group overflow-hidden rounded-xl border border-hairline bg-surface-container-lowest">
+				<summary
+					class="flex h-12 cursor-pointer list-none items-center gap-2 px-3 text-body text-ink [&::-webkit-details-marker]:hidden"
+				>
+					<Icon name="category" size={18} class="text-muted-soft" />
+					<span class="min-w-0 flex-1 truncate">{categoryFilterName}</span>
+					<Icon
+						name="expand_more"
+						size={20}
+						class="text-muted transition-transform group-open:rotate-180"
+					/>
+				</summary>
+
+				<div class="max-h-56 overflow-y-auto border-t border-hairline p-1.5">
+					<label
+						class="flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 transition hover:bg-level-1/60 {categoryFilter ===
+						''
+							? 'bg-primary/8'
+							: ''}"
+					>
+						<input
+							type="radio"
+							name="categoria"
+							value=""
+							bind:group={categoryFilter}
+							class="sr-only"
+						/>
+						<Icon name="apps" size={18} class="text-muted" />
+						<span class="min-w-0 flex-1 truncate text-body-sm text-ink">
+							Todas las categorías
+						</span>
+						{#if categoryFilter === ''}
+							<Icon name="check" size={18} class="text-primary" />
+						{/if}
+					</label>
+
+					{#each data.categories as category (category.id)}
+						<label
+							class="flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 transition hover:bg-level-1/60 {categoryFilter ===
+							category.id
+								? 'bg-primary/8'
+								: ''}"
+						>
+							<input
+								type="radio"
+								name="categoria"
+								value={category.id}
+								bind:group={categoryFilter}
+								class="sr-only"
+							/>
+							<span
+								class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-level-1"
+								style="color:{category.color}"
+							>
+								<Icon name={category.icon} size={16} />
+							</span>
+							<span class="min-w-0 flex-1 truncate text-body-sm text-ink">{category.name}</span>
+							{#if categoryFilter === category.id}
+								<Icon name="check" size={18} class="text-primary" />
+							{/if}
+						</label>
+					{/each}
+				</div>
+			</details>
+		</div>
 
 		<div class="grid grid-cols-[auto_1fr] gap-2 pt-1">
 			<a href={withParams({ tipo: null, cuenta: null, categoria: null })} class={buttonClass('ghost', 'lg')}>

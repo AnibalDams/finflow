@@ -6,6 +6,7 @@
 	import DateField from '#lib/components/ui/DateField.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import OptionCards from '#lib/components/ui/OptionCards.svelte';
+	import OptionSheet from '#lib/components/ui/OptionSheet.svelte';
 	import ProgressBar from '#lib/components/ui/ProgressBar.svelte';
 	import Switch from '#lib/components/ui/Switch.svelte';
 	import TextField from '#lib/components/ui/TextField.svelte';
@@ -49,10 +50,18 @@
 	let editMonthly = $state((goal.monthlyContribution ?? plan.monthlyAmount).toFixed(2));
 	let editReminder = $state(goal.reminderEnabled);
 	let editReminderDay = $state(String(goal.reminderDay));
+	let reminderSheetOpen = $state(false);
+	let reminderTrigger = $state<HTMLButtonElement | null>(null);
 	let removeImage = $state(false);
 	let savingEdit = $state(false);
 	let deleting = $state(false);
 	let statusSaving = $state<string | null>(null);
+
+	const REMINDER_DAYS = ['1', '5', '10', '15', '20', '25', '28'].map((day) => ({
+		value: day,
+		label: `Día ${day}`,
+		icon: 'event'
+	}));
 
 	const categoryOptions = $derived(
 		(['technology', 'travel', 'home', 'education', 'other'] as GoalCategory[]).map((value) => ({
@@ -289,20 +298,31 @@
 				/>
 				{#if editReminder}
 					<div class="mt-2 flex items-center justify-between gap-2 border-t border-hairline/70 pt-2.5">
-						<label for="edit-reminder-day" class="text-body-sm text-on-surface-variant">
-							Día del recordatorio
-						</label>
-						<select
-							id="edit-reminder-day"
-							name="reminderDay"
-							bind:value={editReminderDay}
-							class="rounded-xl border border-hairline bg-surface-container-lowest px-2.5 py-1.5 text-label font-medium text-ink"
+						<span class="text-body-sm text-on-surface-variant">Día del recordatorio</span>
+						<button
+							type="button"
+							bind:this={reminderTrigger}
+							class="pressable flex items-center gap-1.5 rounded-xl border border-hairline bg-surface-container-lowest px-2.5 py-1.5 text-label font-medium text-ink"
+							aria-haspopup="listbox"
+							aria-expanded={reminderSheetOpen}
+							aria-label={`Día del recordatorio: ${editReminderDay}`}
+							onclick={() => (reminderSheetOpen = true)}
 						>
-							{#each ['1', '5', '10', '15', '20', '25', '28'] as day (day)}
-								<option value={day}>{day}</option>
-							{/each}
-						</select>
+							{editReminderDay}
+							<Icon name="expand_more" size={16} class="text-muted" />
+						</button>
 					</div>
+
+					<OptionSheet
+						bind:open={reminderSheetOpen}
+						title="Día del recordatorio"
+						name="reminderDay"
+						label="Día del recordatorio"
+						bind:value={editReminderDay}
+						options={REMINDER_DAYS}
+						tone="secondary"
+						returnFocus={reminderTrigger}
+					/>
 				{/if}
 			</div>
 

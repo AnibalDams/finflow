@@ -27,7 +27,7 @@
 <svelte:window onkeydown={onKeydown} />
 
 {#if open}
-	<div class="fixed inset-0 z-90 mx-auto flex max-w-[430px] flex-col justify-end">
+	<div class="fixed inset-0 z-90 mx-auto flex max-w-[430px] flex-col justify-end" style="margin:0">
 		<button
 			type="button"
 			class="absolute inset-0 bg-ink/45 backdrop-blur-[2px]"

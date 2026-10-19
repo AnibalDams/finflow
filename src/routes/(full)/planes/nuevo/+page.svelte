@@ -6,6 +6,7 @@
 	import DateField from '#lib/components/ui/DateField.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import OptionCards from '#lib/components/ui/OptionCards.svelte';
+	import OptionSheet from '#lib/components/ui/OptionSheet.svelte';
 	import ProgressBar from '#lib/components/ui/ProgressBar.svelte';
 	import Switch from '#lib/components/ui/Switch.svelte';
 	import TextField from '#lib/components/ui/TextField.svelte';
@@ -35,8 +36,16 @@
 	let accountId = $state(values.accountId ?? data.defaultAccountId);
 	let reminderEnabled = $state(true);
 	let reminderDay = $state(values.reminderDay ?? '1');
+	let reminderSheetOpen = $state(false);
+	let reminderTrigger = $state<HTMLButtonElement | null>(null);
 	let saving = $state(false);
 	let preview = $state<string | null>(null);
+
+	const REMINDER_DAYS = ['1', '5', '10', '15', '20', '25', '28'].map((day) => ({
+		value: day,
+		label: `Día ${day}`,
+		icon: 'event'
+	}));
 
 	const target = $derived(parseAmountInput(targetAmount) ?? 0);
 	const saved = $derived(parseAmountInput(initialAmount) ?? 0);
@@ -306,20 +315,31 @@
 
 			{#if reminderEnabled}
 				<div class="mt-2 flex items-center justify-between gap-2 border-t border-hairline/70 pt-2.5">
-					<label for="reminder-day" class="text-body-sm text-on-surface-variant">
-						Día del recordatorio
-					</label>
-					<select
-						id="reminder-day"
-						name="reminderDay"
-						bind:value={reminderDay}
-						class="rounded-xl border border-hairline bg-surface-container-lowest px-2.5 py-1.5 text-label font-medium text-ink"
+					<span class="text-body-sm text-on-surface-variant">Día del recordatorio</span>
+					<button
+						type="button"
+						bind:this={reminderTrigger}
+						class="pressable flex items-center gap-1.5 rounded-xl border border-hairline bg-surface-container-lowest px-2.5 py-1.5 text-label font-medium text-ink"
+						aria-haspopup="listbox"
+						aria-expanded={reminderSheetOpen}
+						aria-label={`Día del recordatorio: ${reminderDay}`}
+						onclick={() => (reminderSheetOpen = true)}
 					>
-						{#each ['1', '5', '10', '15', '20', '25', '28'] as day (day)}
-							<option value={day}>{day}</option>
-						{/each}
-					</select>
+						{reminderDay}
+						<Icon name="expand_more" size={16} class="text-muted" />
+					</button>
 				</div>
+
+				<OptionSheet
+					bind:open={reminderSheetOpen}
+					title="Día del recordatorio"
+					name="reminderDay"
+					label="Día del recordatorio"
+					bind:value={reminderDay}
+					options={REMINDER_DAYS}
+					tone="secondary"
+					returnFocus={reminderTrigger}
+				/>
 			{/if}
 		</div>
 	</section>

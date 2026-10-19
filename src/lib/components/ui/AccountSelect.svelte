@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from '#lib/components/ui/Icon.svelte';
+	import OptionSheet from '#lib/components/ui/OptionSheet.svelte';
 	import type { Account } from '#lib/types/domain';
 	import { cn } from '#lib/utils/cn';
 	import { formatMoney } from '#lib/utils/money';
@@ -15,6 +16,7 @@
 		error?: string;
 		tone?: 'primary' | 'tertiary' | 'secondary';
 		disabled?: boolean;
+		required?: boolean;
 		class?: string;
 	}
 
@@ -28,8 +30,12 @@
 		error,
 		tone = 'primary',
 		disabled = false,
+		required = false,
 		class: className = ''
 	}: Props = $props();
+
+	let open = $state(false);
+	let trigger = $state<HTMLButtonElement | null>(null);
 
 	const TONE: Record<string, string> = {
 		primary: 'bg-primary/12 text-primary',
@@ -38,15 +44,31 @@
 	};
 
 	const selected = $derived(accounts.find((account) => account.id === value) ?? null);
+
+	const options = $derived(
+		accounts.map((account) => ({
+			value: account.id,
+			label: account.name,
+			description: `${hintPrefix} ${formatMoney(account.balance, account.currency)}`,
+			icon: account.icon
+		}))
+	);
 </script>
 
 <div class={cn('space-y-1.5', className)}>
-	<label
+	<button
+		type="button"
+		bind:this={trigger}
 		class={cn(
-			'relative flex items-center gap-3 rounded-2xl border bg-surface-container-lowest p-3 shadow-card transition',
-			error ? 'border-tertiary/60' : 'border-hairline focus-within:border-secondary',
-			disabled && 'opacity-60'
+			'pressable flex w-full items-center gap-3 rounded-2xl border bg-surface-container-lowest p-3 text-left shadow-card transition',
+			error ? 'border-tertiary/60' : 'border-hairline hover:border-outline-variant',
+			disabled && 'pointer-events-none opacity-60'
 		)}
+		aria-haspopup="listbox"
+		aria-expanded={open}
+		aria-label={`${label}: ${selected ? selected.name : placeholder}`}
+		{disabled}
+		onclick={() => (open = true)}
 	>
 		<span class="flex size-10 shrink-0 items-center justify-center rounded-full {TONE[tone]}">
 			<Icon name={selected?.icon ?? 'account_balance_wallet'} size={20} />
@@ -65,20 +87,19 @@
 		</span>
 
 		<Icon name="expand_more" size={20} class="shrink-0 text-muted" />
+	</button>
 
-		<select
-			{name}
-			{disabled}
-			bind:value
-			class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-			aria-label={label}
-		>
-			<option value="" disabled>{placeholder}</option>
-			{#each accounts as account (account.id)}
-				<option value={account.id}>{account.name} · {formatMoney(account.balance, account.currency)}</option>
-			{/each}
-		</select>
-	</label>
+	<OptionSheet
+		bind:open
+		title={label}
+		{name}
+		{label}
+		{tone}
+		{required}
+		returnFocus={trigger}
+		bind:value
+		options={options}
+	/>
 
 	{#if error}
 		<p class="text-body-sm font-medium text-tertiary">{error}</p>

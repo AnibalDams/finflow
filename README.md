@@ -92,6 +92,7 @@ e2e/              # pruebas end-to-end
 - Los formularios usan `use:enhance` con un helper central que muestra toasts y respeta `redirect`. Las pestañas y filtros que viven en la URL se siembran en estado local, porque `action="?/nombre"` descarta los parámetros existentes.
 - Los gráficos son SVG hechos a mano (sin librerías); el PDF usa `jspdf`.
 - La interfaz da respuesta inmediata: barra de progreso de navegación, atenuado del contenido al cambiar de ruta, estados `loading` en cada acción y transiciones de 120–250 ms sobre `transform`/`opacity`. Todo respeta `prefers-reduced-motion`.
+- Los selectores (cuentas, moneda, tipo de cuenta, filtros y día de recordatorio) usan una **hoja inferior** propia (`OptionSheet`) en lugar del menú nativo del navegador. Mantienen `name`/`required` con un `<select>` oculto, y son navegables con teclado (flechas, Home/End, Escape) devolviendo el foco al cerrar.
 
 ## Seguridad en producción
 

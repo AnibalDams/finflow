@@ -7,6 +7,7 @@
 	import Sparkline from '#lib/components/charts/Sparkline.svelte';
 	import TransactionRow from '#lib/components/domain/TransactionRow.svelte';
 	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import OptionSheet from '#lib/components/ui/OptionSheet.svelte';
 	import { buttonClass } from '#lib/components/ui/button-styles';
 	import { formatMonthName } from '#lib/utils/dates';
 	import { formatMoney, formatPercent } from '#lib/utils/money';
@@ -23,6 +24,24 @@
 
 	const accountLabel = $derived(selectedAccount ? selectedAccount.name : 'Todas las cuentas');
 
+	let accountSheetOpen = $state(false);
+	let accountTrigger = $state<HTMLButtonElement | null>(null);
+
+	const accountOptions = $derived([
+		...data.accounts.map((account) => ({
+			value: account.id,
+			label: account.name,
+			description: formatMoney(account.balance, account.currency),
+			icon: account.icon
+		})),
+		{
+			value: 'all',
+			label: 'Todas las cuentas',
+			description: 'Resumen consolidado',
+			icon: 'apps'
+		}
+	]);
+
 	function withParams(changes: Record<string, string | null>): string {
 		const search = new URLSearchParams(page.url.searchParams.toString());
 		for (const [key, value] of Object.entries(changes)) {
@@ -33,9 +52,11 @@
 		return `/${query ? `?${query}` : ''}`;
 	}
 
-	function onAccountChange(event: Event): void {
-		const value = (event.currentTarget as HTMLSelectElement).value;
-		goto(withParams({ cuenta: value }), { reset: false });
+	function selectAccount(value: string): void {
+		// `all` es un valor válido del filtro (resumen consolidado): se conserva.
+		const search = new URLSearchParams(page.url.searchParams.toString());
+		search.set('cuenta', value);
+		goto(`/?${search.toString()}`, { reset: false });
 	}
 
 	const quickActions = [
@@ -82,25 +103,30 @@
 			</p>
 		</div>
 
-		<label
-			class="relative flex shrink-0 items-center gap-1.5 rounded-full bg-level-1 py-2 pr-2 pl-3 transition hover:bg-surface-container"
+		<button
+			type="button"
+			bind:this={accountTrigger}
+			class="pressable relative flex shrink-0 items-center gap-1.5 rounded-full bg-level-1 py-2 pr-2 pl-3 transition hover:bg-surface-container"
+			aria-haspopup="listbox"
+			aria-expanded={accountSheetOpen}
+			aria-label="Seleccionar cuenta"
+			onclick={() => (accountSheetOpen = true)}
 		>
 			<Icon name={selectedAccount?.icon ?? 'account_balance_wallet'} size={17} class="text-primary" />
 			<span class="max-w-24 truncate text-label-sm font-semibold text-ink">{accountLabel}</span>
 			<Icon name="expand_more" size={16} class="text-muted" />
-			<select
-				class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-				aria-label="Seleccionar cuenta"
-				value={data.selectedAccountId}
-				onchange={onAccountChange}
-			>
-				{#each data.accounts as account (account.id)}
-					<option value={account.id}>{account.name}</option>
-				{/each}
-				<option value="all">Todas las cuentas</option>
-			</select>
-		</label>
+		</button>
 	</header>
+
+	<OptionSheet
+		bind:open={accountSheetOpen}
+		title="Seleccionar cuenta"
+		value={data.selectedAccountId}
+		options={accountOptions}
+		tone="primary"
+		returnFocus={accountTrigger}
+		onchange={selectAccount}
+	/>
 
 	<section class="overflow-hidden rounded-3xl bg-inverse-surface p-5 shadow-hero">
 		<div class="flex items-start justify-between gap-3">
