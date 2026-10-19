@@ -240,6 +240,7 @@ export type Database = {
           due_day: number
           first_due_date: string
           id: string
+          initial_amount: number
           interest_kind: Database["public"]["Enums"]["interest_kind"]
           interest_rate: number
           is_active: boolean
@@ -247,7 +248,9 @@ export type Database = {
           monthly_payment: number
           name: string
           notes: string | null
+          payment_frequency: Database["public"]["Enums"]["debt_frequency"]
           principal_amount: number
+          started_at: string
           total_installments: number
           updated_at: string
           user_id: string
@@ -260,6 +263,7 @@ export type Database = {
           due_day?: number
           first_due_date: string
           id?: string
+          initial_amount?: number
           interest_kind?: Database["public"]["Enums"]["interest_kind"]
           interest_rate?: number
           is_active?: boolean
@@ -267,7 +271,9 @@ export type Database = {
           monthly_payment: number
           name: string
           notes?: string | null
+          payment_frequency?: Database["public"]["Enums"]["debt_frequency"]
           principal_amount: number
+          started_at?: string
           total_installments?: number
           updated_at?: string
           user_id: string
@@ -280,6 +286,7 @@ export type Database = {
           due_day?: number
           first_due_date?: string
           id?: string
+          initial_amount?: number
           interest_kind?: Database["public"]["Enums"]["interest_kind"]
           interest_rate?: number
           is_active?: boolean
@@ -287,7 +294,9 @@ export type Database = {
           monthly_payment?: number
           name?: string
           notes?: string | null
+          payment_frequency?: Database["public"]["Enums"]["debt_frequency"]
           principal_amount?: number
+          started_at?: string
           total_installments?: number
           updated_at?: string
           user_id?: string
@@ -659,6 +668,7 @@ export type Database = {
           due_day: number | null
           first_due_date: string | null
           id: string | null
+          initial_amount: number | null
           installments_left: number | null
           installments_paid: number | null
           interest_kind: Database["public"]["Enums"]["interest_kind"] | null
@@ -671,9 +681,13 @@ export type Database = {
           next_due_date: string | null
           notes: string | null
           paid_amount: number | null
+          payment_frequency:
+            | Database["public"]["Enums"]["debt_frequency"]
+            | null
           principal_amount: number | null
           progress_percent: number | null
           remaining_amount: number | null
+          started_at: string | null
           total_installments: number | null
           updated_at: string | null
           user_id: string | null
@@ -836,6 +850,7 @@ export type Database = {
     Enums: {
       account_kind: "checking" | "savings" | "pocket" | "cash" | "credit"
       category_kind: "expense" | "income"
+      debt_frequency: "weekly" | "biweekly" | "monthly"
       debt_kind: "credit_card" | "personal" | "family" | "mortgage" | "other"
       goal_status: "active" | "completed" | "paused"
       interest_kind: "msi" | "fixed" | "variable"
@@ -969,6 +984,7 @@ export const Constants = {
     Enums: {
       account_kind: ["checking", "savings", "pocket", "cash", "credit"],
       category_kind: ["expense", "income"],
+      debt_frequency: ["weekly", "biweekly", "monthly"],
       debt_kind: ["credit_card", "personal", "family", "mortgage", "other"],
       goal_status: ["active", "completed", "paused"],
       interest_kind: ["msi", "fixed", "variable"],

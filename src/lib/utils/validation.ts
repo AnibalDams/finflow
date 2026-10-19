@@ -67,11 +67,7 @@ export const loginSchema = z.object({
 
 export const registerSchema = z
 	.object({
-		fullName: z
-			.string()
-			.trim()
-			.min(2, 'Escribe tu nombre')
-			.max(80, 'El nombre es demasiado largo'),
+		fullName: z.string().trim().min(2, 'Escribe tu nombre').max(80, 'El nombre es demasiado largo'),
 		email,
 		password,
 		passwordConfirm: z.string(),
@@ -163,26 +159,38 @@ export const contributionSchema = z.object({
    Deudas
    ========================================================================== */
 
-export const debtSchema = z.object({
-	name: z.string().trim().min(3, 'Escribe el nombre de la deuda').max(80),
-	creditor: optionalText(80),
-	kind: z.enum(['credit_card', 'personal', 'family', 'mortgage', 'other']),
-	principalAmount: money('el monto total'),
-	totalInstallments: z.coerce
-		.number()
-		.int()
-		.min(1, 'Mínimo 1 cuota')
-		.max(600, 'Máximo 600 cuotas'),
-	paidInstallments: z.coerce.number().int().min(0).max(600).default(0),
-	monthlyPayment: money('la cuota mensual'),
-	interestKind: z.enum(['msi', 'fixed', 'variable']),
-	interestRate: z.coerce.number().min(0, 'No puede ser negativo').max(200, 'Revisa la tasa').default(0),
-	dueDay: z.coerce.number().int().min(1, 'Día inválido').max(31, 'Día inválido'),
-	firstDueDate: isoDate,
-	alertDaysBefore: z.coerce.number().int().min(0).max(30).default(5),
-	accountId: z.union([uuid, z.literal('')]).optional(),
-	notes: optionalText(300)
-});
+export const debtSchema = z
+	.object({
+		name: z.string().trim().min(3, 'Escribe el nombre de la deuda').max(80),
+		creditor: optionalText(80),
+		kind: z.enum(['credit_card', 'personal', 'family', 'mortgage', 'other']),
+		principalAmount: money('el monto total'),
+		initialAmount: money('el monto inicial', { allowZero: true }),
+		totalInstallments: z.coerce
+			.number()
+			.int()
+			.min(1, 'Mínimo 1 cuota')
+			.max(600, 'Máximo 600 cuotas'),
+		paidInstallments: z.coerce.number().int().min(0).max(600).default(0),
+		monthlyPayment: money('la cuota'),
+		paymentFrequency: z.enum(['weekly', 'biweekly', 'monthly']).default('monthly'),
+		startedAt: isoDate,
+		interestKind: z.enum(['msi', 'fixed', 'variable']),
+		interestRate: z.coerce
+			.number()
+			.min(0, 'No puede ser negativo')
+			.max(200, 'Revisa la tasa')
+			.default(0),
+		dueDay: z.coerce.number().int().min(1, 'Día inválido').max(31, 'Día inválido'),
+		firstDueDate: isoDate,
+		alertDaysBefore: z.coerce.number().int().min(0).max(30).default(5),
+		accountId: z.union([uuid, z.literal('')]).optional(),
+		notes: optionalText(300)
+	})
+	.refine((data) => data.initialAmount <= data.principalAmount, {
+		message: 'El monto inicial no puede superar el monto total',
+		path: ['initialAmount']
+	});
 
 export const paymentSchema = z.object({
 	debtId: uuid,

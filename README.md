@@ -8,7 +8,7 @@ Aplicación móvil-first de finanzas personales: movimientos, métricas, metas, 
 - **Movimientos**: lista mensual con navegación entre meses, búsqueda, filtros, alta de gasto/ingreso/transferencia, comprobante adjunto (solo imagen, sin OCR), edición y borrado desde el detalle.
 - **Métricas**: totales del periodo con comparación contra el periodo anterior, desglose por categoría, serie temporal y exportación a **CSV** (`;` y coma decimal, compatible con Excel en español) y **PDF**.
 - **Planes y metas**: aportaciones, ritmo de ahorro (adelantado / a tiempo / atrasado / vencido), proyección de fecha de alcance, pausar, completar y reactivar.
-- **Deudas**: amortización con MSI/interés fijo/interés variable, proyección con método bola de nieve, alertas de vencimiento y pagos atómicos que generan el gasto asociado.
+- **Deudas**: amortización con MSI/interés fijo/interés variable, frecuencia **semanal, quincenal o mensual**, fecha de origen, monto ya entregado, cuotas pagadas con calendario, proyección con método bola de nieve, alertas de vencimiento y pagos atómicos que generan el gasto asociado.
 - **Cuentas y categorías**: cuentas con saldo inicial, moneda (no editable), cuenta principal única, archivado y borrado solo sin movimientos; categorías con icono y color; presupuestos por categoría y mes.
 - **Ajustes**: perfil, cambio de contraseña, exportaciones y cierre de sesión.
 - **Seguridad**: RLS en todas las tablas, secretos solo por variables de entorno, validación con Zod, redirecciones internas validadas, cierre de sesión solo por POST y traducción de errores de Auth al español.
@@ -88,6 +88,7 @@ e2e/              # pruebas end-to-end
 ## Notas de diseño
 
 - El dinero se calcula en **centavos enteros** y se formatea con agrupación `1,234.56`.
+- En deudas, `monthly_payment` almacena la **cuota por periodo**; el compromiso mensual se deriva de la frecuencia (52/12 semanal, 2 quincenal, 1 mensual) y el interés anual se convierte a tasa periódica (÷52, ÷24, ÷12).
 - Los agregados de periodos usan límites en UTC; la presentación es local.
 - Los formularios usan `use:enhance` con un helper central que muestra toasts y respeta `redirect`. Las pestañas y filtros que viven en la URL se siembran en estado local, porque `action="?/nombre"` descarta los parámetros existentes.
 - Los gráficos son SVG hechos a mano (sin librerías); el PDF usa `jspdf`.
@@ -96,7 +97,7 @@ e2e/              # pruebas end-to-end
 
 ## Seguridad en producción
 
-- Las migraciones de `supabase/migrations/` se aplican en orden (0001 esquema, 0002 storage, 0003 endurecimiento e índices). No requieren la CLI ni Docker.
+- Las migraciones de `supabase/migrations/` se aplican en orden (0001 esquema, 0002 storage, 0003 endurecimiento e índices, 0004 frecuencia y origen de deudas). No requieren la CLI ni Docker.
 - En el panel de Supabase → **Auth → Providers → Email** conviene activar **Leaked password protection** (Supabase lo revisa contra HaveIBeenPwned). Es el único aviso del asesor de seguridad que no se puede resolver por SQL.
 - Los buckets `receipts` y `goal-images` son privados; el acceso se resuelve con URLs firmadas y las políticas exigen que la ruta empiece por `auth.uid()`.
 

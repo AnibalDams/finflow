@@ -27,6 +27,7 @@ import type {
 	View,
 	Row
 } from '#lib/types/domain';
+import { monthlyEquivalent } from './finance';
 
 export function toNumber(value: unknown, fallback = 0): number {
 	if (typeof value === 'number' && Number.isFinite(value)) return value;
@@ -111,7 +112,9 @@ export function mapTransaction(row: View<'transactions_detailed'>): TransactionI
 }
 
 export function mapBudget(
-	row: Row<'budgets'> & { category?: { id: string; name: string; icon: string; color: string } | null }
+	row: Row<'budgets'> & {
+		category?: { id: string; name: string; icon: string; color: string } | null;
+	}
 ): BudgetItem {
 	return {
 		id: row.id,
@@ -138,7 +141,8 @@ export function mapGoal(row: View<'goal_progress'>): Goal {
 		targetDate: row.target_date,
 		status: row.status ?? 'active',
 		accountId: row.account_id,
-		monthlyContribution: row.monthly_contribution === null ? null : toNumber(row.monthly_contribution),
+		monthlyContribution:
+			row.monthly_contribution === null ? null : toNumber(row.monthly_contribution),
 		reminderEnabled: toBoolean(row.reminder_enabled, true),
 		reminderDay: toNumber(row.reminder_day, 1),
 		imagePath: row.image_path,
@@ -158,6 +162,9 @@ export function mapGoalContribution(row: Row<'goal_contributions'>): GoalContrib
 }
 
 export function mapDebt(row: View<'debt_progress'>): Debt {
+	const frequency = row.payment_frequency ?? 'monthly';
+	const installment = toNumber(row.monthly_payment);
+
 	return {
 		id: toStringValue(row.id),
 		name: toStringValue(row.name),
@@ -165,7 +172,11 @@ export function mapDebt(row: View<'debt_progress'>): Debt {
 		kind: row.kind ?? 'other',
 		principalAmount: toNumber(row.principal_amount),
 		totalInstallments: toNumber(row.total_installments),
-		monthlyPayment: toNumber(row.monthly_payment),
+		installmentAmount: installment,
+		monthlyEquivalent: monthlyEquivalent(installment, frequency),
+		paymentFrequency: frequency,
+		startedAt: toStringValue(row.started_at),
+		initialAmount: toNumber(row.initial_amount),
 		interestKind: row.interest_kind ?? 'msi',
 		interestRate: toNumber(row.interest_rate),
 		dueDay: toNumber(row.due_day, 1),

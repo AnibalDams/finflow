@@ -6,7 +6,7 @@
 	import { cn } from '#lib/utils/cn';
 	import { enhanceForm } from '#lib/utils/enhance';
 	import { addMonths, daysUntil, formatDayMonth, formatMonthName } from '#lib/utils/dates';
-	import { DEBT_KIND_ICONS, DEBT_KIND_LABELS } from '#lib/utils/labels';
+	import { DEBT_KIND_ICONS, DEBT_KIND_LABELS, DEBT_FREQUENCY_PERIODS } from '#lib/utils/labels';
 	import { formatMoney } from '#lib/utils/money';
 	import type { Debt, DebtKind } from '#lib/types/domain';
 	import type { PageProps } from './$types';
@@ -27,7 +27,11 @@
 
 	const filters = $derived([
 		{ value: 'todas', label: `Todas (${data.counts.todas})`, href: '/deudas' },
-		{ value: 'tarjetas', label: `Tarjetas (${data.counts.tarjetas})`, href: '/deudas?tipo=tarjetas' },
+		{
+			value: 'tarjetas',
+			label: `Tarjetas (${data.counts.tarjetas})`,
+			href: '/deudas?tipo=tarjetas'
+		},
 		{
 			value: 'prestamos',
 			label: `Préstamos (${data.counts.prestamos})`,
@@ -58,7 +62,7 @@
 
 	function confirmPayment(event: MouseEvent, debt: Debt): void {
 		const button = event.currentTarget as HTMLButtonElement;
-		const message = `¿Registrar el pago de ${formatMoney(debt.monthlyPayment, data.currency)} para ${debt.name}?`;
+		const message = `¿Registrar el pago de ${formatMoney(debt.installmentAmount, data.currency)} para ${debt.name}?`;
 		if (window.confirm(message)) button.form?.requestSubmit();
 	}
 </script>
@@ -70,7 +74,9 @@
 				<Icon name="account_balance" size={16} class="text-primary-container" />
 				Estado de amortización
 			</span>
-			<span class="flex items-center gap-1.5 rounded-full bg-primary-container/20 px-2.5 py-1 text-label-sm font-semibold text-primary-container">
+			<span
+				class="flex items-center gap-1.5 rounded-full bg-primary-container/20 px-2.5 py-1 text-label-sm font-semibold text-primary-container"
+			>
 				<span class="size-1.5 rounded-full bg-primary-container" aria-hidden="true"></span>
 				En curso
 			</span>
@@ -79,24 +85,27 @@
 		<p class="mt-4 text-label-sm font-semibold tracking-wide text-inverse-on-surface/60 uppercase">
 			Deuda total pendiente
 		</p>
-		<p class="tnum mt-1 flex items-baseline gap-1.5">
-			<span class="text-[2rem] leading-none font-bold">{formatMoney(data.totals.remaining, data.currency)}</span>
+		<p class="mt-1 flex items-baseline gap-1.5 tnum">
+			<span class="text-[2rem] leading-none font-bold"
+				>{formatMoney(data.totals.remaining, data.currency)}</span
+			>
 			<span class="text-body-sm text-inverse-on-surface/60">{data.currency}</span>
 		</p>
 
 		<div class="mt-4 grid grid-cols-2 gap-2">
 			<div class="rounded-2xl bg-white/8 p-3">
 				<p class="text-label-sm text-inverse-on-surface/60">Compromiso mensual</p>
-				<p class="tnum mt-0.5 text-title-sm font-bold">
+				<p class="mt-0.5 tnum text-title-sm font-bold">
 					{formatMoney(data.totals.monthly, data.currency)}
 				</p>
 				<p class="text-label-sm text-inverse-on-surface/60">
-					{data.active.length} {data.active.length === 1 ? 'cuota activa' : 'cuotas activas'}
+					{data.active.length}
+					{data.active.length === 1 ? 'cuota activa' : 'cuotas activas'}
 				</p>
 			</div>
 			<div class="rounded-2xl bg-white/8 p-3">
 				<p class="text-label-sm text-inverse-on-surface/60">Total amortizado</p>
-				<p class="tnum mt-0.5 text-title-sm font-bold">
+				<p class="mt-0.5 tnum text-title-sm font-bold">
 					{formatMoney(data.totals.paid, data.currency)}
 				</p>
 				<p class="text-label-sm text-inverse-on-surface/60">
@@ -129,14 +138,19 @@
 	{#if data.alerts.length > 0}
 		<section class="rounded-2xl bg-secondary/6 p-3.5">
 			<div class="flex items-start gap-3">
-				<span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-container-lowest text-secondary">
+				<span
+					class="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-container-lowest text-secondary"
+				>
 					<Icon name="event_upcoming" size={20} />
 				</span>
 				<div class="min-w-0 flex-1">
 					<div class="flex items-start justify-between gap-2">
 						<p class="text-title-sm text-ink">Próximos 30 días</p>
-						<span class="rounded-full bg-secondary/10 px-2 py-0.5 text-label-sm font-semibold text-secondary">
-							{data.alerts.length} {data.alerts.length === 1 ? 'alerta' : 'alertas'}
+						<span
+							class="rounded-full bg-secondary/10 px-2 py-0.5 text-label-sm font-semibold text-secondary"
+						>
+							{data.alerts.length}
+							{data.alerts.length === 1 ? 'alerta' : 'alertas'}
 						</span>
 					</div>
 					<p class="mt-0.5 text-body-sm text-on-surface-variant">
@@ -146,15 +160,13 @@
 				</div>
 			</div>
 
-			<div class="-mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1 no-scrollbar">
+			<div class="-mx-1 mt-3 no-scrollbar flex gap-2 overflow-x-auto px-1 pb-1">
 				{#each data.alerts as alert (alert.debt.id)}
 					<a
 						href={`/deudas/${alert.debt.id}`}
 						class={cn(
 							'flex shrink-0 items-center gap-1.5 rounded-lg border bg-surface-container-lowest px-2.5 py-1.5 text-label-sm font-semibold whitespace-nowrap',
-							alert.overdue
-								? 'border-tertiary/40 text-tertiary'
-								: 'border-outline-variant text-ink'
+							alert.overdue ? 'border-tertiary/40 text-tertiary' : 'border-outline-variant text-ink'
 						)}
 					>
 						<Icon name={alert.overdue ? 'error' : 'schedule'} size={14} />
@@ -169,11 +181,12 @@
 		<div class="flex items-end justify-between gap-2">
 			<h2 class="text-title-md text-ink">Obligaciones activas</h2>
 			<span class="text-label-sm text-muted">
-				{data.active.length} {data.active.length === 1 ? 'compromiso' : 'compromisos'}
+				{data.active.length}
+				{data.active.length === 1 ? 'compromiso' : 'compromisos'}
 			</span>
 		</div>
 
-		<div class="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1 no-scrollbar">
+		<div class="-mx-4 mt-2 no-scrollbar flex gap-2 overflow-x-auto px-4 pb-1">
 			{#each filters as filter (filter.value)}
 				<a
 					href={filter.href}
@@ -195,7 +208,7 @@
 				{@const status = statusOf(debt)}
 				{@const urgent = data.urgentIds.includes(debt.id)}
 				<article
-					class="rounded-2xl border border-hairline/70 border-l-4 {style.accent} bg-surface-container-lowest p-3.5 shadow-card"
+					class="rounded-2xl border border-l-4 border-hairline/70 {style.accent} bg-surface-container-lowest p-3.5 shadow-card"
 				>
 					<div class="flex items-start gap-3">
 						<span class="flex size-11 shrink-0 items-center justify-center rounded-xl {style.tile}">
@@ -209,7 +222,9 @@
 										{debt.creditor ?? DEBT_KIND_LABELS[debt.kind]}
 									</p>
 								</div>
-								<span class="shrink-0 rounded-full px-2 py-0.5 text-label-sm font-semibold {status.tone}">
+								<span
+									class="shrink-0 rounded-full px-2 py-0.5 text-label-sm font-semibold {status.tone}"
+								>
 									{status.label}
 								</span>
 							</div>
@@ -227,11 +242,18 @@
 							</p>
 						</div>
 						<div class="text-right">
-							<p class="text-label-sm text-muted">Cuota mensual</p>
+							<p class="text-label-sm text-muted">
+								Cuota / {DEBT_FREQUENCY_PERIODS[debt.paymentFrequency]}
+							</p>
 							<p class="tnum text-title-sm font-bold text-ink">
-								{formatMoney(debt.monthlyPayment, data.currency)}
+								{formatMoney(debt.installmentAmount, data.currency)}
 							</p>
 							<p class="text-label-sm text-muted">Vence: {formatDayMonth(debt.nextDueDate)}</p>
+							{#if debt.paymentFrequency !== 'monthly'}
+								<p class="text-label-sm text-muted">
+									≈ {formatMoney(debt.monthlyEquivalent, data.currency)}/mes
+								</p>
+							{/if}
 						</div>
 					</div>
 
@@ -263,7 +285,7 @@
 							})}
 						>
 							<input type="hidden" name="debtId" value={debt.id} />
-							<input type="hidden" name="amount" value={debt.monthlyPayment.toFixed(2)} />
+							<input type="hidden" name="amount" value={debt.installmentAmount.toFixed(2)} />
 							<input type="hidden" name="accountId" value={debt.accountId ?? ''} />
 							<button
 								type="button"
@@ -276,7 +298,7 @@
 								{:else}
 									<Icon name="payments" size={18} />
 								{/if}
-								Pagar cuota ({formatMoney(debt.monthlyPayment, data.currency)})
+								Pagar cuota ({formatMoney(debt.installmentAmount, data.currency)})
 							</button>
 						</form>
 						<a
@@ -314,14 +336,18 @@
 						{payoffDate ?? 'Sin proyección disponible'}
 					</p>
 				</div>
-				<span class="flex size-9 items-center justify-center rounded-full bg-secondary/12 text-secondary">
+				<span
+					class="flex size-9 items-center justify-center rounded-full bg-secondary/12 text-secondary"
+				>
 					<Icon name="trending_down" size={20} />
 				</span>
 			</div>
 
 			<p class="mt-2 text-body text-on-surface-variant">
-				Manteniendo el ritmo actual de pagos programados
-				({formatMoney(data.projection.monthlyCommitment, data.currency)}/mes), saldarás tus pasivos en
+				Manteniendo el ritmo actual de pagos programados ({formatMoney(
+					data.projection.monthlyCommitment,
+					data.currency
+				)}/mes), saldarás tus pasivos en
 				{data.projection.baseline.months}
 				{data.projection.baseline.months === 1 ? 'mes' : 'meses'}.
 				{#if data.projection.interestSaved > 0}

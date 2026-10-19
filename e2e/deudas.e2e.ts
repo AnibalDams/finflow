@@ -43,3 +43,37 @@ test('registra una obligación, paga una cuota y la elimina con su movimiento', 
 	await expect(page).toHaveURL(/\/movimientos(\?.*)?$/);
 	await expect(page.getByText(new RegExp(`Pago de cuota · ${name}`))).toHaveCount(0);
 });
+
+test('registra una deuda semanal con monto inicial y cuotas pagadas', async ({ page }) => {
+	const name = `Deuda Semanal E2E ${Date.now()}`;
+
+	await login(page);
+	await page.goto('/deudas/nueva');
+	await page.getByLabel('Nombre de la obligación').fill(name);
+	await page.getByLabel('Monto total original o saldo').fill('520');
+	await page.getByLabel('Monto ya entregado (opcional)').fill('20');
+	await page.getByLabel('Total de cuotas').fill('26');
+	await page.getByLabel('Ya pagadas').fill('2');
+	await page.locator('label').filter({ hasText: 'Semanal' }).click();
+	await page.getByLabel('Fecha en que se generó').fill('2026-10-01');
+	await page.getByLabel('Primer vencimiento').fill('2026-10-08');
+
+	// (520 - 20) / 26 = 19.23 por semana.
+	await expect(page.getByText('$19.23').first()).toBeVisible();
+	await page.getByRole('button', { name: 'Registrar obligación' }).click();
+
+	await expect(page).toHaveURL(/\/deudas$/);
+	await page.getByRole('link', { name: `Ver detalle de ${name}` }).click();
+	await expect(page).toHaveURL(/\/deudas\/[0-9a-f-]{36}/);
+
+	// 20 entregados + 2 cuotas de 19.23; quedan 461.54.
+	await expect(page.getByText('$461.54').first()).toBeVisible();
+	await expect(page.getByText('Semanal', { exact: true })).toBeVisible();
+	await expect(page.getByText('2 de 26 cuotas amortizadas')).toBeVisible();
+
+	// Limpieza: la deuda no generó movimientos.
+	acceptConfirm(page);
+	await page.getByRole('button', { name: 'Eliminar deuda' }).click();
+	await expect(page).toHaveURL(/\/deudas$/);
+	await expect(page.getByText(name)).toHaveCount(0);
+});

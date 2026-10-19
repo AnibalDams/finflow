@@ -4,7 +4,7 @@ import { mutationMessage } from '#lib/server/mutations';
 import { requireAuth } from '#lib/server/results';
 import { defaultAccount } from '#lib/server/shell';
 import { addMonths, periodRange, toISODate } from '#lib/utils/dates';
-import { installmentAmount } from '#lib/utils/finance';
+import { addFrequency, installmentAmount } from '#lib/utils/finance';
 import { formValues, readString } from '#lib/utils/forms';
 import { debtSchema, fieldErrors } from '#lib/utils/validation';
 import type { Actions, PageServerLoad } from './$types';
@@ -14,9 +14,12 @@ const VALUES = [
 	'creditor',
 	'kind',
 	'principalAmount',
+	'initialAmount',
 	'totalInstallments',
 	'paidInstallments',
 	'monthlyPayment',
+	'paymentFrequency',
+	'startedAt',
 	'interestKind',
 	'interestRate',
 	'dueDay',
@@ -55,9 +58,12 @@ export const actions: Actions = {
 			creditor: readString(form, 'creditor'),
 			kind: readString(form, 'kind'),
 			principalAmount: readString(form, 'principalAmount'),
+			initialAmount: readString(form, 'initialAmount') || '0',
 			totalInstallments: readString(form, 'totalInstallments'),
 			paidInstallments: readString(form, 'paidInstallments') || '0',
 			monthlyPayment: readString(form, 'monthlyPayment'),
+			paymentFrequency: readString(form, 'paymentFrequency') || 'monthly',
+			startedAt: readString(form, 'startedAt'),
 			interestKind: readString(form, 'interestKind'),
 			interestRate: readString(form, 'interestRate') || '0',
 			dueDay: readString(form, 'dueDay'),
@@ -103,10 +109,20 @@ export const actions: Actions = {
 		// La cuota se recalcula en el servidor: nunca se confía en el valor del formulario.
 		const monthlyPayment = installmentAmount({
 			principal: parsed.data.principalAmount,
+			initialAmount: parsed.data.initialAmount,
 			totalInstallments: parsed.data.totalInstallments,
 			interestKind: parsed.data.interestKind,
-			interestRate: parsed.data.interestRate
+			interestRate: parsed.data.interestRate,
+			frequency: parsed.data.paymentFrequency
 		});
+
+		if (parsed.data.paidInstallments > 0 && monthlyPayment <= 0) {
+			return fail(400, {
+				message: 'El monto inicial cubre toda la deuda; no hay cuotas que registrar.',
+				errors: { initialAmount: 'Deja al menos una cuota pendiente' },
+				values
+			});
+		}
 
 		const { data: created, error } = await locals.supabase
 			.from('debts')
@@ -116,8 +132,11 @@ export const actions: Actions = {
 				creditor: parsed.data.creditor,
 				kind: parsed.data.kind,
 				principal_amount: parsed.data.principalAmount,
+				initial_amount: parsed.data.initialAmount,
 				total_installments: parsed.data.totalInstallments,
 				monthly_payment: monthlyPayment,
+				payment_frequency: parsed.data.paymentFrequency,
+				started_at: parsed.data.startedAt,
 				interest_kind: parsed.data.interestKind,
 				interest_rate: parsed.data.interestKind === 'msi' ? 0 : parsed.data.interestRate,
 				due_day: parsed.data.dueDay,
@@ -142,7 +161,7 @@ export const actions: Actions = {
 				user_id: user.id,
 				debt_id: created.id,
 				amount: monthlyPayment,
-				occurred_at: addMonths(start, index).toISOString(),
+				occurred_at: addFrequency(start, index, parsed.data.paymentFrequency).toISOString(),
 				installment_number: index + 1,
 				note: 'Cuota registrada al crear la obligación'
 			}));

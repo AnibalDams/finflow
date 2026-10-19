@@ -33,9 +33,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const filter = parseFilter(url.searchParams.get('tipo'));
 
 	const filtered =
-		filter === 'todas'
-			? active
-			: active.filter((debt) => FILTER_KINDS[filter].includes(debt.kind));
+		filter === 'todas' ? active : active.filter((debt) => FILTER_KINDS[filter].includes(debt.kind));
 
 	const totalPaid = sumAmounts(debts.map((debt) => debt.paidAmount));
 	const historical = sumAmounts(debts.map((debt) => debt.principalAmount));
@@ -53,7 +51,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		},
 		totals: {
 			remaining: sumAmounts(active.map((debt) => debt.remainingAmount)),
-			monthly: sumAmounts(active.map((debt) => debt.monthlyPayment)),
+			monthly: sumAmounts(active.map((debt) => debt.monthlyEquivalent)),
 			paid: totalPaid,
 			historical,
 			progress: historical > 0 ? Math.min(100, (totalPaid / historical) * 100) : 0

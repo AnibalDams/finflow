@@ -106,7 +106,7 @@ export function summarizeDebts(debts: Debt[]): DebtSummary {
 	return {
 		count: active.length,
 		remaining,
-		monthlyCommitment: active.reduce((total, debt) => total + debt.monthlyPayment, 0),
+		monthlyCommitment: active.reduce((total, debt) => total + debt.monthlyEquivalent, 0),
 		paid,
 		original,
 		percent: original > 0 ? (paid / original) * 100 : 0

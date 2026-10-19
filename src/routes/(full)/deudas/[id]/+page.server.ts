@@ -13,10 +13,13 @@ const EDIT_VALUES = [
 	'name',
 	'creditor',
 	'principalAmount',
+	'initialAmount',
 	'totalInstallments',
 	'interestKind',
 	'interestRate',
 	'monthlyPayment',
+	'paymentFrequency',
+	'startedAt',
 	'dueDay',
 	'firstDueDate',
 	'accountId',
@@ -38,8 +41,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		debt: result.debt,
 		payments: result.payments,
 		accounts,
-		defaultAccountId:
-			result.debt.accountId ?? defaultAccount(accounts)?.id ?? '',
+		defaultAccountId: result.debt.accountId ?? defaultAccount(accounts)?.id ?? '',
 		today: toISODate(new Date()),
 		currency: locals.profile?.currency ?? 'USD'
 	};
@@ -96,9 +98,12 @@ export const actions: Actions = {
 			creditor: readString(form, 'creditor'),
 			kind: readString(form, 'kind'),
 			principalAmount: readString(form, 'principalAmount'),
+			initialAmount: readString(form, 'initialAmount') || '0',
 			totalInstallments: readString(form, 'totalInstallments'),
 			paidInstallments: '0',
 			monthlyPayment: readString(form, 'monthlyPayment'),
+			paymentFrequency: readString(form, 'paymentFrequency') || 'monthly',
+			startedAt: readString(form, 'startedAt'),
 			interestKind: readString(form, 'interestKind'),
 			interestRate: readString(form, 'interestRate') || '0',
 			dueDay: readString(form, 'dueDay'),
@@ -123,6 +128,9 @@ export const actions: Actions = {
 				name: parsed.data.name,
 				creditor: parsed.data.creditor,
 				monthly_payment: parsed.data.monthlyPayment,
+				payment_frequency: parsed.data.paymentFrequency,
+				started_at: parsed.data.startedAt,
+				initial_amount: parsed.data.initialAmount,
 				due_day: parsed.data.dueDay,
 				first_due_date: parsed.data.firstDueDate,
 				alert_days_before: parsed.data.alertDaysBefore,
@@ -167,10 +175,7 @@ export const actions: Actions = {
 
 	delete: async ({ locals, params }) => {
 		requireAuth(locals.user);
-		const { error: deleteError } = await locals.supabase
-			.from('debts')
-			.delete()
-			.eq('id', params.id);
+		const { error: deleteError } = await locals.supabase.from('debts').delete().eq('id', params.id);
 
 		if (deleteError) {
 			return fail(400, {

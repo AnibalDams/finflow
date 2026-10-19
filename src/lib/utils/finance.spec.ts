@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Debt, Goal } from '#lib/types/domain';
 import { toISODate } from './dates';
 import {
+	addFrequency,
 	budgetTone,
 	contributionPlan,
 	debtProjection,
@@ -9,6 +10,9 @@ import {
 	elapsedMonths,
 	goalPace,
 	installmentAmount,
+	monthlyEquivalent,
+	nextDueDate,
+	periodsPerMonth,
 	upcomingDebtPayments,
 	type DebtAlert
 } from './finance';
@@ -46,7 +50,11 @@ function buildDebt(overrides: Partial<Debt> = {}): Debt {
 		kind: 'credit_card',
 		principalAmount: 1000,
 		totalInstallments: 4,
-		monthlyPayment: 250,
+		installmentAmount: 250,
+		monthlyEquivalent: 250,
+		paymentFrequency: 'monthly',
+		startedAt: '2026-01-01',
+		initialAmount: 0,
 		interestKind: 'msi',
 		interestRate: 0,
 		dueDay: 5,
@@ -111,6 +119,66 @@ describe('installmentAmount', () => {
 			})
 		).toBe(0);
 	});
+
+	it('descuenta el monto ya entregado del saldo a financiar', () => {
+		expect(
+			installmentAmount({
+				principal: 1200,
+				initialAmount: 200,
+				totalInstallments: 10,
+				interestKind: 'msi',
+				interestRate: 0
+			})
+		).toBe(100);
+	});
+
+	it('usa la tasa periódica según la frecuencia', () => {
+		const weekly = installmentAmount({
+			principal: 1200,
+			totalInstallments: 52,
+			interestKind: 'fixed',
+			interestRate: 12,
+			frequency: 'weekly'
+		});
+		const monthly = installmentAmount({
+			principal: 1200,
+			totalInstallments: 12,
+			interestKind: 'fixed',
+			interestRate: 12,
+			frequency: 'monthly'
+		});
+		// La cuota semanal es ~1/4 de la mensual, no 1/4.33.
+		expect(weekly).toBeGreaterThan(monthly / 4.4);
+		expect(weekly).toBeLessThan(monthly / 4);
+	});
+});
+
+describe('frecuencia de deudas', () => {
+	it('calcula los periodos mensuales por frecuencia', () => {
+		expect(periodsPerMonth('monthly')).toBe(1);
+		expect(periodsPerMonth('biweekly')).toBe(2);
+		expect(periodsPerMonth('weekly')).toBeCloseTo(52 / 12, 5);
+	});
+
+	it('convierte la cuota a su equivalente mensual', () => {
+		expect(monthlyEquivalent(100, 'monthly')).toBe(100);
+		expect(monthlyEquivalent(100, 'biweekly')).toBe(200);
+		expect(monthlyEquivalent(100, 'weekly')).toBe(433.33);
+	});
+
+	it('suma vencimientos según la frecuencia', () => {
+		const start = new Date(2026, 0, 1);
+		expect(toISODate(addFrequency(start, 2, 'weekly'))).toBe('2026-01-15');
+		expect(toISODate(addFrequency(start, 2, 'biweekly'))).toBe('2026-01-31');
+		expect(toISODate(addFrequency(start, 2, 'monthly'))).toBe('2026-03-01');
+	});
+
+	it('calcula el próximo vencimiento con las cuotas pagadas', () => {
+		expect(nextDueDate('2026-01-05', 0, 'monthly')).toBe('2026-01-05');
+		expect(nextDueDate('2026-01-05', 3, 'monthly')).toBe('2026-04-05');
+		expect(nextDueDate('2026-01-05', 3, 'weekly')).toBe('2026-01-26');
+		expect(nextDueDate('2026-01-05', 3, 'biweekly')).toBe('2026-02-19');
+	});
 });
 
 describe('contributionPlan', () => {
@@ -166,7 +234,9 @@ describe('goalPace', () => {
 		expect(goalPace(buildGoal({ ...base, savedAmount: 700 }), reference)).toBe('ahead');
 		expect(goalPace(buildGoal({ ...base, savedAmount: 100 }), reference)).toBe('behind');
 		expect(goalPace(buildGoal({ ...base, savedAmount: 1200 }), reference)).toBe('completed');
-		expect(goalPace(buildGoal({ ...base, savedAmount: 300 }), new Date(2027, 0, 15))).toBe('overdue');
+		expect(goalPace(buildGoal({ ...base, savedAmount: 300 }), new Date(2027, 0, 15))).toBe(
+			'overdue'
+		);
 	});
 });
 
@@ -181,8 +251,8 @@ describe('debtProjection', () => {
 
 	it('acelera el pago aplicando las cuotas liberadas', () => {
 		const projection = debtProjection([
-			buildDebt({ id: 'a', name: 'Pequeña', remainingAmount: 200, monthlyPayment: 200 }),
-			buildDebt({ id: 'b', name: 'Grande', remainingAmount: 1800, monthlyPayment: 200 })
+			buildDebt({ id: 'a', name: 'Pequeña', remainingAmount: 200, monthlyEquivalent: 200 }),
+			buildDebt({ id: 'b', name: 'Grande', remainingAmount: 1800, monthlyEquivalent: 200 })
 		]);
 		expect(projection.monthlyCommitment).toBe(400);
 		expect(projection.accelerated.months).toBeLessThan(projection.baseline.months);

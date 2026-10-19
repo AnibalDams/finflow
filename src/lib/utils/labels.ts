@@ -1,5 +1,6 @@
 import type {
 	AccountKind,
+	DebtFrequency,
 	DebtKind,
 	GoalCategory,
 	GoalStatus,
@@ -63,6 +64,25 @@ export const INTEREST_KIND_LABELS: Record<InterestKind, string> = {
 	msi: '0% MSI',
 	fixed: 'Fija',
 	variable: 'Variable'
+};
+
+export const DEBT_FREQUENCY_LABELS: Record<DebtFrequency, string> = {
+	weekly: 'Semanal',
+	biweekly: 'Quincenal',
+	monthly: 'Mensual'
+};
+
+/** Unidad usada junto al monto de la cuota: "$100 / semana". */
+export const DEBT_FREQUENCY_PERIODS: Record<DebtFrequency, string> = {
+	weekly: 'semana',
+	biweekly: 'quincena',
+	monthly: 'mes'
+};
+
+export const DEBT_FREQUENCY_ICONS: Record<DebtFrequency, string> = {
+	weekly: 'view_week',
+	biweekly: 'date_range',
+	monthly: 'calendar_month'
 };
 
 export const GOAL_CATEGORY_LABELS: Record<GoalCategory, string> = {

@@ -37,7 +37,7 @@ export function buildAlerts(input: AlertInput): DashboardAlert[] {
 				id: `debt-overdue-${debt.id}`,
 				kind: 'debt_overdue',
 				title: `${debt.name} está vencida`,
-				description: `La cuota de ${formatMoney(debt.monthlyPayment, input.currency)} venció hace ${Math.abs(days)} días.`,
+				description: `La cuota de ${formatMoney(debt.installmentAmount, input.currency)} venció hace ${Math.abs(days)} días.`,
 				icon: 'notification_important',
 				tone: 'danger'
 			});
@@ -49,7 +49,7 @@ export function buildAlerts(input: AlertInput): DashboardAlert[] {
 				id: `debt-due-${debt.id}`,
 				kind: 'debt_due',
 				title: `${debt.name} vence ${days === 0 ? 'hoy' : `en ${days} días`}`,
-				description: `Programa ${formatMoney(debt.monthlyPayment, input.currency)} para no generar intereses moratorios.`,
+				description: `Programa ${formatMoney(debt.installmentAmount, input.currency)} para no generar intereses moratorios.`,
 				icon: 'schedule',
 				tone: 'warning'
 			});

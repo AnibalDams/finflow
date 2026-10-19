@@ -118,6 +118,8 @@ export interface GoalContribution {
 	note: string | null;
 }
 
+export type DebtFrequency = 'weekly' | 'biweekly' | 'monthly';
+
 export interface Debt {
 	id: string;
 	name: string;
@@ -125,7 +127,13 @@ export interface Debt {
 	kind: DebtKind;
 	principalAmount: number;
 	totalInstallments: number;
-	monthlyPayment: number;
+	/** Cuota por periodo (semana, quincena o mes). */
+	installmentAmount: number;
+	/** Equivalente mensual de la cuota según la frecuencia. */
+	monthlyEquivalent: number;
+	paymentFrequency: DebtFrequency;
+	startedAt: string;
+	initialAmount: number;
 	interestKind: InterestKind;
 	interestRate: number;
 	dueDay: number;

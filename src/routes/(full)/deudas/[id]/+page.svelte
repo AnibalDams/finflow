@@ -6,13 +6,22 @@
 	import DateField from '#lib/components/ui/DateField.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import ProgressBar from '#lib/components/ui/ProgressBar.svelte';
+	import SegmentedControl from '#lib/components/ui/SegmentedControl.svelte';
 	import TextField from '#lib/components/ui/TextField.svelte';
 	import { buttonClass } from '#lib/components/ui/button-styles';
 	import { enhanceForm } from '#lib/utils/enhance';
 	import type { FormState } from '#lib/utils/forms';
-	import { daysUntil, formatDayMonth, formatFullDate } from '#lib/utils/dates';
-	import { DEBT_KIND_ICONS, DEBT_KIND_LABELS, INTEREST_KIND_LABELS } from '#lib/utils/labels';
+	import { daysUntil, formatDayMonth, formatFullDate, parseISODate } from '#lib/utils/dates';
+	import {
+		DEBT_FREQUENCY_ICONS,
+		DEBT_FREQUENCY_LABELS,
+		DEBT_FREQUENCY_PERIODS,
+		DEBT_KIND_ICONS,
+		DEBT_KIND_LABELS,
+		INTEREST_KIND_LABELS
+	} from '#lib/utils/labels';
 	import { formatMoney } from '#lib/utils/money';
+	import type { DebtFrequency } from '#lib/types/domain';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
@@ -34,7 +43,7 @@
 		return { label: 'Al día', tone: 'bg-secondary/10 text-secondary' };
 	});
 
-	let amount = $state(debt.monthlyPayment.toFixed(2));
+	let amount = $state(debt.installmentAmount.toFixed(2));
 	let occurredAt = $state(data.today);
 	let payAccount = $state(data.defaultAccountId);
 	let note = $state('');
@@ -42,7 +51,10 @@
 
 	let editName = $state(debt.name);
 	let editCreditor = $state(debt.creditor ?? '');
-	let editMonthly = $state(debt.monthlyPayment.toFixed(2));
+	let editMonthly = $state(debt.installmentAmount.toFixed(2));
+	let editFrequency = $state<DebtFrequency>(debt.paymentFrequency);
+	let editStartedAt = $state(debt.startedAt);
+	let editInitialAmount = $state(debt.initialAmount.toFixed(2));
 	let editDueDay = $state(String(debt.dueDay));
 	let editFirstDue = $state(debt.firstDueDate);
 	let editAccount = $state(debt.accountId ?? '');
@@ -51,6 +63,16 @@
 	let savingEdit = $state(false);
 	let deleting = $state(false);
 	let statusSaving = $state(false);
+
+	const frequencyOptions = [
+		{ value: 'weekly', label: 'Semanal', icon: DEBT_FREQUENCY_ICONS.weekly },
+		{ value: 'biweekly', label: 'Quincenal', icon: DEBT_FREQUENCY_ICONS.biweekly },
+		{ value: 'monthly', label: 'Mensual', icon: DEBT_FREQUENCY_ICONS.monthly }
+	];
+
+	const editDueDayValue = $derived(
+		editFrequency === 'monthly' ? editDueDay : String(parseISODate(editFirstDue).getDate())
+	);
 
 	function confirmDelete(event: MouseEvent): void {
 		const button = event.currentTarget as HTMLButtonElement;
@@ -63,9 +85,13 @@
 <PageHeader title={debt.name} backHref="/deudas" />
 
 <div class="space-y-4 px-4 pt-4 pb-10">
-	<section class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4 shadow-card">
+	<section
+		class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4 shadow-card"
+	>
 		<div class="flex items-start gap-3">
-			<span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
+			<span
+				class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary"
+			>
 				<Icon name={DEBT_KIND_ICONS[debt.kind]} size={22} />
 			</span>
 			<div class="min-w-0 flex-1">
@@ -101,14 +127,36 @@
 
 		<div class="mt-4 grid grid-cols-2 gap-2 border-t border-hairline pt-3">
 			<div>
-				<p class="text-label-sm text-muted uppercase">Cuota mensual</p>
-				<p class="tnum text-title-sm font-bold text-ink">
-					{formatMoney(debt.monthlyPayment, data.currency)}
+				<p class="text-label-sm text-muted uppercase">
+					Cuota / {DEBT_FREQUENCY_PERIODS[debt.paymentFrequency]}
 				</p>
+				<p class="tnum text-title-sm font-bold text-ink">
+					{formatMoney(debt.installmentAmount, data.currency)}
+				</p>
+				{#if debt.paymentFrequency !== 'monthly'}
+					<p class="text-label-sm text-muted">
+						≈ {formatMoney(debt.monthlyEquivalent, data.currency)}/mes
+					</p>
+				{/if}
 			</div>
 			<div class="text-right">
 				<p class="text-label-sm text-muted uppercase">Próximo vencimiento</p>
 				<p class="text-title-sm font-bold text-ink">{formatDayMonth(debt.nextDueDate)}</p>
+			</div>
+		</div>
+
+		<div class="mt-2 grid grid-cols-3 gap-2">
+			<div>
+				<p class="text-label-sm text-muted uppercase">Frecuencia</p>
+				<p class="text-label text-ink">{DEBT_FREQUENCY_LABELS[debt.paymentFrequency]}</p>
+			</div>
+			<div class="text-center">
+				<p class="text-label-sm text-muted uppercase">Origen</p>
+				<p class="text-label text-ink">{formatFullDate(debt.startedAt)}</p>
+			</div>
+			<div class="text-right">
+				<p class="text-label-sm text-muted uppercase">Entregado</p>
+				<p class="text-label text-ink">{formatMoney(debt.initialAmount, data.currency)}</p>
 			</div>
 		</div>
 
@@ -167,7 +215,12 @@
 					error={previous.amount}
 				/>
 
-				<DateField name="occurredAt" label="Fecha del pago" bind:date={occurredAt} error={previous.occurredAt} />
+				<DateField
+					name="occurredAt"
+					label="Fecha del pago"
+					bind:date={occurredAt}
+					error={previous.occurredAt}
+				/>
 
 				<AccountSelect
 					name="accountId"
@@ -193,7 +246,7 @@
 					{:else}
 						<Icon name="payments" size={18} />
 					{/if}
-					Pagar {formatMoney(debt.monthlyPayment, data.currency)}
+					Pagar {formatMoney(debt.installmentAmount, data.currency)}
 				</button>
 			</form>
 		</section>
@@ -205,10 +258,14 @@
 			<span class="text-label-sm text-muted">{data.payments.length} pagos</span>
 		</div>
 
-		<div class="mt-2 divide-y divide-hairline/70 rounded-2xl border border-hairline/70 bg-surface-container-lowest px-4">
+		<div
+			class="mt-2 divide-y divide-hairline/70 rounded-2xl border border-hairline/70 bg-surface-container-lowest px-4"
+		>
 			{#each data.payments as payment (payment.id)}
 				<div class="flex items-center gap-3 py-3">
-					<span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+					<span
+						class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
+					>
 						<Icon name="check" size={18} />
 					</span>
 					<div class="min-w-0 flex-1">
@@ -220,7 +277,7 @@
 							{#if payment.installmentNumber}· Cuota {payment.installmentNumber}{/if}
 						</p>
 					</div>
-					<span class="tnum shrink-0 text-label font-bold text-ink">
+					<span class="shrink-0 tnum text-label font-bold text-ink">
 						{formatMoney(payment.amount, data.currency)}
 					</span>
 				</div>
@@ -262,9 +319,19 @@
 				error={previous.creditor}
 			/>
 
+			<div class="space-y-1.5">
+				<p class="text-label-sm font-medium text-on-surface-variant">Frecuencia de pago</p>
+				<SegmentedControl
+					name="paymentFrequency"
+					tone="secondary"
+					options={frequencyOptions}
+					bind:value={editFrequency}
+				/>
+			</div>
+
 			<AmountField
 				name="monthlyPayment"
-				label="Cuota mensual"
+				label="Cuota por periodo"
 				bind:value={editMonthly}
 				currency={data.currency}
 				tone="secondary"
@@ -272,17 +339,38 @@
 				error={previous.monthlyPayment}
 			/>
 
+			<DateField
+				name="startedAt"
+				label="Fecha en que se generó"
+				bind:date={editStartedAt}
+				error={previous.startedAt}
+			/>
+
+			<AmountField
+				name="initialAmount"
+				label="Monto ya entregado"
+				bind:value={editInitialAmount}
+				currency={data.currency}
+				tone="secondary"
+				quickAmounts={[]}
+				error={previous.initialAmount}
+			/>
+
 			<div class="space-y-2">
-				<TextField
-					label="Día límite"
-					name="dueDay"
-					type="number"
-					inputmode="numeric"
-					min="1"
-					max="31"
-					bind:value={editDueDay}
-					error={previous.dueDay}
-				/>
+				{#if editFrequency === 'monthly'}
+					<TextField
+						label="Día límite"
+						name="dueDay"
+						type="number"
+						inputmode="numeric"
+						min="1"
+						max="31"
+						bind:value={editDueDay}
+						error={previous.dueDay}
+					/>
+				{:else}
+					<input type="hidden" name="dueDay" value={editDueDayValue} />
+				{/if}
 				<DateField
 					name="firstDueDate"
 					label="Primer vencimiento"
@@ -322,8 +410,7 @@
 					rows="2"
 					bind:value={editNotes}
 					class="w-full rounded-xl border border-hairline bg-surface-container-lowest px-3.5 py-2.5 text-body text-ink placeholder:text-muted-soft focus:border-secondary focus:ring-3 focus:ring-secondary/12 focus:outline-none"
-					placeholder="Detalles del acuerdo"
-				></textarea>
+					placeholder="Detalles del acuerdo"></textarea>
 			</div>
 
 			<button type="submit" class={buttonClass('secondary', 'md', true)} disabled={savingEdit}>
@@ -360,11 +447,7 @@
 			</form>
 		{/if}
 
-		<form
-			method="POST"
-			action="?/delete"
-			use:enhance={enhanceForm({ success: 'Deuda eliminada' })}
-		>
+		<form method="POST" action="?/delete" use:enhance={enhanceForm({ success: 'Deuda eliminada' })}>
 			<button
 				type="button"
 				class={buttonClass('danger', 'md', true)}

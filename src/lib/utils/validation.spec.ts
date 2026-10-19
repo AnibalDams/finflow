@@ -63,9 +63,10 @@ describe('autenticación', () => {
 	it('exige 8 caracteres en el cambio de contraseña', () => {
 		const short = changePasswordSchema.safeParse({ password: 'corta', passwordConfirm: 'corta' });
 		expect(short.success).toBe(false);
-		expect(changePasswordSchema.safeParse({ password: 'LargaClave1', passwordConfirm: 'LargaClave1' }).success).toBe(
-			true
-		);
+		expect(
+			changePasswordSchema.safeParse({ password: 'LargaClave1', passwordConfirm: 'LargaClave1' })
+				.success
+		).toBe(true);
 	});
 });
 
@@ -149,9 +150,12 @@ describe('planes y deudas', () => {
 			creditor: '',
 			kind: 'credit_card',
 			principalAmount: '12,000',
+			initialAmount: '1,000',
 			totalInstallments: '12',
 			paidInstallments: '2',
 			monthlyPayment: '1,000',
+			paymentFrequency: 'monthly',
+			startedAt: '2026-01-10',
 			interestKind: 'msi',
 			interestRate: '0',
 			dueDay: '10',
@@ -163,9 +167,12 @@ describe('planes y deudas', () => {
 		const debt = debtSchema.parse(raw);
 		expect(debt).toMatchObject({
 			principalAmount: 12_000,
+			initialAmount: 1000,
 			totalInstallments: 12,
 			paidInstallments: 2,
 			monthlyPayment: 1000,
+			paymentFrequency: 'monthly',
+			startedAt: '2026-01-10',
 			interestKind: 'msi',
 			creditor: null,
 			notes: null
@@ -174,6 +181,13 @@ describe('planes y deudas', () => {
 		expect(debtSchema.safeParse({ ...raw, totalInstallments: 0 }).success).toBe(false);
 		expect(debtSchema.safeParse({ ...raw, dueDay: 40 }).success).toBe(false);
 		expect(debtSchema.safeParse({ ...raw, interestRate: 250 }).success).toBe(false);
+		expect(debtSchema.safeParse({ ...raw, paymentFrequency: 'daily' }).success).toBe(false);
+		expect(
+			debtSchema.safeParse({ ...raw, initialAmount: '12,000', principalAmount: '12,000' }).success
+		).toBe(true);
+		expect(
+			debtSchema.safeParse({ ...raw, initialAmount: '12,001', principalAmount: '12,000' }).success
+		).toBe(false);
 	});
 
 	it('valida aportaciones y pagos', () => {
@@ -248,10 +262,20 @@ describe('cuentas, categorías y perfil', () => {
 
 	it('valida el color de la categoría', () => {
 		expect(
-			categorySchema.parse({ name: 'Alimentos', kind: 'expense', icon: 'restaurant', color: '#10B981' }).color
+			categorySchema.parse({
+				name: 'Alimentos',
+				kind: 'expense',
+				icon: 'restaurant',
+				color: '#10B981'
+			}).color
 		).toBe('#10B981');
 		expect(
-			categorySchema.safeParse({ name: 'Alimentos', kind: 'expense', icon: 'restaurant', color: 'verde' }).success
+			categorySchema.safeParse({
+				name: 'Alimentos',
+				kind: 'expense',
+				icon: 'restaurant',
+				color: 'verde'
+			}).success
 		).toBe(false);
 	});
 
@@ -271,6 +295,8 @@ describe('cuentas, categorías y perfil', () => {
 			monthlyBudget: '0'
 		});
 		expect(profile).toMatchObject({ currency: 'MXN', monthlyBudget: 0 });
-		expect(profileSchema.safeParse({ fullName: 'S', currency: 'MXN', monthlyBudget: '0' }).success).toBe(false);
+		expect(
+			profileSchema.safeParse({ fullName: 'S', currency: 'MXN', monthlyBudget: '0' }).success
+		).toBe(false);
 	});
 });
