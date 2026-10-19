@@ -1,0 +1,284 @@
+@import 'tailwindcss';
+
+/* ==========================================================================
+   FinFlow · Sistema de diseño
+   Derivado de `Design/modern_high_trust_wealth_management/DESIGN.md`:
+   tipografía suiza precisa, elevación tonal suave y color estrictamente
+   semántico (verde = activos, índigo = planes, rosa = pasivos).
+   ========================================================================== */
+
+@theme {
+	--font-sans:
+		'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+	/* --- Superficies (Material 3) --- */
+	--color-background: #faf8ff;
+	--color-surface: #faf8ff;
+	--color-surface-dim: #d2d9f4;
+	--color-surface-bright: #faf8ff;
+	--color-surface-container-lowest: #ffffff;
+	--color-surface-container-low: #f2f3ff;
+	--color-surface-container: #eaedff;
+	--color-surface-container-high: #e2e7ff;
+	--color-surface-container-highest: #dae2fd;
+	--color-surface-variant: #dae2fd;
+	--color-on-surface: #131b2e;
+	--color-on-surface-variant: #3c4a42;
+	--color-on-background: #131b2e;
+	--color-inverse-surface: #283044;
+	--color-inverse-on-surface: #eef0ff;
+	--color-outline: #6c7a71;
+	--color-outline-variant: #bbcabf;
+
+	/* --- Color semántico --- */
+	--color-primary: #006c49;
+	--color-on-primary: #ffffff;
+	--color-primary-container: #10b981;
+	--color-on-primary-container: #00422b;
+	--color-primary-fixed: #6ffbbe;
+	--color-primary-fixed-dim: #4edea3;
+	--color-on-primary-fixed: #002113;
+	--color-on-primary-fixed-variant: #005236;
+
+	--color-secondary: #4648d4;
+	--color-on-secondary: #ffffff;
+	--color-secondary-container: #6063ee;
+	--color-on-secondary-container: #fffbff;
+	--color-secondary-fixed: #e1e0ff;
+	--color-secondary-fixed-dim: #c0c1ff;
+	--color-on-secondary-fixed: #07006c;
+	--color-on-secondary-fixed-variant: #2f2ebe;
+
+	--color-tertiary: #bc0b3b;
+	--color-on-tertiary: #ffffff;
+	--color-tertiary-container: #ff7886;
+	--color-on-tertiary-container: #780021;
+	--color-tertiary-fixed: #ffdadb;
+	--color-tertiary-fixed-dim: #ffb2b7;
+	--color-on-tertiary-fixed: #40000d;
+	--color-on-tertiary-fixed-variant: #92002a;
+
+	--color-error: #ba1a1a;
+	--color-on-error: #ffffff;
+	--color-error-container: #ffdad6;
+	--color-on-error-container: #93000a;
+
+	/* --- Neutros de apoyo (DESIGN.md · jerarquía slate) --- */
+	--color-canvas: #f8fafc;
+	--color-level-1: #f1f5f9;
+	--color-hairline: #e2e8f0;
+	--color-ink: #0f172a;
+	--color-muted: #64748b;
+	--color-muted-soft: #94a3b8;
+
+	/* --- Estados de movimiento --- */
+	--color-income-surface: #ecfdf5;
+	--color-income-text: #065f46;
+	--color-expense-surface: #fff1f2;
+	--color-expense-text: #9f1239;
+	--color-plan-surface: #eef2ff;
+	--color-plan-text: #3730a3;
+
+	/* --- Escala tipográfica --- */
+	--text-title-xl: 36px;
+	--text-title-xl--line-height: 44px;
+	--text-title-xl--letter-spacing: -0.03em;
+	--text-title-xl--font-weight: 700;
+
+	--text-amount: 30px;
+	--text-amount--line-height: 36px;
+	--text-amount--letter-spacing: -0.025em;
+	--text-amount--font-weight: 700;
+
+	--text-title-lg: 26px;
+	--text-title-lg--line-height: 32px;
+	--text-title-lg--letter-spacing: -0.02em;
+	--text-title-lg--font-weight: 600;
+
+	--text-title-md: 20px;
+	--text-title-md--line-height: 26px;
+	--text-title-md--letter-spacing: -0.015em;
+	--text-title-md--font-weight: 600;
+
+	--text-title-sm: 17px;
+	--text-title-sm--line-height: 22px;
+	--text-title-sm--letter-spacing: -0.01em;
+	--text-title-sm--font-weight: 600;
+
+	--text-body-lg: 16px;
+	--text-body-lg--line-height: 24px;
+	--text-body-lg--letter-spacing: -0.005em;
+
+	--text-body: 14px;
+	--text-body--line-height: 20px;
+
+	--text-body-sm: 12px;
+	--text-body-sm--line-height: 16px;
+	--text-body-sm--letter-spacing: 0.005em;
+
+	--text-label: 14px;
+	--text-label--line-height: 18px;
+	--text-label--letter-spacing: 0.01em;
+	--text-label--font-weight: 600;
+
+	--text-label-sm: 12px;
+	--text-label-sm--line-height: 16px;
+	--text-label-sm--letter-spacing: 0.02em;
+	--text-label-sm--font-weight: 500;
+
+	--text-label-xs: 10px;
+	--text-label-xs--line-height: 12px;
+	--text-label-xs--letter-spacing: 0.04em;
+	--text-label-xs--font-weight: 600;
+
+	/* --- Elevación (modelo táctil por capas) --- */
+	--shadow-card: 0 1px 3px 0 rgb(15 23 42 / 0.04), 0 4px 12px -2px rgb(15 23 42 / 0.03);
+	--shadow-level-1: 0 1px 2px 0 rgb(15 23 42 / 0.04);
+	--shadow-elevated: 0 10px 25px -5px rgb(15 23 42 / 0.08);
+	--shadow-sheet: 0 -10px 30px -10px rgb(15 23 42 / 0.18);
+	--shadow-fab: 0 10px 20px -6px rgb(0 108 73 / 0.45);
+	--shadow-hero: 0 18px 40px -18px rgb(19 27 46 / 0.55);
+}
+
+@layer base {
+	html {
+		-webkit-text-size-adjust: 100%;
+		text-size-adjust: 100%;
+	}
+
+	body {
+		background-color: var(--color-canvas);
+		color: var(--color-ink);
+		font-family: var(--font-sans);
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+		overscroll-behavior-y: none;
+	}
+
+	button,
+	input,
+	select,
+	textarea {
+		font: inherit;
+		color: inherit;
+	}
+
+	:focus-visible {
+		outline: 2px solid var(--color-secondary);
+		outline-offset: 2px;
+	}
+
+	::selection {
+		background-color: color-mix(in oklab, var(--color-primary) 20%, transparent);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		*,
+		*::before,
+		*::after {
+			animation-duration: 0.01ms !important;
+			transition-duration: 0.01ms !important;
+		}
+	}
+}
+
+/* Cifras tabulares: evita el salto de layout al actualizar montos. */
+@utility tnum {
+	font-feature-settings: 'tnum' on, 'lnum' on;
+	font-variant-numeric: tabular-nums lining-nums;
+}
+
+@utility pt-safe {
+	padding-top: max(env(safe-area-inset-top), 0px);
+}
+
+@utility pb-safe {
+	padding-bottom: max(env(safe-area-inset-bottom), 0px);
+}
+
+@utility mt-safe {
+	margin-top: env(safe-area-inset-top);
+}
+
+@utility no-scrollbar {
+	scrollbar-width: none;
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
+@utility tap-highlight-none {
+	-webkit-tap-highlight-color: transparent;
+}
+
+@utility touch-target {
+	min-height: 44px;
+	min-width: 44px;
+}
+
+/* Iconos Material Symbols */
+.material-symbols-outlined {
+	font-variation-settings:
+		'FILL' 0,
+		'wght' 400,
+		'GRAD' 0,
+		'opsz' 24;
+	line-height: 1;
+	user-select: none;
+}
+
+.material-symbols-outlined[data-filled='true'] {
+	font-variation-settings:
+		'FILL' 1,
+		'wght' 400,
+		'GRAD' 0,
+		'opsz' 24;
+}
+
+/* Animaciones del sistema */
+@keyframes finflow-rise {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes finflow-fade {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes finflow-slide-up {
+	from {
+		transform: translateY(100%);
+	}
+	to {
+		transform: translateY(0);
+	}
+}
+
+@keyframes finflow-shimmer {
+	100% {
+		transform: translateX(100%);
+	}
+}
+
+.animate-rise {
+	animation: finflow-rise 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-fade {
+	animation: finflow-fade 0.2s ease-out both;
+}
+
+.animate-slide-up {
+	animation: finflow-slide-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
