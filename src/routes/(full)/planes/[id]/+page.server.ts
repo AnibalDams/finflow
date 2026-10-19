@@ -104,7 +104,7 @@ export const actions: Actions = {
 				.eq('id', current.goal.id);
 		}
 
-		redirect(303, `/planes/${current.goal.id}`);
+		return { ok: true };
 	},
 
 	update: async ({ request, locals, params }) => {
@@ -198,7 +198,7 @@ export const actions: Actions = {
 			await removeFile(locals.supabase, 'goal-images', current.goal.imagePath);
 		}
 
-		redirect(303, `/planes/${current.goal.id}`);
+		return { ok: true };
 	},
 
 	status: async ({ request, locals, params }) => {
@@ -225,7 +225,7 @@ export const actions: Actions = {
 			});
 		}
 
-		redirect(303, `/planes/${params.id}`);
+		return { ok: true };
 	},
 
 	delete: async ({ locals, params }) => {

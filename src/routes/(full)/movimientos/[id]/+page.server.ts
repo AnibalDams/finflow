@@ -63,7 +63,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, locals, params }) => {
+	update: async ({ request, locals, params }) => {
 		const user = requireAuth(locals.user);
 		const current = await getTransaction(locals.supabase, params.id);
 
@@ -167,7 +167,10 @@ export const actions: Actions = {
 		}
 
 		await replaceTransactionTags(locals.supabase, user.id, current.id, parsed.data.tags);
-		redirect(303, `/movimientos/${current.id}`);
+
+		// Igual que en el resto de detalles: no redirigimos a la misma URL porque
+		// eso fuerza una recarga nativa y puede pisar una acción posterior.
+		return { ok: true };
 	},
 
 	delete: async ({ locals, params }) => {

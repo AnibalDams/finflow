@@ -74,7 +74,13 @@ const authHandle: Handle = async ({ event, resolve }) => {
 	const { data } = await event.locals.supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
 	event.locals.profile = data ? mapProfile(data) : null;
 
-	if (isPublicRoute(event.url.pathname) && event.url.pathname !== '/restablecer') {
+	// Solo navegaciones de lectura: las rutas `/auth/salir` y `/auth/confirm`
+	// reciben POST y deben ejecutarse incluso con sesión activa.
+	if (
+		event.request.method === 'GET' &&
+		isPublicRoute(event.url.pathname) &&
+		event.url.pathname !== '/restablecer'
+	) {
 		redirect(303, '/');
 	}
 

@@ -147,6 +147,7 @@
 		<form
 			id="edit-form"
 			method="POST"
+			action="?/update"
 			enctype="multipart/form-data"
 			class="space-y-4"
 			use:enhance={enhanceForm({

@@ -46,7 +46,7 @@ export const actions: Actions = {
 		const parsed = goalSchema.safeParse({
 			name: readString(form, 'name'),
 			targetAmount: readString(form, 'targetAmount'),
-			initialAmount: readString(form, 'initialAmount'),
+			initialAmount: readString(form, 'initialAmount') || '0',
 			targetDate: readString(form, 'targetDate'),
 			category: readString(form, 'category'),
 			accountId: readString(form, 'accountId'),

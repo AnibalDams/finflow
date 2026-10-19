@@ -4,7 +4,7 @@
  * centavos por dentro) y sin dependencias de UI para poder probarse aislado.
  */
 
-import { addMonths, daysUntil, diffInMonths, monthsBetween, parseISODate, toISODate } from './dates';
+import { addMonths, daysUntil, diffInDays, diffInMonths, monthsBetween, parseISODate, toISODate } from './dates';
 import { fromCents, round2, toCents } from './money';
 import type { Debt, Goal, GoalStatus, InterestKind } from '#lib/types/domain';
 
@@ -50,12 +50,13 @@ export function goalPace(goal: Goal, reference: Date = new Date()): GoalPace {
 	const start = Number.isNaN(startDate.getTime()) ? reference : startDate;
 	const end = parseISODate(goal.targetDate);
 
-	const totalDays = Math.max(daysUntil(start, end), 1);
-	const elapsedDays = Math.max(daysUntil(start, reference), 0);
+	// Días totales del plan y días transcurridos hasta la fecha de referencia.
+	const totalDays = Math.max(diffInDays(start, end), 1);
+	const elapsedDays = Math.max(diffInDays(start, reference), 0);
 	const expected = Math.min(elapsedDays / totalDays, 1) * goal.targetAmount;
 	const tolerance = goal.targetAmount * 0.05;
 
-	if (daysUntil(end, reference) < 0) return 'overdue';
+	if (diffInDays(reference, end) < 0) return 'overdue';
 	if (goal.savedAmount >= expected + tolerance) return 'ahead';
 	if (goal.savedAmount >= expected - tolerance) return 'on_track';
 	return 'behind';
