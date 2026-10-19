@@ -189,7 +189,10 @@
 					<div class="rounded-2xl border border-hairline/70 bg-surface-container-lowest px-4">
 						<ul>
 							{#each group.items as item, index (item.id)}
-								<li class={index > 0 ? 'border-t border-hairline/70' : ''}>
+								<li
+									class="animate-stagger {index > 0 ? 'border-t border-hairline/70' : ''}"
+									style="animation-delay:{Math.min(index, 8) * 30}ms"
+								>
 									<TransactionRow
 										transaction={item}
 										currency={item.currency}
@@ -267,7 +270,7 @@
 			</select>
 		</label>
 
-		<div class="flex gap-2 pt-1">
+		<div class="grid grid-cols-[auto_1fr] gap-2 pt-1">
 			<a href={withParams({ tipo: null, cuenta: null, categoria: null })} class={buttonClass('ghost', 'lg')}>
 				Limpiar
 			</a>

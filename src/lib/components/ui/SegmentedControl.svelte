@@ -31,34 +31,38 @@
 	}: Props = $props();
 
 	const TONE_ACTIVE: Record<Tone, string> = {
-		neutral: 'bg-surface-container-lowest text-ink shadow-[0_1px_4px_rgba(19,27,46,0.10)]',
-		primary: 'bg-primary text-white shadow-[0_2px_8px_rgba(0,131,88,0.28)]',
-		tertiary: 'bg-tertiary text-white shadow-[0_2px_8px_rgba(190,40,80,0.24)]',
-		secondary: 'bg-secondary text-white shadow-[0_2px_8px_rgba(60,90,220,0.24)]'
+		neutral: 'bg-surface-container-lowest shadow-[0_1px_4px_rgba(19,27,46,0.10)]',
+		primary: 'bg-primary shadow-[0_2px_8px_rgba(0,131,88,0.28)]',
+		tertiary: 'bg-tertiary shadow-[0_2px_8px_rgba(190,40,80,0.24)]',
+		secondary: 'bg-secondary shadow-[0_2px_8px_rgba(60,90,220,0.24)]'
 	};
 
 	const activeIndex = $derived(Math.max(0, options.findIndex((option) => option.value === value)));
 	const columns = $derived(Math.max(1, options.length));
 </script>
 
-<div class={cn('relative flex gap-1 rounded-full bg-level-1 p-1', className)}>
-	{#if tone === 'neutral'}
-		<span
-			class="absolute top-1 bottom-1 rounded-full bg-surface-container-lowest shadow-[0_1px_4px_rgba(19,27,46,0.10)] transition-transform duration-200 ease-out"
-			style="left:4px;width:calc((100% - 8px)/{columns});transform:translateX(calc({activeIndex} * 100%))"
-			aria-hidden="true"
-		></span>
-	{/if}
+<div
+	class={cn('relative grid rounded-full bg-level-1 p-1', className)}
+	style="grid-template-columns:repeat({columns},minmax(0,1fr))"
+>
+	<span
+		class={cn(
+			'absolute top-1 bottom-1 left-1 rounded-full transition-transform duration-200 ease-out',
+			TONE_ACTIVE[tone]
+		)}
+		style="width:calc((100% - 8px)/{columns});transform:translateX(calc({activeIndex} * 100%))"
+		aria-hidden="true"
+	></span>
 
 	{#each options as option (option.value)}
 		<label
 			class={cn(
-				'relative z-10 flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full font-semibold transition-colors',
+				'relative z-10 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-full font-semibold transition-colors active:opacity-75',
 				size === 'sm' ? 'h-8 text-label-sm' : 'h-11 text-label',
 				value === option.value
 					? tone === 'neutral'
 						? 'text-ink'
-						: TONE_ACTIVE[tone]
+						: 'text-white'
 					: 'text-on-surface-variant hover:text-on-surface'
 			)}
 		>

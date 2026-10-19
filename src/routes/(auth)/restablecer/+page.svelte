@@ -12,6 +12,8 @@
 	let { data }: PageProps = $props();
 
 	const form = $derived(page.form as FormState | null | undefined);
+
+	let saving = $state(false);
 </script>
 
 <Card class="p-5">
@@ -33,7 +35,14 @@
 			</a>
 		</div>
 	{:else}
-		<form method="POST" use:enhance={enhanceForm()} class="space-y-4">
+		<form
+			method="POST"
+			use:enhance={enhanceForm({
+				onStart: () => (saving = true),
+				onFinish: () => (saving = false)
+			})}
+			class="space-y-4"
+		>
 			<TextField
 				label="Contraseña nueva"
 				name="password"
@@ -56,7 +65,7 @@
 				error={form?.errors?.passwordConfirm}
 			/>
 
-			<Button type="submit" block size="lg" icon="save">Guardar contraseña</Button>
+			<Button type="submit" block size="lg" icon="save" loading={saving}>Guardar contraseña</Button>
 		</form>
 	{/if}
 </Card>

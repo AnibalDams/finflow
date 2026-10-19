@@ -23,6 +23,7 @@
 	let color = $state(category.color);
 	let saving = $state(false);
 	let deleting = $state(false);
+	let archiveSaving = $state(false);
 
 	function confirmDelete(event: MouseEvent): void {
 		const button = event.currentTarget as HTMLButtonElement;
@@ -143,13 +144,19 @@
 			method="POST"
 			action="?/archive"
 			use:enhance={enhanceForm({
-				success: category.isArchived ? 'Categoría reactivada' : 'Categoría archivada'
+				success: category.isArchived ? 'Categoría reactivada' : 'Categoría archivada',
+				onStart: () => (archiveSaving = true),
+				onFinish: () => (archiveSaving = false)
 			})}
 		>
 			<input type="hidden" name="volver" value={data.volver} />
 			<input type="hidden" name="archived" value={category.isArchived ? 'false' : 'true'} />
-			<button type="submit" class={buttonClass('outline', 'md', true)}>
-				<Icon name={category.isArchived ? 'unarchive' : 'archive'} size={18} />
+			<button type="submit" class={buttonClass('outline', 'md', true)} disabled={archiveSaving}>
+				{#if archiveSaving}
+					<Icon name="progress_activity" size={18} class="animate-spin" />
+				{:else}
+					<Icon name={category.isArchived ? 'unarchive' : 'archive'} size={18} />
+				{/if}
 				{category.isArchived ? 'Reactivar categoría' : 'Archivar categoría'}
 			</button>
 		</form>
@@ -166,7 +173,11 @@
 				disabled={deleting}
 				onclick={confirmDelete}
 			>
-				<Icon name="delete" size={18} />
+				{#if deleting}
+					<Icon name="progress_activity" size={18} class="animate-spin" />
+				{:else}
+					<Icon name="delete" size={18} />
+				{/if}
 				Eliminar categoría
 			</button>
 		</form>

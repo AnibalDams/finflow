@@ -65,8 +65,9 @@
 				stroke="var(--color-level-1)"
 				stroke-width={THICKNESS}
 			/>
-			{#each slices as slice (slice.id)}
+			{#each slices as slice, index (slice.id)}
 				<circle
+					class="donut-slice"
 					cx={SIZE / 2}
 					cy={SIZE / 2}
 					r={RADIUS}
@@ -77,6 +78,8 @@
 					stroke-dashoffset={slice.offset}
 					stroke-linecap="butt"
 					transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}
+					style="--dash-start:{CIRCUMFERENCE};--dash-end:{slice.offset};animation-delay:{index *
+						60}ms"
 				/>
 			{/each}
 		</svg>
@@ -95,8 +98,8 @@
 	</div>
 
 	<ul class="grid w-full grid-cols-2 gap-x-3 gap-y-3">
-		{#each slices as slice (slice.id)}
-			<li class="min-w-0">
+		{#each slices as slice, index (slice.id)}
+			<li class="animate-stagger min-w-0" style="animation-delay:{index * 60}ms">
 				<span class="flex items-center gap-2">
 					<span
 						class="size-2 shrink-0 rounded-full"
@@ -115,3 +118,26 @@
 		{/if}
 	</ul>
 </div>
+
+<style>
+	.donut-slice {
+		animation: donut-draw 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	@keyframes donut-draw {
+		from {
+			stroke-dashoffset: var(--dash-start);
+			opacity: 0;
+		}
+		to {
+			stroke-dashoffset: var(--dash-end);
+			opacity: 1;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.donut-slice {
+			animation: none;
+		}
+	}
+</style>

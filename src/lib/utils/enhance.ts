@@ -1,4 +1,5 @@
 import type { SubmitFunction } from '$app/forms';
+import { pending } from '#lib/stores/pending.svelte';
 import { notifyError, notifySuccess } from '#lib/stores/toast.svelte';
 import type { FormState } from './forms';
 
@@ -31,22 +32,27 @@ export function enhanceForm(
 	const { success, onSuccess, resetOnFailure = true, onStart, onFinish } = options;
 
 	return () => {
+		pending.start();
 		onStart?.();
 
 		return async ({ result, update }) => {
-			if (result.type === 'failure') {
-				notifyError(failureMessage(result.data));
-			} else if (result.type === 'error') {
-				notifyError(result.error.message);
-			} else if (result.type === 'success') {
-				if (success) notifySuccess(success);
-				onSuccess?.(result.data);
-			} else if (result.type === 'redirect' && success) {
-				notifySuccess(success);
-			}
+			try {
+				if (result.type === 'failure') {
+					notifyError(failureMessage(result.data));
+				} else if (result.type === 'error') {
+					notifyError(result.error.message);
+				} else if (result.type === 'success') {
+					if (success) notifySuccess(success);
+					onSuccess?.(result.data);
+				} else if (result.type === 'redirect' && success) {
+					notifySuccess(success);
+				}
 
-			await update({ reset: result.type === 'failure' ? !resetOnFailure : false });
-			onFinish?.();
+				await update({ reset: result.type === 'failure' ? !resetOnFailure : false });
+			} finally {
+				pending.finish();
+				onFinish?.();
+			}
 		};
 	};
 }

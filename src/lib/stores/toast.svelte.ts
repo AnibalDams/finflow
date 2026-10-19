@@ -6,6 +6,8 @@ export interface ToastItem {
 	id: number;
 	message: string;
 	tone: ToastTone;
+	/** Duración visible en milisegundos. */
+	duration: number;
 }
 
 let counter = 0;
@@ -17,7 +19,7 @@ class ToastStore {
 		const clean = message.trim();
 		if (!clean) return;
 		const id = ++counter;
-		this.items = [...this.items, { id, message: clean, tone }];
+		this.items = [...this.items, { id, message: clean, tone, duration }];
 		if (duration > 0) setTimeout(() => this.dismiss(id), duration);
 	}
 

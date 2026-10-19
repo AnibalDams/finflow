@@ -15,6 +15,8 @@
 
 	const form = $derived(page.form as (FormState & { needsConfirmation?: boolean }) | null | undefined);
 	const waitingForEmail = $derived(form?.needsConfirmation === true);
+
+	let saving = $state(false);
 </script>
 
 <div class="space-y-4">
@@ -40,7 +42,14 @@
 				<p class="text-body-sm text-muted">Configura tu moneda y empieza a ordenar tus finanzas.</p>
 			</div>
 
-			<form method="POST" use:enhance={enhanceForm()} class="space-y-4">
+			<form
+				method="POST"
+				use:enhance={enhanceForm({
+					onStart: () => (saving = true),
+					onFinish: () => (saving = false)
+				})}
+				class="space-y-4"
+			>
 				<TextField
 					label="Nombre completo"
 					name="fullName"
@@ -101,7 +110,7 @@
 					/>
 				</div>
 
-				<Button type="submit" block size="lg" icon="person_add">Crear cuenta</Button>
+				<Button type="submit" block size="lg" icon="person_add" loading={saving}>Crear cuenta</Button>
 			</form>
 		</Card>
 

@@ -71,17 +71,21 @@
 		</linearGradient>
 	</defs>
 
-	<path d={geometry.area} fill="url(#{gradientId})" />
+	<path d={geometry.area} fill="url(#{gradientId})" class="spark-area" />
 	<path
+		class="spark-line"
 		d={geometry.line}
 		fill="none"
 		stroke={stroke}
 		stroke-width={strokeWidth}
 		stroke-linecap="round"
 		stroke-linejoin="round"
+		pathLength={1}
+		stroke-dasharray="1"
 		vector-effect="non-scaling-stroke"
 	/>
 	<circle
+		class="spark-dot"
 		cx={geometry.last.x}
 		cy={geometry.last.y}
 		r="4"
@@ -91,3 +95,43 @@
 		vector-effect="non-scaling-stroke"
 	/>
 </svg>
+
+<style>
+	.spark-area {
+		animation: spark-fade 0.5s ease-out both;
+	}
+
+	.spark-line {
+		animation: spark-draw 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	.spark-dot {
+		animation: spark-fade 0.3s ease-out 0.45s both;
+	}
+
+	@keyframes spark-draw {
+		from {
+			stroke-dashoffset: 1;
+		}
+		to {
+			stroke-dashoffset: 0;
+		}
+	}
+
+	@keyframes spark-fade {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.spark-area,
+		.spark-line,
+		.spark-dot {
+			animation: none;
+		}
+	}
+</style>

@@ -10,6 +10,8 @@
 
 	const form = $derived(page.form as (FormState & { sent?: boolean }) | null | undefined);
 	const sent = $derived(form?.sent === true);
+
+	let saving = $state(false);
 </script>
 
 <div class="space-y-4">
@@ -36,7 +38,14 @@
 				<p class="text-body-sm text-muted">Te enviaremos un enlace para crear una contraseña nueva.</p>
 			</div>
 
-			<form method="POST" use:enhance={enhanceForm()} class="space-y-4">
+			<form
+				method="POST"
+				use:enhance={enhanceForm({
+					onStart: () => (saving = true),
+					onFinish: () => (saving = false)
+				})}
+				class="space-y-4"
+			>
 				<TextField
 					label="Correo electrónico"
 					name="email"
@@ -50,7 +59,7 @@
 					error={form?.errors?.email}
 				/>
 
-				<Button type="submit" block size="lg" icon="send">Enviar enlace</Button>
+				<Button type="submit" block size="lg" icon="send" loading={saving}>Enviar enlace</Button>
 			</form>
 		</Card>
 

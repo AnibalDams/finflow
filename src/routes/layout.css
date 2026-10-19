@@ -271,6 +271,49 @@
 	}
 }
 
+@keyframes finflow-page-in {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes finflow-creep {
+	from {
+		transform: scaleX(0.05);
+	}
+	60% {
+		transform: scaleX(0.72);
+	}
+	to {
+		transform: scaleX(0.94);
+	}
+}
+
+@keyframes finflow-grow-x {
+	from {
+		transform: scaleX(0);
+	}
+	to {
+		transform: scaleX(1);
+	}
+}
+
+@keyframes finflow-tab-in {
+	from {
+		opacity: 0;
+		transform: scaleX(0.4);
+	}
+	to {
+		opacity: 1;
+		transform: scaleX(1);
+	}
+}
+
 .animate-rise {
 	animation: finflow-rise 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -281,6 +324,71 @@
 
 .animate-slide-up {
 	animation: finflow-slide-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/*
+ * Entrada del contenido al cambiar de ruta.
+ * `backwards` (no `both`) es intencional: al terminar, el wrapper recupera
+ * `transform: none` para no convertirse en bloque contenedor de los elementos
+ * `position: fixed` de la página (por ejemplo, el Sheet de filtros).
+ */
+.animate-page-in {
+	animation: finflow-page-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+/* Aparición escalonada de filas (el retardo se pasa en línea). */
+.animate-stagger {
+	animation: finflow-rise 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Respuesta táctil inmediata en tarjetas y filas enlazadas. */
+.pressable {
+	-webkit-tap-highlight-color: transparent;
+	transition:
+		transform 0.16s cubic-bezier(0.22, 1, 0.36, 1),
+		background-color 0.16s ease,
+		box-shadow 0.16s ease,
+		border-color 0.16s ease;
+}
+
+.pressable:active {
+	transform: scale(0.985);
+}
+
+/* Barra de progreso que crece desde cero al montar. */
+.progress-grow {
+	transform-origin: left center;
+	animation: finflow-grow-x 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Indicador de navegación: crece hacia la derecha y se detiene al 94 %. */
+.nav-progress {
+	transform-origin: left center;
+}
+
+.nav-progress-active {
+	animation: finflow-creep 1.4s cubic-bezier(0.1, 0.5, 0.2, 1) forwards;
+}
+
+.nav-tab-indicator {
+	animation: finflow-tab-in 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.nav-progress {
+		transform: none;
+	}
+
+	.nav-progress-active {
+		animation: none !important;
+	}
+
+	.progress-grow,
+	.animate-page-in,
+	.animate-stagger,
+	.nav-tab-indicator {
+		animation: none !important;
+	}
 }
 
 /* Oculta la barra de scroll en carruseles horizontales sin perder el gesto. */

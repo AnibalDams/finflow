@@ -35,7 +35,7 @@
 	aria-label={label}
 >
 	<div
-		class={cn('h-full rounded-full transition-[width] duration-500 ease-out', TONES[tone])}
+		class={cn('h-full rounded-full progress-grow transition-[width] duration-500 ease-out', TONES[tone])}
 		style="width:{clamped}%{color ? `;background-color:${color}` : ''}"
 	></div>
 </div>

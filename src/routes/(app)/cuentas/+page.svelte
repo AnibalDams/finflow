@@ -119,7 +119,7 @@
 			{#each activeAccounts as account (account.id)}
 				<a
 					href={`/cuentas/${account.id}`}
-					class="flex items-center gap-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-3.5 shadow-card transition hover:border-secondary/40"
+					class="flex items-center gap-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-3.5 shadow-card pressable hover:border-secondary/40"
 				>
 					<span
 						class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary"
@@ -165,7 +165,7 @@
 				{#each archivedAccounts as account (account.id)}
 					<a
 						href={`/cuentas/${account.id}`}
-						class="flex items-center gap-3 rounded-2xl border border-hairline/70 bg-level-1/50 p-3.5 opacity-75"
+						class="flex items-center gap-3 rounded-2xl border border-hairline/70 bg-level-1/50 p-3.5 opacity-75 pressable"
 					>
 						<span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-level-1 text-muted">
 							<Icon name={account.icon} size={20} />

@@ -130,7 +130,7 @@
 			{@const pace = goalPace(goal, now)}
 			<a
 				href={`/planes/${goal.id}`}
-				class="block rounded-2xl border border-hairline/70 bg-surface-container-lowest p-3.5 shadow-card transition hover:border-outline-variant"
+				class="block rounded-2xl border border-hairline/70 bg-surface-container-lowest p-3.5 shadow-card pressable hover:border-outline-variant"
 			>
 				<div class="flex gap-3">
 					{#if data.images[goal.id]}

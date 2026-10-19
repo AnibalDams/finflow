@@ -52,6 +52,7 @@
 	let removeImage = $state(false);
 	let savingEdit = $state(false);
 	let deleting = $state(false);
+	let statusSaving = $state<string | null>(null);
 
 	const categoryOptions = $derived(
 		(['technology', 'travel', 'home', 'education', 'other'] as GoalCategory[]).map((value) => ({
@@ -340,25 +341,73 @@
 
 	<section class="space-y-2">
 		{#if goal.status === 'active'}
-			<form method="POST" action="?/status" use:enhance>
+			<form
+				method="POST"
+				action="?/status"
+				use:enhance={enhanceForm({
+					success: 'Plan pausado',
+					onStart: () => (statusSaving = 'paused'),
+					onFinish: () => (statusSaving = null)
+				})}
+			>
 				<input type="hidden" name="status" value="paused" />
-				<button type="submit" class={buttonClass('outline', 'md', true)}>
-					<Icon name="pause" size={18} />
+				<button
+					type="submit"
+					class={buttonClass('outline', 'md', true)}
+					disabled={statusSaving === 'paused'}
+				>
+					{#if statusSaving === 'paused'}
+						<Icon name="progress_activity" size={18} class="animate-spin" />
+					{:else}
+						<Icon name="pause" size={18} />
+					{/if}
 					Pausar plan
 				</button>
 			</form>
-			<form method="POST" action="?/status" use:enhance>
+			<form
+				method="POST"
+				action="?/status"
+				use:enhance={enhanceForm({
+					success: 'Plan completado',
+					onStart: () => (statusSaving = 'completed'),
+					onFinish: () => (statusSaving = null)
+				})}
+			>
 				<input type="hidden" name="status" value="completed" />
-				<button type="submit" class={buttonClass('outline', 'md', true)}>
-					<Icon name="task_alt" size={18} />
+				<button
+					type="submit"
+					class={buttonClass('outline', 'md', true)}
+					disabled={statusSaving === 'completed'}
+				>
+					{#if statusSaving === 'completed'}
+						<Icon name="progress_activity" size={18} class="animate-spin" />
+					{:else}
+						<Icon name="task_alt" size={18} />
+					{/if}
 					Marcar como completado
 				</button>
 			</form>
 		{:else}
-			<form method="POST" action="?/status" use:enhance>
+			<form
+				method="POST"
+				action="?/status"
+				use:enhance={enhanceForm({
+					success: 'Plan reactivado',
+					onStart: () => (statusSaving = 'active'),
+					onFinish: () => (statusSaving = null)
+				})}
+			>
 				<input type="hidden" name="status" value="active" />
-				<button type="submit" class={buttonClass('outline', 'md', true)}>
-					<Icon name="play_arrow" size={18} />
+				<button
+					type="submit"
+					class={buttonClass('outline', 'md', true)}
+					disabled={statusSaving === 'active'}
+				>
+					{#if statusSaving === 'active'}
+						<Icon name="progress_activity" size={18} class="animate-spin" />
+					{:else}
+						<Icon name="play_arrow" size={18} />
+					{/if}
 					Reactivar plan
 				</button>
 			</form>
@@ -371,7 +420,11 @@
 			onsubmit={confirmDelete}
 		>
 			<button type="submit" class={buttonClass('danger', 'md', true)} disabled={deleting}>
-				<Icon name="delete" size={18} />
+				{#if deleting}
+					<Icon name="progress_activity" size={18} class="animate-spin" />
+				{:else}
+					<Icon name="delete" size={18} />
+				{/if}
 				Eliminar plan
 			</button>
 		</form>

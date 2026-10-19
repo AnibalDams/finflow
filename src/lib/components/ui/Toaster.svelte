@@ -1,5 +1,8 @@
 <script lang="ts">
+	import { cubicOut } from 'svelte/easing';
+	import { fly } from 'svelte/transition';
 	import { toasts } from '#lib/stores/toast.svelte';
+	import { motionDuration } from '#lib/utils/motion';
 	import Icon from './Icon.svelte';
 
 	const TONES = {
@@ -16,9 +19,10 @@
 >
 	{#each toasts.items as toast (toast.id)}
 		<div
-			class="animate-rise pointer-events-auto flex w-full items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-label shadow-elevated {TONES[
+			class="pointer-events-auto relative flex w-full items-center gap-2.5 overflow-hidden rounded-xl px-3.5 py-2.5 text-label shadow-elevated {TONES[
 				toast.tone
 			].klass}"
+			transition:fly={{ y: 14, duration: motionDuration(200), easing: cubicOut }}
 		>
 			<Icon name={TONES[toast.tone].icon} size={18} filled />
 			<span class="min-w-0 flex-1">{toast.message}</span>
@@ -30,6 +34,38 @@
 			>
 				<Icon name="close" size={16} />
 			</button>
+
+			{#if toast.duration > 0}
+				<span
+					class="toast-timer absolute inset-x-0 bottom-0 h-0.5 origin-left bg-current opacity-25"
+					style="animation-duration:{toast.duration}ms"
+					aria-hidden="true"
+				></span>
+			{/if}
 		</div>
 	{/each}
 </div>
+
+<style>
+	.toast-timer {
+		animation-name: toast-timer;
+		animation-timing-function: linear;
+		animation-fill-mode: both;
+	}
+
+	@keyframes toast-timer {
+		from {
+			transform: scaleX(1);
+		}
+		to {
+			transform: scaleX(0);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.toast-timer {
+			animation: none;
+			opacity: 0;
+		}
+	}
+</style>

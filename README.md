@@ -91,6 +91,7 @@ e2e/              # pruebas end-to-end
 - Los agregados de periodos usan límites en UTC; la presentación es local.
 - Los formularios usan `use:enhance` con un helper central que muestra toasts y respeta `redirect`. Las pestañas y filtros que viven en la URL se siembran en estado local, porque `action="?/nombre"` descarta los parámetros existentes.
 - Los gráficos son SVG hechos a mano (sin librerías); el PDF usa `jspdf`.
+- La interfaz da respuesta inmediata: barra de progreso de navegación, atenuado del contenido al cambiar de ruta, estados `loading` en cada acción y transiciones de 120–250 ms sobre `transform`/`opacity`. Todo respeta `prefers-reduced-motion`.
 
 ## Seguridad en producción
 

@@ -50,6 +50,7 @@
 	let editAlert = $state(debt.alertDaysBefore > 0);
 	let savingEdit = $state(false);
 	let deleting = $state(false);
+	let statusSaving = $state(false);
 
 	function confirmDelete(event: MouseEvent): void {
 		const button = event.currentTarget as HTMLButtonElement;
@@ -338,10 +339,22 @@
 
 	<section class="space-y-2">
 		{#if !debt.isActive}
-			<form method="POST" action="?/status" use:enhance={enhanceForm({ success: 'Deuda reactivada' })}>
+			<form
+				method="POST"
+				action="?/status"
+				use:enhance={enhanceForm({
+					success: 'Deuda reactivada',
+					onStart: () => (statusSaving = true),
+					onFinish: () => (statusSaving = false)
+				})}
+			>
 				<input type="hidden" name="status" value="active" />
-				<button type="submit" class={buttonClass('outline', 'md', true)}>
-					<Icon name="play_arrow" size={18} />
+				<button type="submit" class={buttonClass('outline', 'md', true)} disabled={statusSaving}>
+					{#if statusSaving}
+						<Icon name="progress_activity" size={18} class="animate-spin" />
+					{:else}
+						<Icon name="play_arrow" size={18} />
+					{/if}
 					Reactivar deuda
 				</button>
 			</form>
@@ -358,7 +371,11 @@
 				disabled={deleting}
 				onclick={confirmDelete}
 			>
-				<Icon name="delete" size={18} />
+				{#if deleting}
+					<Icon name="progress_activity" size={18} class="animate-spin" />
+				{:else}
+					<Icon name="delete" size={18} />
+				{/if}
 				Eliminar deuda
 			</button>
 		</form>

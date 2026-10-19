@@ -10,6 +10,8 @@
 
 	const form = $derived(page.form as FormState | null | undefined);
 	const confirmNotice = $derived(page.url.searchParams.get('error') === 'confirm');
+
+	let saving = $state(false);
 </script>
 
 <div class="space-y-4">
@@ -29,7 +31,14 @@
 			<p class="text-body-sm text-muted">Accede con tu correo y contraseña.</p>
 		</div>
 
-		<form method="POST" use:enhance={enhanceForm()} class="space-y-4">
+		<form
+			method="POST"
+			use:enhance={enhanceForm({
+				onStart: () => (saving = true),
+				onFinish: () => (saving = false)
+			})}
+			class="space-y-4"
+		>
 			<TextField
 				label="Correo electrónico"
 				name="email"
@@ -60,7 +69,7 @@
 				</a>
 			</div>
 
-			<Button type="submit" block size="lg" icon="login">Entrar</Button>
+			<Button type="submit" block size="lg" icon="login" loading={saving}>Entrar</Button>
 		</form>
 	</Card>
 

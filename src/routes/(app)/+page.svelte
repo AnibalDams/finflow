@@ -240,7 +240,10 @@
 			{:else}
 				<ul>
 					{#each data.recent as transaction, index (transaction.id)}
-						<li class={index > 0 ? 'border-t border-hairline/70' : ''}>
+						<li
+							class="animate-stagger {index > 0 ? 'border-t border-hairline/70' : ''}"
+							style="animation-delay:{index * 35}ms"
+						>
 							<TransactionRow
 								{transaction}
 								currency={data.currency}

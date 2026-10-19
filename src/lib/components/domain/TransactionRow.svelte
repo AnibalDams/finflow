@@ -55,7 +55,7 @@
 	{href}
 	class={cn(
 		'flex items-center gap-3 py-3.5 transition-colors',
-		href && 'hover:bg-level-1/60',
+		href && 'pressable tap-highlight-none hover:bg-level-1/60',
 		className
 	)}
 >

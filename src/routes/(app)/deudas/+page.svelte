@@ -13,6 +13,8 @@
 
 	let { data }: PageProps = $props();
 
+	let payingId = $state<string | null>(null);
+
 	const now = new Date();
 
 	const KIND_STYLES: Record<DebtKind, { accent: string; tile: string }> = {
@@ -254,7 +256,11 @@
 							method="POST"
 							action="?/pay"
 							class="flex-1"
-							use:enhance={enhanceForm({ success: 'Pago registrado' })}
+							use:enhance={enhanceForm({
+								success: 'Pago registrado',
+								onStart: () => (payingId = debt.id),
+								onFinish: () => (payingId = null)
+							})}
 						>
 							<input type="hidden" name="debtId" value={debt.id} />
 							<input type="hidden" name="amount" value={debt.monthlyPayment.toFixed(2)} />
@@ -262,9 +268,14 @@
 							<button
 								type="button"
 								class={buttonClass(urgent ? 'primary' : 'tonal', 'md', true)}
+								disabled={payingId === debt.id}
 								onclick={(event) => confirmPayment(event, debt)}
 							>
-								<Icon name="payments" size={18} />
+								{#if payingId === debt.id}
+									<Icon name="progress_activity" size={18} class="animate-spin" />
+								{:else}
+									<Icon name="payments" size={18} />
+								{/if}
 								Pagar cuota ({formatMoney(debt.monthlyPayment, data.currency)})
 							</button>
 						</form>

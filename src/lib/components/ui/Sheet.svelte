@@ -1,5 +1,8 @@
 <script lang="ts">
+	import { cubicIn, cubicOut } from 'svelte/easing';
+	import { fade, fly } from 'svelte/transition';
 	import type { Snippet } from 'svelte';
+	import { motionDuration } from '#lib/utils/motion';
 	import Icon from './Icon.svelte';
 
 	interface Props {
@@ -27,16 +30,19 @@
 	<div class="fixed inset-0 z-90 mx-auto flex max-w-[430px] flex-col justify-end">
 		<button
 			type="button"
-			class="animate-fade absolute inset-0 bg-ink/45 backdrop-blur-[2px]"
+			class="absolute inset-0 bg-ink/45 backdrop-blur-[2px]"
 			aria-label="Cerrar"
 			onclick={close}
+			transition:fade={{ duration: motionDuration(160) }}
 		></button>
 
 		<div
-			class="animate-slide-up relative z-10 flex max-h-[86dvh] flex-col overflow-hidden rounded-t-3xl bg-surface-container-lowest shadow-sheet"
+			class="relative z-10 flex max-h-[86dvh] flex-col overflow-hidden rounded-t-3xl bg-surface-container-lowest shadow-sheet"
 			role="dialog"
 			aria-modal="true"
 			aria-label={title}
+			in:fly={{ y: 48, duration: motionDuration(220), easing: cubicOut }}
+			out:fly={{ y: 64, duration: motionDuration(160), easing: cubicIn }}
 		>
 			<header class="flex items-start justify-between gap-3 px-5 pt-5 pb-3">
 				<div class="min-w-0">

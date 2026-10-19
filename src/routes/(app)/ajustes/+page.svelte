@@ -30,6 +30,7 @@
 	let password = $state('');
 	let passwordConfirm = $state('');
 	let savingPassword = $state(false);
+	let leaving = $state(false);
 
 	const initials = $derived(
 		profile.fullName
@@ -287,9 +288,20 @@
 	</section>
 
 	<section class="space-y-2">
-		<form method="POST" action="/auth/salir" use:enhance>
-			<button type="submit" class={buttonClass('danger', 'md', true)}>
-				<Icon name="logout" size={18} />
+		<form
+			method="POST"
+			action="/auth/salir"
+			use:enhance={enhanceForm({
+				onStart: () => (leaving = true),
+				onFinish: () => (leaving = false)
+			})}
+		>
+			<button type="submit" class={buttonClass('danger', 'md', true)} disabled={leaving}>
+				{#if leaving}
+					<Icon name="progress_activity" size={18} class="animate-spin" />
+				{:else}
+					<Icon name="logout" size={18} />
+				{/if}
 				Cerrar sesión
 			</button>
 		</form>

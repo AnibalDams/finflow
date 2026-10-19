@@ -28,6 +28,7 @@
 	let isPrimary = $state(account.isPrimary);
 	let saving = $state(false);
 	let deleting = $state(false);
+	let archiveSaving = $state(false);
 
 	const kindOptions = (
 		['checking', 'savings', 'pocket', 'cash', 'credit'] as AccountKind[]
@@ -154,12 +155,18 @@
 			method="POST"
 			action="?/archive"
 			use:enhance={enhanceForm({
-				success: account.isArchived ? 'Cuenta reactivada' : 'Cuenta archivada'
+				success: account.isArchived ? 'Cuenta reactivada' : 'Cuenta archivada',
+				onStart: () => (archiveSaving = true),
+				onFinish: () => (archiveSaving = false)
 			})}
 		>
 			<input type="hidden" name="archived" value={account.isArchived ? 'false' : 'true'} />
-			<button type="submit" class={buttonClass('outline', 'md', true)}>
-				<Icon name={account.isArchived ? 'unarchive' : 'archive'} size={18} />
+			<button type="submit" class={buttonClass('outline', 'md', true)} disabled={archiveSaving}>
+				{#if archiveSaving}
+					<Icon name="progress_activity" size={18} class="animate-spin" />
+				{:else}
+					<Icon name={account.isArchived ? 'unarchive' : 'archive'} size={18} />
+				{/if}
 				{account.isArchived ? 'Reactivar cuenta' : 'Archivar cuenta'}
 			</button>
 		</form>
@@ -176,7 +183,11 @@
 					disabled={deleting}
 					onclick={confirmDelete}
 				>
-					<Icon name="delete" size={18} />
+					{#if deleting}
+						<Icon name="progress_activity" size={18} class="animate-spin" />
+					{:else}
+						<Icon name="delete" size={18} />
+					{/if}
 					Eliminar cuenta
 				</button>
 			</form>

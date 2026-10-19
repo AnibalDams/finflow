@@ -82,10 +82,19 @@
 			stroke-width="2.5"
 			stroke-linecap="round"
 			stroke-linejoin="round"
-			stroke-dasharray={item.dashed ? '5 5' : undefined}
+			pathLength={item.dashed ? undefined : 1}
+			stroke-dasharray={item.dashed ? '5 5' : '1'}
+			class:chart-line={!item.dashed}
 		/>
 		{#each item.values as value, index (index)}
-			<circle cx={xFor(index, item.values.length)} cy={yFor(value)} r="3" fill={item.color} />
+			<circle
+				class="chart-dot"
+				cx={xFor(index, item.values.length)}
+				cy={yFor(value)}
+				r="3"
+				fill={item.color}
+				style="animation-delay:{260 + index * 50}ms"
+			/>
 		{/each}
 	{/each}
 
@@ -114,3 +123,38 @@
 		{/each}
 	</div>
 {/if}
+
+<style>
+	.chart-line {
+		animation: line-draw 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	@keyframes line-draw {
+		from {
+			stroke-dashoffset: 1;
+		}
+		to {
+			stroke-dashoffset: 0;
+		}
+	}
+
+	.chart-dot {
+		animation: dot-in 0.35s ease-out both;
+	}
+
+	@keyframes dot-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.chart-line,
+		.chart-dot {
+			animation: none;
+		}
+	}
+</style>

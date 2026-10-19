@@ -242,7 +242,11 @@
 		onsubmit={confirmDelete}
 	>
 		<button type="submit" class={buttonClass('danger', 'lg', true)} disabled={deleting}>
-			<Icon name="delete" size={20} />
+			{#if deleting}
+				<Icon name="progress_activity" size={20} class="animate-spin" />
+			{:else}
+				<Icon name="delete" size={20} />
+			{/if}
 			Eliminar movimiento
 		</button>
 	</form>
