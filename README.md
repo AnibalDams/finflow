@@ -91,3 +91,10 @@ e2e/              # pruebas end-to-end
 - Los agregados de periodos usan límites en UTC; la presentación es local.
 - Los formularios usan `use:enhance` con un helper central que muestra toasts y respeta `redirect`. Las pestañas y filtros que viven en la URL se siembran en estado local, porque `action="?/nombre"` descarta los parámetros existentes.
 - Los gráficos son SVG hechos a mano (sin librerías); el PDF usa `jspdf`.
+
+## Seguridad en producción
+
+- Las migraciones de `supabase/migrations/` se aplican en orden (0001 esquema, 0002 storage, 0003 endurecimiento e índices). No requieren la CLI ni Docker.
+- En el panel de Supabase → **Auth → Providers → Email** conviene activar **Leaked password protection** (Supabase lo revisa contra HaveIBeenPwned). Es el único aviso del asesor de seguridad que no se puede resolver por SQL.
+- Los buckets `receipts` y `goal-images` son privados; el acceso se resuelve con URLs firmadas y las políticas exigen que la ruta empiece por `auth.uid()`.
+
