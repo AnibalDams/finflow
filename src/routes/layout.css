@@ -282,3 +282,13 @@
 .animate-slide-up {
 	animation: finflow-slide-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+/* Oculta la barra de scroll en carruseles horizontales sin perder el gesto. */
+.no-scrollbar {
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
+}
