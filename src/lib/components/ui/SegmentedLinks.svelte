@@ -32,7 +32,7 @@
 		<a
 			href={option.href}
 			class={cn(
-				'relative z-10 flex flex-1 items-center justify-center rounded-full font-semibold transition-colors',
+				'relative z-10 flex flex-1 items-center justify-center rounded-full px-1 font-semibold whitespace-nowrap transition-colors',
 				size === 'sm' ? 'h-8 text-label-sm' : 'h-10 text-label',
 				value === option.value ? 'text-ink' : 'text-on-surface-variant hover:text-on-surface'
 			)}
