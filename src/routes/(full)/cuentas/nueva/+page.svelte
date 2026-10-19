@@ -15,7 +15,8 @@
 		ACCOUNT_KIND_ICONS,
 		ACCOUNT_KIND_LABELS,
 		CURRENCY_OPTIONS,
-		ICON_CHOICES
+		ICON_CHOICES,
+		currencyIcon
 	} from '#lib/utils/labels';
 	import type { AccountKind } from '#lib/types/domain';
 	import type { PageProps } from './$types';
@@ -34,17 +35,18 @@
 	let isPrimary = $state(values.isPrimary === 'on' || !data.hasAccounts);
 	let saving = $state(false);
 
-	const kindOptions = (
-		['checking', 'savings', 'pocket', 'cash', 'credit'] as AccountKind[]
-	).map((value) => ({
-		value,
-		label: ACCOUNT_KIND_LABELS[value],
-		icon: ACCOUNT_KIND_ICONS[value]
-	}));
+	const kindOptions = (['checking', 'savings', 'pocket', 'cash', 'credit'] as AccountKind[]).map(
+		(value) => ({
+			value,
+			label: ACCOUNT_KIND_LABELS[value],
+			icon: ACCOUNT_KIND_ICONS[value]
+		})
+	);
 
 	const currencyOptions = CURRENCY_OPTIONS.map((option) => ({
 		value: option.code,
-		label: option.label
+		label: option.label,
+		icon: currencyIcon(option.code)
 	}));
 
 	// Sugerimos el ícono de la familia elegida mientras el usuario no lo personalice.
@@ -132,7 +134,7 @@
 			name="openingBalance"
 			label="Saldo inicial"
 			bind:value={openingBalance}
-			currency={currency}
+			{currency}
 			tone="primary"
 			quickAmounts={[]}
 			error={previous.openingBalance}

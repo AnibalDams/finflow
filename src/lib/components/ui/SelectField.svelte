@@ -10,7 +10,13 @@
 		error?: string;
 		hint?: string;
 		value?: string;
-		options: Array<{ value: string; label: string; disabled?: boolean; description?: string }>;
+		options: Array<{
+			value: string;
+			label: string;
+			disabled?: boolean;
+			description?: string;
+			icon?: string;
+		}>;
 		placeholder?: string;
 	}
 
@@ -35,7 +41,9 @@
 	let open = $state(false);
 	let trigger = $state<HTMLButtonElement | null>(null);
 
-	const selectedLabel = $derived(options.find((option) => option.value === value)?.label ?? '');
+	const selected = $derived(options.find((option) => option.value === value) ?? null);
+	const selectedLabel = $derived(selected?.label ?? '');
+	const leadingIcon = $derived(icon ?? selected?.icon ?? '');
 </script>
 
 <div class="space-y-1.5">
@@ -49,7 +57,7 @@
 		bind:this={trigger}
 		class={cn(
 			'pressable relative flex h-12 w-full items-center gap-2 rounded-xl border bg-surface-container-lowest pr-3 text-left text-body-lg text-ink transition',
-			icon ? 'pl-10.5' : 'pl-3.5',
+			leadingIcon ? 'pl-10.5' : 'pl-3.5',
 			error ? 'border-tertiary/60' : 'border-hairline hover:border-outline-variant',
 			disabled && 'pointer-events-none opacity-60',
 			className
@@ -60,9 +68,9 @@
 		disabled={disabled ?? false}
 		onclick={() => (open = true)}
 	>
-		{#if icon}
+		{#if leadingIcon}
 			<span class="pointer-events-none absolute left-3 text-muted-soft">
-				<Icon name={icon} size={19} />
+				<Icon name={leadingIcon} size={19} />
 			</span>
 		{/if}
 
@@ -81,7 +89,7 @@
 		required={required ?? false}
 		returnFocus={trigger}
 		bind:value
-		options={options}
+		{options}
 	/>
 
 	{#if error}

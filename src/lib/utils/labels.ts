@@ -125,6 +125,16 @@ export const CURRENCY_OPTIONS = [
 	{ code: 'BRL', label: 'BRL · Real brasileño' }
 ];
 
+const CURRENCY_ICONS: Record<string, string> = {
+	USD: 'attach_money',
+	EUR: 'euro'
+};
+
+/** Ícono de Material Symbols para una moneda, con respaldo genérico. */
+export function currencyIcon(code: string): string {
+	return CURRENCY_ICONS[code] ?? 'payments';
+}
+
 export const ICON_CHOICES = [
 	'account_balance',
 	'account_balance_wallet',

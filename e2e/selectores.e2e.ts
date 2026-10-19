@@ -34,7 +34,10 @@ test('el selector de cuenta de un movimiento actualiza el formulario', async ({ 
 	await expect(trigger).toHaveAttribute('aria-label', 'Cuenta de origen: Principal USD');
 
 	await trigger.click();
-	await page.getByRole('dialog').getByRole('option', { name: /Efectivo/ }).click();
+	await page
+		.getByRole('dialog')
+		.getByRole('option', { name: /Efectivo/ })
+		.click();
 
 	await expect(trigger).toHaveAttribute('aria-label', 'Cuenta de origen: Efectivo');
 	await expect(page.locator('select[name="accountId"]')).toHaveValue(/[0-9a-f-]{36}/);
@@ -61,6 +64,29 @@ test('los filtros de movimientos usan listas expandibles', async ({ page }) => {
 
 	// Restaura la vista sin filtros.
 	await page.goto('/movimientos');
+});
+
+test('la hoja de notificaciones atrapa el foco y lo devuelve al disparador', async ({ page }) => {
+	await login(page);
+
+	const trigger = page.getByRole('button', { name: /Notificaciones/ });
+	await trigger.click();
+
+	const sheet = page.getByRole('dialog');
+	await expect(sheet).toBeVisible();
+
+	const inside = () =>
+		page.evaluate(() => Boolean(document.activeElement?.closest('[role="dialog"]')));
+
+	// Más Tabs que elementos enfocables: el foco no debe escapar al fondo.
+	for (let index = 0; index < 10; index += 1) {
+		await page.keyboard.press('Tab');
+		expect(await inside()).toBe(true);
+	}
+
+	await page.keyboard.press('Escape');
+	await expect(sheet).toHaveCount(0);
+	await expect(trigger).toBeFocused();
 });
 
 test('moneda y día de recordatorio usan la hoja inferior', async ({ page }) => {

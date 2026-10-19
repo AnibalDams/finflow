@@ -59,25 +59,16 @@
 	} as const;
 
 	let listbox = $state<HTMLDivElement | null>(null);
-	let wasOpen = false;
 
 	$effect(() => {
-		if (open) {
-			wasOpen = true;
-			// El Sheet monta la lista en el siguiente tick; enfoca la opción activa.
-			tick().then(() => {
-				const target =
-					listbox?.querySelector<HTMLElement>('[role="option"][aria-selected="true"]') ??
-					listbox?.querySelector<HTMLElement>('[role="option"]:not([disabled])');
-				target?.focus({ preventScroll: false });
-			});
-			return;
-		}
-
-		if (wasOpen) {
-			wasOpen = false;
-			tick().then(() => returnFocus?.focus());
-		}
+		if (!open) return;
+		// El Sheet monta la lista en el siguiente tick; enfoca la opción activa.
+		tick().then(() => {
+			const target =
+				listbox?.querySelector<HTMLElement>('[role="option"][aria-selected="true"]') ??
+				listbox?.querySelector<HTMLElement>('[role="option"]:not([disabled])');
+			target?.focus({ preventScroll: false });
+		});
 	});
 
 	function choose(option: OptionSheetOption): void {
@@ -131,7 +122,7 @@
 	</select>
 {/if}
 
-<Sheet {title} bind:open>
+<Sheet {title} bind:open {returnFocus}>
 	<div
 		class="space-y-1.5 pt-1 pb-2"
 		role="listbox"

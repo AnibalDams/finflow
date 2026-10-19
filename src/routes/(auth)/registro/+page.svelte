@@ -8,12 +8,14 @@
 	import TextField from '#lib/components/ui/TextField.svelte';
 	import { enhanceForm } from '#lib/utils/enhance';
 	import type { FormState } from '#lib/utils/forms';
-	import { CURRENCY_OPTIONS } from '#lib/utils/labels';
+	import { CURRENCY_OPTIONS, currencyIcon } from '#lib/utils/labels';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	const form = $derived(page.form as (FormState & { needsConfirmation?: boolean }) | null | undefined);
+	const form = $derived(
+		page.form as (FormState & { needsConfirmation?: boolean }) | null | undefined
+	);
 	const waitingForEmail = $derived(form?.needsConfirmation === true);
 
 	let saving = $state(false);
@@ -23,7 +25,9 @@
 	{#if waitingForEmail}
 		<Card class="p-5">
 			<div class="flex flex-col items-center gap-3 py-4 text-center">
-				<span class="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+				<span
+					class="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary"
+				>
 					<Icon name="mark_email_read" size={28} filled />
 				</span>
 				<h2 class="text-title-md text-ink">Revisa tu correo</h2>
@@ -32,7 +36,9 @@
 					<span class="font-semibold text-ink">{form?.values?.email}</span>. Ábrelo para activar tu
 					cuenta y empezar a registrar movimientos.
 				</p>
-				<a href="/login" class="mt-1 text-label-sm font-semibold text-primary">Volver a iniciar sesión</a>
+				<a href="/login" class="mt-1 text-label-sm font-semibold text-primary"
+					>Volver a iniciar sesión</a
+				>
 			</div>
 		</Card>
 	{:else}
@@ -80,7 +86,8 @@
 					icon="payments"
 					options={CURRENCY_OPTIONS.map((option) => ({
 						value: option.code,
-						label: option.label
+						label: option.label,
+						icon: currencyIcon(option.code)
 					}))}
 					value={form?.values?.currency ?? data.defaultCurrency}
 					error={form?.errors?.currency}
@@ -110,7 +117,9 @@
 					/>
 				</div>
 
-				<Button type="submit" block size="lg" icon="person_add" loading={saving}>Crear cuenta</Button>
+				<Button type="submit" block size="lg" icon="person_add" loading={saving}
+					>Crear cuenta</Button
+				>
 			</form>
 		</Card>
 

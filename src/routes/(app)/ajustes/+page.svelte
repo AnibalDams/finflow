@@ -10,7 +10,7 @@
 	import { enhanceForm } from '#lib/utils/enhance';
 	import { csvNumber, downloadCsv, downloadPdf } from '#lib/utils/export';
 	import type { FormState } from '#lib/utils/forms';
-	import { CURRENCY_OPTIONS, TRANSACTION_TYPE_LABELS } from '#lib/utils/labels';
+	import { CURRENCY_OPTIONS, TRANSACTION_TYPE_LABELS, currencyIcon } from '#lib/utils/labels';
 	import { formatMoney } from '#lib/utils/money';
 	import type { PageProps } from './$types';
 
@@ -43,7 +43,8 @@
 
 	const currencyOptions = CURRENCY_OPTIONS.map((option) => ({
 		value: option.code,
-		label: option.label
+		label: option.label,
+		icon: currencyIcon(option.code)
 	}));
 
 	const stats = $derived([
@@ -131,7 +132,7 @@
 			{#each stats as stat (stat.label)}
 				<div class="rounded-2xl bg-white/8 p-2 text-center">
 					<Icon name={stat.icon} size={18} class="mx-auto text-primary-container" />
-					<p class="tnum mt-1 text-title-sm font-bold">{stat.value}</p>
+					<p class="mt-1 tnum text-title-sm font-bold">{stat.value}</p>
 					<p class="text-[10px] leading-tight text-inverse-on-surface/60">{stat.label}</p>
 				</div>
 			{/each}
@@ -142,7 +143,9 @@
 		href="/cuentas"
 		class="flex items-center gap-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-3.5 shadow-card transition hover:border-secondary/40"
 	>
-		<span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
+		<span
+			class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary"
+		>
 			<Icon name="account_balance_wallet" size={20} />
 		</span>
 		<div class="min-w-0 flex-1">
@@ -159,7 +162,10 @@
 		</h2>
 
 		{#if form?.intent === 'profile' && form.message}
-			<div class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary" role="alert">
+			<div
+				class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+				role="alert"
+			>
 				<Icon name="error" size={18} class="mt-0.5 shrink-0" />
 				{form.message}
 			</div>
@@ -175,7 +181,12 @@
 				onFinish: () => (savingProfile = false)
 			})}
 		>
-			<TextField label="Nombre completo" name="fullName" bind:value={fullName} error={errors.fullName} />
+			<TextField
+				label="Nombre completo"
+				name="fullName"
+				bind:value={fullName}
+				error={errors.fullName}
+			/>
 			<SelectField
 				label="Moneda principal"
 				name="currency"
@@ -187,7 +198,7 @@
 				name="monthlyBudget"
 				label="Presupuesto mensual global"
 				bind:value={monthlyBudget}
-				currency={currency}
+				{currency}
 				tone="primary"
 				quickAmounts={[]}
 				error={errors.monthlyBudget}
@@ -214,7 +225,10 @@
 		</h2>
 
 		{#if form?.intent === 'password' && form.message}
-			<div class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary" role="alert">
+			<div
+				class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+				role="alert"
+			>
 				<Icon name="error" size={18} class="mt-0.5 shrink-0" />
 				{form.message}
 			</div>

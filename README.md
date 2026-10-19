@@ -94,6 +94,7 @@ e2e/              # pruebas end-to-end
 - Los gráficos son SVG hechos a mano (sin librerías); el PDF usa `jspdf`.
 - La interfaz da respuesta inmediata: barra de progreso de navegación, atenuado del contenido al cambiar de ruta, estados `loading` en cada acción y transiciones de 120–250 ms sobre `transform`/`opacity`. Todo respeta `prefers-reduced-motion`.
 - Los selectores (cuentas, moneda, tipo de cuenta, filtros y día de recordatorio) usan una **hoja inferior** propia (`OptionSheet`) en lugar del menú nativo del navegador. Mantienen `name`/`required` con un `<select>` oculto, y son navegables con teclado (flechas, Home/End, Escape) devolviendo el foco al cerrar.
+- Las hojas (`Sheet`) atrapan el foco con Tab/Shift+Tab y lo devuelven al disparador al cerrarse; `NotificationsSheet` reutiliza el mismo componente con su animación de salida.
 
 ## Seguridad en producción
 
