@@ -21,6 +21,9 @@ export type View<T extends keyof Database['public']['Views']> =
 export interface Profile {
 	id: string;
 	fullName: string;
+	/** Ruta del objeto en el bucket privado `avatars`. */
+	avatarPath: string | null;
+	/** URL firmada resuelta por el servidor. */
 	avatarUrl: string | null;
 	currency: string;
 	monthlyBudget: number;

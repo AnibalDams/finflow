@@ -1,11 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { getAccounts } from '#lib/server/queries';
-import {
-	mutationMessage,
-	removeFile,
-	uploadGoalImage,
-	validateImage
-} from '#lib/server/mutations';
+import { mutationMessage, removeFile, uploadGoalImage, validateImage } from '#lib/server/mutations';
 import { requireAuth } from '#lib/server/results';
 import { defaultAccount } from '#lib/server/shell';
 import { addMonths, toISODate } from '#lib/utils/dates';
@@ -85,7 +80,7 @@ export const actions: Actions = {
 		let imagePath: string | null = null;
 
 		if (image) {
-			const problem = validateImage(image);
+			const problem = await validateImage(image);
 			if (problem) {
 				return fail(400, { message: problem, errors: { image: problem }, values });
 			}

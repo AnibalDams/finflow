@@ -50,7 +50,8 @@ export function mapProfile(row: Row<'profiles'>): Profile {
 	return {
 		id: row.id,
 		fullName: row.full_name,
-		avatarUrl: row.avatar_url,
+		avatarPath: row.avatar_url,
+		avatarUrl: null,
 		currency: row.currency,
 		monthlyBudget: toNumber(row.monthly_budget)
 	};

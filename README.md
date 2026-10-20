@@ -26,10 +26,11 @@ Aplicación móvil-first de finanzas personales: movimientos, métricas, metas, 
 cp .env.example .env
 ```
 
-| Variable                          | Obligatoria | Descripción                                    |
-| --------------------------------- | ----------- | ---------------------------------------------- |
-| `PUBLIC_SUPABASE_URL`             | sí          | URL del proyecto (`https://<ref>.supabase.co`) |
-| `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | sí          | Clave publicable (segura para el cliente)      |
+| Variable                          | Obligatoria | Descripción                                                                |
+| --------------------------------- | ----------- | -------------------------------------------------------------------------- |
+| `PUBLIC_SUPABASE_URL`             | sí          | URL del proyecto (`https://<ref>.supabase.co`)                             |
+| `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | sí          | Clave publicable (segura para el cliente)                                  |
+| `SITE_URL`                        | producción  | URL pública (`https://tu-dominio.com`) para enlaces de confirmación/correo |
 
 Las claves de servidor **no** se usan: todo el acceso a Supabase ocurre en el servidor con la sesión del usuario.
 
@@ -68,13 +69,17 @@ psql <tu-conexion> -f supabase/seed.sql
 # o pega el contenido en el editor SQL de Supabase
 ```
 
-Usuario: `demo@finflow.app` · Contraseña: `FinFlow2026!` (re-ejecutable: no duplica filas).
+El script rellena datos ficticios, pero **no crea ni publica credenciales**. Crea un usuario de pruebas propio en Supabase Auth y pásalo a las pruebas con `E2E_EMAIL` / `E2E_PASSWORD`. La contraseña de la antigua cuenta `demo@finflow.app` fue rotada a un valor aleatorio no publicado y sus sesiones fueron revocadas; no reutilices credenciales de demostración en producción.
 
 ## Pruebas E2E
 
-Las pruebas E2E comparten el usuario de demostración y se ejecutan en serie (`workers: 1`). Cada caso crea datos con sufijo de marca de tiempo y los elimina al terminar; los valores tocados (presupuesto de ejemplo, presupuesto global, cuenta principal) se restauran dentro de la propia prueba.
+Las pruebas E2E comparten un usuario de pruebas dedicado y se ejecutan en serie (`workers: 1`). Cada caso crea datos con sufijo de marca de tiempo y los elimina al terminar; los valores tocados (presupuesto de ejemplo, presupuesto global, cuenta principal) se restauran dentro de la propia prueba.
 
-Variables opcionales: `E2E_EMAIL` y `E2E_PASSWORD`.
+Variables necesarias para las pruebas con sesión: `E2E_EMAIL` y `E2E_PASSWORD` (secretos de CI, sin valores por defecto). Si faltan, esos casos se omiten.
+
+```sh
+E2E_EMAIL=test@tu-dominio.com E2E_PASSWORD='...' npx playwright test
+```
 
 ```sh
 npx playwright test --ui    # para explorar
@@ -112,6 +117,11 @@ e2e/              # pruebas end-to-end
 
 ## Seguridad en producción
 
-- Las migraciones de `supabase/migrations/` se aplican en orden (0001 esquema, 0002 storage, 0003 endurecimiento e índices, 0004 frecuencia y origen de deudas). No requieren la CLI ni Docker.
-- En el panel de Supabase → **Auth → Providers → Email** conviene activar **Leaked password protection** (Supabase lo revisa contra HaveIBeenPwned). Es el único aviso del asesor de seguridad que no se puede resolver por SQL.
+- Las migraciones de `supabase/migrations/` se aplican en orden (0001 esquema, 0002 storage, 0003 endurecimiento e índices, 0004 frecuencia y origen de deudas, 0005 hardening de RPCs y permisos, 0006 integridad multi-tenant). No requieren la CLI ni Docker.
+- Configura `SITE_URL` con el dominio de producción para que los enlaces de confirmación y recuperación no dependan del header `Host`.
+- Las cookies de sesión son `HttpOnly`, `Secure` y `SameSite=Lax`; las respuestas autenticadas se envían con `Cache-Control: private, no-store`.
+- La app aplica CSP, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` y cabeceras COOP/CORP. HSTS lo añade Vercel en el despliegue actual.
+- Los formularios de Auth tienen rate limiting en memoria, contraseñas de mínimo 12 caracteres con letras y números, comprobación k-anonymity contra HaveIBeenPwned y reautenticación para cambiar la contraseña. Para un despliegue multi-instancia, complementa el limitador con un almacén distribuido (KV/Redis).
+- En el panel de Supabase → **Auth → Providers → Email**, activa también **Leaked password protection** (es una configuración del proveedor, no de la base de datos).
 - Los buckets `receipts` y `goal-images` son privados; el acceso se resuelve con URLs firmadas y las políticas exigen que la ruta empiece por `auth.uid()`.
+- Los archivos subidos se validan por MIME, tamaño y firma binaria (magic bytes). Para entornos de alto riesgo, añade análisis antivirus.

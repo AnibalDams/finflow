@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { resolve } from '$app/paths';
 	import InstallApp from '#lib/components/app/InstallApp.svelte';
+	import ProfilePhoto from '#lib/components/app/ProfilePhoto.svelte';
 	import AmountField from '#lib/components/ui/AmountField.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import SelectField from '#lib/components/ui/SelectField.svelte';
@@ -28,6 +30,7 @@
 	let monthlyBudget = $state(values.monthlyBudget ?? profile.monthlyBudget.toFixed(2));
 	let savingProfile = $state(false);
 
+	let currentPassword = $state('');
 	let password = $state('');
 	let passwordConfirm = $state('');
 	let savingPassword = $state(false);
@@ -119,9 +122,13 @@
 	<section class="rounded-3xl bg-inverse-surface p-5 text-inverse-on-surface shadow-hero">
 		<div class="flex items-center gap-3">
 			<span
-				class="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary-container text-title-sm font-bold text-inverse-surface"
+				class="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-container text-title-sm font-bold text-inverse-surface"
 			>
-				{initials}
+				{#if profile.avatarUrl}
+					<img src={profile.avatarUrl} alt="" class="size-full object-cover" />
+				{:else}
+					{initials}
+				{/if}
 			</span>
 			<div class="min-w-0">
 				<p class="truncate text-title-sm font-semibold">{profile.fullName || 'Tu perfil'}</p>
@@ -140,8 +147,10 @@
 		</div>
 	</section>
 
+	<ProfilePhoto avatarUrl={profile.avatarUrl} hasAvatar={Boolean(profile.avatarPath)} {initials} />
+
 	<a
-		href="/cuentas"
+		href={resolve('/(app)/cuentas')}
 		class="flex items-center gap-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-3.5 shadow-card transition hover:border-secondary/40"
 	>
 		<span
@@ -242,6 +251,7 @@
 			use:enhance={enhanceForm({
 				success: 'Contraseña actualizada',
 				onSuccess: () => {
+					currentPassword = '';
 					password = '';
 					passwordConfirm = '';
 				},
@@ -250,6 +260,15 @@
 			})}
 		>
 			<TextField
+				label="Contraseña actual"
+				name="currentPassword"
+				type="password"
+				icon="lock"
+				autocomplete="current-password"
+				bind:value={currentPassword}
+				error={errors.currentPassword}
+			/>
+			<TextField
 				label="Nueva contraseña"
 				name="password"
 				type="password"
@@ -257,7 +276,7 @@
 				autocomplete="new-password"
 				bind:value={password}
 				error={errors.password}
-				hint="Mínimo 8 caracteres"
+				hint="Mínimo 12 caracteres, con letras y números"
 			/>
 			<TextField
 				label="Confirmar contraseña"
@@ -287,7 +306,10 @@
 		</h2>
 		<p class="text-body-sm text-muted">
 			{data.movements.length} de {data.movementTotal} movimientos de {data.month.label}. Para otros
-			periodos usa <a href="/metricas" class="font-semibold text-secondary underline">Métricas</a>.
+			periodos usa
+			<a href={resolve('/(app)/metricas')} class="font-semibold text-secondary underline"
+				>Métricas</a
+			>.
 		</p>
 
 		<div class="grid grid-cols-2 gap-2">

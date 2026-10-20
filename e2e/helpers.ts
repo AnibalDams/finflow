@@ -1,16 +1,22 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 /**
- * Credenciales del usuario de demostración creado por `supabase/seed.sql`.
- * Se pueden sobrescribir con `E2E_EMAIL` / `E2E_PASSWORD`.
+ * Credenciales de un usuario de pruebas dedicado. No se incluye ninguna
+ * contraseña por defecto: deben venir de `E2E_EMAIL` / `E2E_PASSWORD` (secretos
+ * de CI). Si faltan, las pruebas que requieren sesión se omiten.
  */
 export const DEMO = {
 	email: process.env.E2E_EMAIL ?? 'demo@finflow.app',
-	password: process.env.E2E_PASSWORD ?? 'FinFlow2026!'
+	password: process.env.E2E_PASSWORD ?? ''
 };
 
-/** Inicia sesión con el usuario de demostración y espera el panel principal. */
+/** Inicia sesión con el usuario de pruebas y espera el panel principal. */
 export async function login(page: Page): Promise<void> {
+	if (!DEMO.password) {
+		test.skip(true, 'Configura E2E_EMAIL y E2E_PASSWORD para ejecutar las pruebas con sesión.');
+		return;
+	}
+
 	await page.goto('/login');
 	await page.getByLabel('Correo electrónico').fill(DEMO.email);
 	await page.getByLabel('Contraseña').fill(DEMO.password);

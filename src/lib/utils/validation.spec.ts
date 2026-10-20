@@ -17,7 +17,6 @@ import {
 } from './validation';
 
 const uuid = '11111111-1111-4111-8111-111111111111';
-const otherUuid = '22222222-2222-4222-8222-222222222222';
 
 describe('fieldErrors', () => {
 	it('convierte los issues de Zod en un mapa campo → mensaje', () => {
@@ -48,10 +47,10 @@ describe('autenticación', () => {
 		const base = {
 			fullName: 'Sofía Ramírez',
 			email: 'sofia@finflow.app',
-			password: 'FinFlow2026!',
+			password: 'ClaveSegura2026!',
 			currency: 'usd'
 		};
-		const register = registerSchema.parse({ ...base, passwordConfirm: 'FinFlow2026!' });
+		const register = registerSchema.parse({ ...base, passwordConfirm: 'ClaveSegura2026!' });
 		expect(register.currency).toBe('USD');
 
 		const mismatch = registerSchema.safeParse({ ...base, passwordConfirm: 'Otra' });
@@ -60,13 +59,26 @@ describe('autenticación', () => {
 		expect(fieldErrors(mismatch.error).passwordConfirm).toBe('Las contraseñas no coinciden');
 	});
 
-	it('exige 8 caracteres en el cambio de contraseña', () => {
-		const short = changePasswordSchema.safeParse({ password: 'corta', passwordConfirm: 'corta' });
-		expect(short.success).toBe(false);
+	it('exige 12 caracteres, letras y números en el cambio de contraseña', () => {
+		const base = {
+			currentPassword: 'Actual2026!',
+			password: 'LargaClave12',
+			passwordConfirm: 'LargaClave12'
+		};
+
 		expect(
-			changePasswordSchema.safeParse({ password: 'LargaClave1', passwordConfirm: 'LargaClave1' })
+			changePasswordSchema.safeParse({ ...base, password: 'corta', passwordConfirm: 'corta' })
 				.success
-		).toBe(true);
+		).toBe(false);
+		expect(
+			changePasswordSchema.safeParse({
+				...base,
+				password: 'sinNumeros!!',
+				passwordConfirm: 'sinNumeros!!'
+			}).success
+		).toBe(false);
+		expect(changePasswordSchema.safeParse(base).success).toBe(true);
+		expect(changePasswordSchema.safeParse({ ...base, currentPassword: '' }).success).toBe(false);
 	});
 });
 

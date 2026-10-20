@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { login, submitForm } from './helpers';
+import { DEMO, acceptConfirm, login, submitForm } from './helpers';
 
 test('guarda el perfil y conserva los datos al recargar', async ({ page }) => {
 	await login(page);
@@ -26,6 +26,7 @@ test('avisa cuando las contraseñas no coinciden', async ({ page }) => {
 	await login(page);
 	await page.goto('/ajustes');
 
+	await page.getByLabel('Contraseña actual').fill(DEMO.password);
 	await page.getByLabel('Nueva contraseña').fill('ClaveNueva2026');
 	await page.getByLabel('Confirmar contraseña').fill('ClaveDistinta2026');
 	await page.getByRole('button', { name: 'Cambiar contraseña' }).click();
@@ -43,4 +44,37 @@ test('exporta el CSV de movimientos del mes', async ({ page }) => {
 	]);
 
 	expect(download.suggestedFilename()).toMatch(/^finflow-movimientos-\d{4}-\d{2}-01\.csv$/);
+});
+
+test('sube y elimina la foto de perfil', async ({ page }) => {
+	const png = Buffer.from(
+		'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+		'base64'
+	);
+
+	await login(page);
+	await page.goto('/ajustes');
+
+	const topBarAvatar = page.locator('a[aria-label="Perfil y ajustes"] img');
+	await expect(topBarAvatar).toHaveCount(0);
+
+	await page.locator('input[name="avatar"]').setInputFiles({
+		name: 'perfil.png',
+		mimeType: 'image/png',
+		buffer: png
+	});
+
+	await expect(page.getByText('Foto actualizada')).toBeVisible({ timeout: 20_000 });
+	await expect(topBarAvatar).toBeVisible();
+	await expect
+		.poll(() => topBarAvatar.evaluate((image) => (image as HTMLImageElement).naturalWidth))
+		.toBeGreaterThan(0);
+
+	await page.reload();
+	await expect(page.locator('a[aria-label="Perfil y ajustes"] img')).toBeVisible();
+
+	acceptConfirm(page);
+	await page.getByRole('button', { name: 'Quitar foto' }).click();
+	await expect(page.getByText('Foto eliminada')).toBeVisible({ timeout: 20_000 });
+	await expect(page.locator('a[aria-label="Perfil y ajustes"] img')).toHaveCount(0);
 });

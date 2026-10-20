@@ -29,5 +29,23 @@ export const variables = defineEnvVars({
 			if (!value) throw new Error('PUBLIC_SUPABASE_PUBLISHABLE_KEY es obligatoria');
 			return value;
 		}
+	},
+	SITE_URL: {
+		public: false,
+		description: 'URL pública del sitio para enlaces de correo (opcional en desarrollo)',
+		schema: (value) => {
+			if (!value) return '';
+			let url: URL;
+			try {
+				url = new URL(value);
+			} catch {
+				throw new Error('SITE_URL no es una URL válida');
+			}
+			const isLocal = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+			if (url.protocol !== 'https:' && !isLocal) {
+				throw new Error('SITE_URL debe usar HTTPS fuera de localhost');
+			}
+			return url.origin;
+		}
 	}
 });

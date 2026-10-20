@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Button from '#lib/components/ui/Button.svelte';
 	import Card from '#lib/components/ui/Card.svelte';
@@ -30,7 +31,7 @@
 					Este enlace ya no es válido o expiró. Solicita uno nuevo para continuar.
 				</p>
 			</div>
-			<a href="/recuperar">
+			<a href={resolve('/(auth)/recuperar')}>
 				<Button block icon="restart_alt">Solicitar nuevo enlace</Button>
 			</a>
 		</div>
@@ -48,7 +49,7 @@
 				name="password"
 				type="password"
 				autocomplete="new-password"
-				placeholder="Mínimo 8 caracteres"
+				placeholder="Mínimo 12 caracteres"
 				icon="lock"
 				required
 				error={form?.errors?.password}

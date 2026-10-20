@@ -1,11 +1,6 @@
 import { getAccounts, getCategories, getMonthTotals, listTransactions } from '#lib/server/queries';
-import {
-	addMonths,
-	monthKey,
-	monthRange,
-	parseISODate,
-	formatMonthName
-} from '#lib/utils/dates';
+import { addMonths, monthKey, monthRange, parseISODate, formatMonthName } from '#lib/utils/dates';
+import { parseUuid } from '#lib/utils/uuid';
 import type { TransactionType } from '#lib/types/domain';
 import type { PageServerLoad } from './$types';
 
@@ -28,11 +23,14 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const range = month ? monthRange(month) : null;
 
 	const type = parseType(url.searchParams.get('tipo'));
-	const accountId = url.searchParams.get('cuenta') || undefined;
-	const categoryId = url.searchParams.get('categoria') || undefined;
+	const accountId = parseUuid(url.searchParams.get('cuenta'));
+	const categoryId = parseUuid(url.searchParams.get('categoria'));
 	const search = url.searchParams.get('q')?.trim() || undefined;
 	const requestedLimit = Number(url.searchParams.get('limit') ?? PAGE_SIZE);
-	const limit = Math.min(Math.max(Number.isFinite(requestedLimit) ? requestedLimit : PAGE_SIZE, PAGE_SIZE), 150);
+	const limit = Math.min(
+		Math.max(Number.isFinite(requestedLimit) ? requestedLimit : PAGE_SIZE, PAGE_SIZE),
+		150
+	);
 
 	const [page, accounts, categories, totals] = await Promise.all([
 		listTransactions(locals.supabase, {
@@ -46,7 +44,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		}),
 		getAccounts(locals.supabase),
 		getCategories(locals.supabase),
-		range ? getMonthTotals(locals.supabase, range.from, range.to) : Promise.resolve({ income: 0, expense: 0 })
+		range
+			? getMonthTotals(locals.supabase, range.from, range.to)
+			: Promise.resolve({ income: 0, expense: 0 })
 	]);
 
 	const baseDate = range ? parseISODate(range.from) : now;

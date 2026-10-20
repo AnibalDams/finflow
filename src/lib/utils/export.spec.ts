@@ -19,10 +19,18 @@ describe('toCsv', () => {
 	});
 
 	it('escapa separadores, comillas y saltos de línea', () => {
-		expect(toCsv([['Casa; jardín', 'Dice "hola"', 'a\nb']])).toBe('"Casa; jardín";"Dice ""hola""";"a\nb"');
+		expect(toCsv([['Casa; jardín', 'Dice "hola"', 'a\nb']])).toBe(
+			'"Casa; jardín";"Dice ""hola""";"a\nb"'
+		);
 	});
 
 	it('representa valores vacíos como celdas vacías', () => {
 		expect(toCsv([[null, undefined, '', 0]])).toBe(';;;0');
+	});
+
+	it('neutraliza fórmulas sin romper números negativos', () => {
+		expect(toCsv([['=1+1', '+SUM(A1)', '-2+3', '@cmd', -10]])).toBe(
+			"'=1+1;'+SUM(A1);'-2+3;'@cmd;-10"
+		);
 	});
 });

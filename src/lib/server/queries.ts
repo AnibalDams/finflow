@@ -28,6 +28,7 @@ import {
 	toNumber
 } from '#lib/utils/mappers';
 import { sumAmounts } from '#lib/utils/money';
+import { isUuid } from '#lib/utils/uuid';
 import type { PeriodRange } from '#lib/utils/dates';
 import {
 	emptyAnalytics,
@@ -95,8 +96,9 @@ export async function listTransactions(
 	if (filters.from) query = query.gte('occurred_at', `${filters.from}T00:00:00.000Z`);
 	if (filters.to) query = query.lte('occurred_at', `${filters.to}T23:59:59.999Z`);
 	if (filters.type) query = query.eq('type', filters.type);
-	if (filters.categoryId) query = query.eq('category_id', filters.categoryId);
-	if (filters.accountId) {
+	// Los IDs se validan como UUID antes de interpolarlos en filtros PostgREST.
+	if (isUuid(filters.categoryId)) query = query.eq('category_id', filters.categoryId);
+	if (isUuid(filters.accountId)) {
 		query = query.or(
 			`account_id.eq.${filters.accountId},counter_account_id.eq.${filters.accountId}`
 		);
@@ -106,7 +108,9 @@ export async function listTransactions(
 		if (term) query = query.or(`concept.ilike.%${term}%,notes.ilike.%${term}%`);
 	}
 
-	const result = await query.order('occurred_at', { ascending: false }).range(offset, offset + limit - 1);
+	const result = await query
+		.order('occurred_at', { ascending: false })
+		.range(offset, offset + limit - 1);
 
 	if (result.error) {
 		console.error('[finflow] transactions:', result.error.message);
@@ -132,7 +136,10 @@ export async function getTransaction(db: Db, id: string): Promise<TransactionIte
 
 export async function getGoals(db: Db): Promise<Goal[]> {
 	const data = unwrap(
-		await db.from('goal_progress').select('*').order('target_date', { ascending: true, nullsFirst: false }),
+		await db
+			.from('goal_progress')
+			.select('*')
+			.order('target_date', { ascending: true, nullsFirst: false }),
 		'goals'
 	);
 	return data.map(mapGoal);
@@ -160,7 +167,11 @@ export async function getGoal(
 
 export async function getDebts(db: Db): Promise<Debt[]> {
 	const data = unwrap(
-		await db.from('debt_progress').select('*').order('is_active', { ascending: false }).order('next_due_date'),
+		await db
+			.from('debt_progress')
+			.select('*')
+			.order('is_active', { ascending: false })
+			.order('next_due_date'),
 		'debts'
 	);
 	return data.map(mapDebt);
@@ -252,14 +263,22 @@ export async function getDashboardSummary(
    ========================================================================== */
 
 export function receiptPath(userId: string, transactionId: string, fileName: string): string {
-	const extension = fileName.includes('.') ? fileName.split('.').pop() ?? 'bin' : 'bin';
-	const safeExtension = extension.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 5) || 'bin';
+	const extension = fileName.includes('.') ? (fileName.split('.').pop() ?? 'bin') : 'bin';
+	const safeExtension =
+		extension
+			.toLowerCase()
+			.replace(/[^a-z0-9]/g, '')
+			.slice(0, 5) || 'bin';
 	return `${userId}/${transactionId}/${crypto.randomUUID()}.${safeExtension}`;
 }
 
 export function goalImagePath(userId: string, goalId: string, fileName: string): string {
-	const extension = fileName.includes('.') ? fileName.split('.').pop() ?? 'bin' : 'bin';
-	const safeExtension = extension.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 5) || 'bin';
+	const extension = fileName.includes('.') ? (fileName.split('.').pop() ?? 'bin') : 'bin';
+	const safeExtension =
+		extension
+			.toLowerCase()
+			.replace(/[^a-z0-9]/g, '')
+			.slice(0, 5) || 'bin';
 	return `${userId}/${goalId}/${crypto.randomUUID()}.${safeExtension}`;
 }
 

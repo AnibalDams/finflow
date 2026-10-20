@@ -24,10 +24,26 @@ export function translateAuthError(message: string | undefined): string {
 	return 'No pudimos completar la operación. Inténtalo de nuevo.';
 }
 
+function hasControlCharacters(value: string): boolean {
+	for (const char of value) {
+		const code = char.charCodeAt(0);
+		if (code < 32 || code === 127) return true;
+	}
+	return false;
+}
+
 /** Solo se permiten rutas internas: evita redirecciones abiertas. */
 export function safeRedirect(target: string | null | undefined, fallback = '/'): string {
 	if (!target) return fallback;
 	const value = target.trim();
-	if (!value.startsWith('/') || value.startsWith('//') || value.includes('\\')) return fallback;
+	if (
+		!value.startsWith('/') ||
+		value.startsWith('//') ||
+		value.includes('\\') ||
+		/%5c/i.test(value) ||
+		hasControlCharacters(value)
+	) {
+		return fallback;
+	}
 	return value;
 }

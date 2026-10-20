@@ -1,10 +1,18 @@
 import type { Db } from './queries';
-import { MAX_RECEIPT_BYTES, ALLOWED_RECEIPT_TYPES, receiptPath } from './queries';
+import {
+	ALLOWED_IMAGE_TYPES,
+	ALLOWED_RECEIPT_TYPES,
+	MAX_IMAGE_BYTES,
+	MAX_RECEIPT_BYTES,
+	receiptPath
+} from './queries';
 
 export interface UploadedFile {
 	path: string;
 	name: string;
 }
+
+export type StorageBucket = 'receipts' | 'goal-images' | 'avatars';
 
 /** Traduce mensajes de PostgreSQL a avisos legibles para el usuario. */
 export function mutationMessage(message: string, fallback: string): string {
@@ -20,24 +28,67 @@ export function mutationMessage(message: string, fallback: string): string {
 	return fallback;
 }
 
+function startsWith(bytes: Uint8Array, signature: number[], offset = 0): boolean {
+	return signature.every((value, index) => bytes[offset + index] === value);
+}
+
+function containsAscii(bytes: Uint8Array, text: string): boolean {
+	const needle = new TextEncoder().encode(text);
+	for (let index = 0; index <= bytes.length - needle.length; index += 1) {
+		if (needle.every((value, offset) => bytes[index + offset] === value)) return true;
+	}
+	return false;
+}
+
+/**
+ * Comprueba la firma real del archivo. El `type` que envía el navegador es
+ * controlable por el cliente; el bucket también valida MIME, pero esta capa
+ * impide subir HTML/ejecutables disfrazados de imagen o PDF.
+ */
+async function matchesSignature(file: File): Promise<boolean> {
+	const bytes = new Uint8Array(await file.slice(0, 1024).arrayBuffer());
+
+	switch (file.type) {
+		case 'image/png':
+			return startsWith(bytes, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+		case 'image/jpeg':
+			return startsWith(bytes, [0xff, 0xd8, 0xff]);
+		case 'image/webp':
+			return (
+				startsWith(bytes, [0x52, 0x49, 0x46, 0x46]) &&
+				startsWith(bytes, [0x57, 0x45, 0x42, 0x50], 8)
+			);
+		case 'application/pdf':
+			return containsAscii(bytes, '%PDF-');
+		default:
+			return false;
+	}
+}
+
 /** Valida un comprobante antes de subirlo. Devuelve el error o `null`. */
-export function validateReceipt(file: File): string | null {
+export async function validateReceipt(file: File): Promise<string | null> {
 	if (!ALLOWED_RECEIPT_TYPES.includes(file.type)) {
 		return 'El comprobante debe ser PNG, JPG, WEBP o PDF.';
 	}
 	if (file.size > MAX_RECEIPT_BYTES) {
 		return 'El comprobante no puede superar los 10 MB.';
 	}
+	if (!(await matchesSignature(file))) {
+		return 'El contenido del comprobante no coincide con su tipo de archivo.';
+	}
 	return null;
 }
 
 /** Valida una imagen de plan antes de subirla. Devuelve el error o `null`. */
-export function validateImage(file: File): string | null {
-	if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+export async function validateImage(file: File): Promise<string | null> {
+	if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
 		return 'La imagen debe ser PNG, JPG o WEBP.';
 	}
-	if (file.size > 5 * 1024 * 1024) {
+	if (file.size > MAX_IMAGE_BYTES) {
 		return 'La imagen no puede superar los 5 MB.';
+	}
+	if (!(await matchesSignature(file))) {
+		return 'El contenido de la imagen no coincide con su tipo de archivo.';
 	}
 	return null;
 }
@@ -57,8 +108,18 @@ export async function uploadReceipt(db: Db, userId: string, file: File): Promise
 	return { path, name: file.name };
 }
 
-export async function uploadGoalImage(db: Db, userId: string, goalId: string, file: File): Promise<UploadedFile> {
-	const path = `${userId}/${goalId}/${crypto.randomUUID()}.${(file.name.split('.').pop() ?? 'png').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 5) || 'png'}`;
+export async function uploadGoalImage(
+	db: Db,
+	userId: string,
+	goalId: string,
+	file: File
+): Promise<UploadedFile> {
+	const path = `${userId}/${goalId}/${crypto.randomUUID()}.${
+		(file.name.split('.').pop() ?? 'png')
+			.toLowerCase()
+			.replace(/[^a-z0-9]/g, '')
+			.slice(0, 5) || 'png'
+	}`;
 	const { error } = await db.storage
 		.from('goal-images')
 		.upload(path, file, { contentType: file.type, upsert: false });
@@ -67,10 +128,26 @@ export async function uploadGoalImage(db: Db, userId: string, goalId: string, fi
 	return { path, name: file.name };
 }
 
+/** Sube la foto de perfil al bucket privado `avatars`. */
+export async function uploadAvatar(db: Db, userId: string, file: File): Promise<UploadedFile> {
+	const path = `${userId}/${crypto.randomUUID()}.${
+		(file.name.split('.').pop() ?? 'png')
+			.toLowerCase()
+			.replace(/[^a-z0-9]/g, '')
+			.slice(0, 5) || 'png'
+	}`;
+	const { error } = await db.storage
+		.from('avatars')
+		.upload(path, file, { contentType: file.type, upsert: false });
+
+	if (error) throw new Error('No pudimos subir tu foto de perfil.');
+	return { path, name: file.name };
+}
+
 /** Enlace temporal para ver un archivo privado. */
 export async function signedUrl(
 	db: Db,
-	bucket: 'receipts' | 'goal-images',
+	bucket: StorageBucket,
 	path: string,
 	expiresIn = 600
 ): Promise<string | null> {
@@ -82,11 +159,7 @@ export async function signedUrl(
 	return data.signedUrl;
 }
 
-export async function removeFile(
-	db: Db,
-	bucket: 'receipts' | 'goal-images',
-	path: string
-): Promise<void> {
+export async function removeFile(db: Db, bucket: StorageBucket, path: string): Promise<void> {
 	const { error } = await db.storage.from(bucket).remove([path]);
 	if (error) console.error('[finflow] remove file:', error.message);
 }

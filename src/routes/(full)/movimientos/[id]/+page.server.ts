@@ -1,9 +1,5 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import {
-	getAccounts,
-	getCategories,
-	getTransaction
-} from '#lib/server/queries';
+import { getAccounts, getCategories, getTransaction } from '#lib/server/queries';
 import {
 	mutationMessage,
 	removeFile,
@@ -18,7 +14,16 @@ import { formValues, readFile, readString } from '#lib/utils/forms';
 import { fieldErrors, transactionSchema } from '#lib/utils/validation';
 import type { Actions, PageServerLoad } from './$types';
 
-const VALUES = ['amount', 'accountId', 'categoryId', 'concept', 'occurredAt', 'occurredTime', 'notes', 'tags'] as const;
+const VALUES = [
+	'amount',
+	'accountId',
+	'categoryId',
+	'concept',
+	'occurredAt',
+	'occurredTime',
+	'notes',
+	'tags'
+] as const;
 
 function occurredAtISO(rawDate: string, rawTime: string): string {
 	const date = rawDate.trim();
@@ -121,7 +126,7 @@ export const actions: Actions = {
 		let uploaded: { path: string; name: string } | null = null;
 
 		if (receipt) {
-			const problem = validateReceipt(receipt);
+			const problem = await validateReceipt(receipt);
 			if (problem) {
 				return fail(400, { message: problem, errors: { receipt: problem }, values });
 			}
@@ -130,7 +135,8 @@ export const actions: Actions = {
 				uploaded = await uploadReceipt(locals.supabase, user.id, receipt);
 			} catch (uploadError) {
 				return fail(500, {
-					message: uploadError instanceof Error ? uploadError.message : 'No pudimos subir el comprobante.',
+					message:
+						uploadError instanceof Error ? uploadError.message : 'No pudimos subir el comprobante.',
 					values
 				});
 			}

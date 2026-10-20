@@ -21,8 +21,11 @@ const email = z
 
 const password = z
 	.string()
-	.min(8, 'La contraseña debe tener al menos 8 caracteres')
-	.max(72, 'La contraseña no puede superar los 72 caracteres');
+	.min(12, 'La contraseña debe tener al menos 12 caracteres')
+	.max(72, 'La contraseña no puede superar los 72 caracteres')
+	.refine((value) => /[A-Za-z]/.test(value) && /\d/.test(value), {
+		message: 'Incluye al menos una letra y un número'
+	});
 
 const optionalText = (max: number) =>
 	z
@@ -244,7 +247,11 @@ export const profileSchema = z.object({
 });
 
 export const changePasswordSchema = z
-	.object({ password, passwordConfirm: z.string() })
+	.object({
+		currentPassword: z.string().min(1, 'Ingresa tu contraseña actual'),
+		password,
+		passwordConfirm: z.string()
+	})
 	.refine((data) => data.password === data.passwordConfirm, {
 		message: 'Las contraseñas no coinciden',
 		path: ['passwordConfirm']

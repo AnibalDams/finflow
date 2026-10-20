@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Button from '#lib/components/ui/Button.svelte';
 	import Card from '#lib/components/ui/Card.svelte';
@@ -36,7 +37,7 @@
 					<span class="font-semibold text-ink">{form?.values?.email}</span>. Ábrelo para activar tu
 					cuenta y empezar a registrar movimientos.
 				</p>
-				<a href="/login" class="mt-1 text-label-sm font-semibold text-primary"
+				<a href={resolve('/(auth)/login')} class="mt-1 text-label-sm font-semibold text-primary"
 					>Volver a iniciar sesión</a
 				>
 			</div>
@@ -99,7 +100,7 @@
 						name="password"
 						type="password"
 						autocomplete="new-password"
-						placeholder="Mínimo 8 caracteres"
+						placeholder="Mínimo 12 caracteres, con letras y números"
 						icon="lock"
 						required
 						error={form?.errors?.password}
@@ -125,7 +126,7 @@
 
 		<p class="text-center text-body text-muted">
 			¿Ya tienes cuenta?
-			<a href="/login" class="font-semibold text-primary">Inicia sesión</a>
+			<a href={resolve('/(auth)/login')} class="font-semibold text-primary">Inicia sesión</a>
 		</p>
 	{/if}
 </div>

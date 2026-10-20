@@ -12,7 +12,9 @@ const VALUES = ['name', 'kind', 'icon', 'color'] as const;
 /** Solo permite volver a rutas internas. */
 function safePath(value: string | null): string {
 	if (!value) return '/cuentas?tab=categorias';
-	return value.startsWith('/') && !value.startsWith('//') ? value : '/cuentas?tab=categorias';
+	return value.startsWith('/') && !value.startsWith('//') && !value.includes('\\')
+		? value
+		: '/cuentas?tab=categorias';
 }
 
 async function loadCategory(locals: App.Locals, id: string): Promise<Category | null> {

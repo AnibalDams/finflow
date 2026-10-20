@@ -5,8 +5,12 @@
 
 export type CsvCell = string | number | null | undefined;
 
+const FORMULA_PREFIX = /^[=+\-@\t\r]/;
+
 function csvCell(value: CsvCell): string {
-	const text = value === null || value === undefined ? '' : String(value);
+	const raw = value === null || value === undefined ? '' : String(value);
+	// Neutraliza fórmulas sin alterar los valores numéricos (incluidos negativos).
+	const text = typeof value === 'string' && FORMULA_PREFIX.test(raw) ? `'${raw}` : raw;
 	return /[";\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 

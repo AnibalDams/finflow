@@ -145,7 +145,7 @@ export const actions: Actions = {
 		let uploaded: string | null = null;
 
 		if (image) {
-			const problem = validateImage(image);
+			const problem = await validateImage(image);
 			if (problem) {
 				return fail(400, {
 					intent: 'update',
@@ -214,8 +214,7 @@ export const actions: Actions = {
 			.from('goals')
 			.update({
 				status: parsed.data,
-				completed_at:
-					parsed.data === 'completed' ? new Date().toISOString() : null
+				completed_at: parsed.data === 'completed' ? new Date().toISOString() : null
 			})
 			.eq('id', params.id);
 

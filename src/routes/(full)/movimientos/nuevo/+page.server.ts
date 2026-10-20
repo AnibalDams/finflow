@@ -141,7 +141,7 @@ export const actions: Actions = {
 		let attachment: { path: string; name: string } | null = null;
 
 		if (receipt) {
-			const problem = validateReceipt(receipt);
+			const problem = await validateReceipt(receipt);
 			if (problem) {
 				return fail(400, { message: problem, errors: { receipt: problem }, values });
 			}
