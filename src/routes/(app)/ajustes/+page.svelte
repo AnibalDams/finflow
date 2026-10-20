@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import InstallApp from '#lib/components/app/InstallApp.svelte';
 	import AmountField from '#lib/components/ui/AmountField.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import SelectField from '#lib/components/ui/SelectField.svelte';
@@ -300,6 +301,8 @@
 			</button>
 		</div>
 	</section>
+
+	<InstallApp />
 
 	<section class="space-y-2">
 		<form

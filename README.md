@@ -11,6 +11,7 @@ Aplicación móvil-first de finanzas personales: movimientos, métricas, metas, 
 - **Deudas**: amortización con MSI/interés fijo/interés variable, frecuencia **semanal, quincenal o mensual**, fecha de origen, monto ya entregado, cuotas pagadas con calendario, proyección con método bola de nieve, alertas de vencimiento y pagos atómicos que generan el gasto asociado.
 - **Cuentas y categorías**: cuentas con saldo inicial, moneda (no editable), cuenta principal única, archivado y borrado solo sin movimientos; categorías con icono y color; presupuestos por categoría y mes.
 - **Ajustes**: perfil, cambio de contraseña, exportaciones y cierre de sesión.
+- **PWA instalable**: manifest, iconos propios, service worker con página offline y sección "Instalar aplicación" en Ajustes (con instrucciones para iOS).
 - **Seguridad**: RLS en todas las tablas, secretos solo por variables de entorno, validación con Zod, redirecciones internas validadas, cierre de sesión solo por POST y traducción de errores de Auth al español.
 - **Sin modo demo**: los datos se cargan siempre desde Supabase. `supabase/seed.sql` crea el usuario de demostración bajo demanda.
 
@@ -25,10 +26,10 @@ Aplicación móvil-first de finanzas personales: movimientos, métricas, metas, 
 cp .env.example .env
 ```
 
-| Variable | Obligatoria | Descripción |
-| --- | --- | --- |
-| `PUBLIC_SUPABASE_URL` | sí | URL del proyecto (`https://<ref>.supabase.co`) |
-| `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | sí | Clave publicable (segura para el cliente) |
+| Variable                          | Obligatoria | Descripción                                    |
+| --------------------------------- | ----------- | ---------------------------------------------- |
+| `PUBLIC_SUPABASE_URL`             | sí          | URL del proyecto (`https://<ref>.supabase.co`) |
+| `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | sí          | Clave publicable (segura para el cliente)      |
 
 Las claves de servidor **no** se usan: todo el acceso a Supabase ocurre en el servidor con la sesión del usuario.
 
@@ -41,14 +42,23 @@ npm run dev        # http://localhost:5173
 
 ## Scripts
 
-| Comando | Descripción |
-| --- | --- |
-| `npm run build` | Compila la app para producción |
-| `npm run check` | `svelte-check` (tipado estricto) |
-| `npm run lint` | Prettier + ESLint |
+| Comando             | Descripción                                                                                |
+| ------------------- | ------------------------------------------------------------------------------------------ |
+| `npm run build`     | Compila la app para producción                                                             |
+| `npm run check`     | `svelte-check` (tipado estricto)                                                           |
+| `npm run check:sw`  | Type-check del service worker con `$app/tsconfig/service-worker`                           |
+| `npm run icons`     | Regenera los iconos PWA desde el logo del navbar                                           |
+| `npm run lint`      | Prettier + ESLint                                                                          |
 | `npm run test:unit` | Vitest: utilidades puras (dinero, fechas, cálculos financieros, validaciones, CSV, series) |
-| `npm run test:e2e` | Playwright contra `npm run build && npm run preview` |
-| `npm run test` | Ambas suites en orden |
+| `npm run test:e2e`  | Playwright contra `npm run build && npm run preview`                                       |
+| `npm run test`      | Ambas suites en orden                                                                      |
+
+## PWA e instalación
+
+- `static/manifest.webmanifest` e iconos en `static/icons/` (192, 512, maskable 512 y Apple 180). Se generan desde el logo del navbar con `npm run icons` (usa Playwright, sin dependencias nuevas).
+- El service worker (`src/service-worker/index.ts`) precachea solo los assets inmutables del build y los archivos estáticos. Las navegaciones son **network-first** con fallback a `/offline.html`; nunca se cachean datos financieros ni HTML autenticado.
+- SvelteKit registra el service worker automáticamente en producción (en `vite dev` no se registra). Para probarlo: `npm run build && npm run preview`.
+- En **Ajustes → Instalar aplicación** aparece el botón nativo cuando el navegador lo permite; en iOS se muestran los pasos (Compartir → Añadir a pantalla de inicio). Si ya está instalada, la sección lo indica.
 
 ## Datos de demostración
 
@@ -79,6 +89,9 @@ src/
     routes/       # (app) shell con navegación, (full) flujos de detalle, (auth) sesión
     utils/        # dinero (centavos), fechas, finanzas, validación, exportación, series
     types/        # tipos de dominio y tipos generados de la base de datos
+  service-worker/ # precache de assets y fallback offline
+static/           # manifest, iconos PWA y página offline
+scripts/          # generación de iconos
 supabase/
   migrations/     # esquema, vistas, RPCs
   seed.sql        # datos de demostración
@@ -101,4 +114,3 @@ e2e/              # pruebas end-to-end
 - Las migraciones de `supabase/migrations/` se aplican en orden (0001 esquema, 0002 storage, 0003 endurecimiento e índices, 0004 frecuencia y origen de deudas). No requieren la CLI ni Docker.
 - En el panel de Supabase → **Auth → Providers → Email** conviene activar **Leaked password protection** (Supabase lo revisa contra HaveIBeenPwned). Es el único aviso del asesor de seguridad que no se puede resolver por SQL.
 - Los buckets `receipts` y `goal-images` son privados; el acceso se resuelve con URLs firmadas y las políticas exigen que la ruta empiece por `auth.uid()`.
-
