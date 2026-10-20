@@ -66,6 +66,14 @@ self.addEventListener('fetch', (event) => {
 	}
 });
 
+// Permite activar de inmediato una versión nueva desde el banner de la app.
+self.addEventListener('message', (event) => {
+	const data = event.data as { type?: string } | null;
+	if (data?.type === 'SKIP_WAITING') {
+		event.waitUntil(self.skipWaiting());
+	}
+});
+
 async function networkFirst(request: Request): Promise<Response> {
 	try {
 		return await fetch(request);

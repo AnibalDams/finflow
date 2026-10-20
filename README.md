@@ -58,6 +58,7 @@ npm run dev        # http://localhost:5173
 - `static/manifest.webmanifest` e iconos en `static/icons/` (192, 512, maskable 512 y Apple 180). Se generan desde el logo del navbar con `npm run icons` (usa Playwright, sin dependencias nuevas).
 - El service worker (`src/service-worker/index.ts`) precachea solo los assets inmutables del build y los archivos estáticos. Las navegaciones son **network-first** con fallback a `/offline.html`; nunca se cachean datos financieros ni HTML autenticado.
 - SvelteKit registra el service worker automáticamente en producción (en `vite dev` no se registra). Para probarlo: `npm run build && npm run preview`.
+- En cada navegación del cliente (`afterNavigate`) se ejecuta `registration.update()`. Si hay una versión nueva esperando, aparece un banner **"Nueva versión disponible"** que la activa con `SKIP_WAITING` y recarga la app.
 - En **Ajustes → Instalar aplicación** aparece el botón nativo cuando el navegador lo permite; en iOS se muestran los pasos (Compartir → Añadir a pantalla de inicio). Si ya está instalada, la sección lo indica.
 
 ## Datos de demostración

@@ -80,3 +80,64 @@ test('muestra la sección para instalar la aplicación', async ({ page }) => {
 		page.getByText(/Instalar FinFlow|pantalla de inicio|Tenla a mano/i).first()
 	).toBeVisible();
 });
+
+test('comprueba si hay una versión nueva al navegar', async ({ page }) => {
+	await login(page);
+
+	await page.evaluate(async () => {
+		await navigator.serviceWorker.ready;
+
+		const target = window as Window & { __swUpdateCalls?: number };
+		target.__swUpdateCalls = 0;
+
+		const original = ServiceWorkerRegistration.prototype.update;
+		ServiceWorkerRegistration.prototype.update = function (this: ServiceWorkerRegistration) {
+			target.__swUpdateCalls = (target.__swUpdateCalls ?? 0) + 1;
+			return original.call(this);
+		};
+	});
+
+	await page.getByRole('link', { name: 'Métricas' }).click();
+	await expect(page).toHaveURL(/\/metricas/);
+
+	await expect
+		.poll(() =>
+			page.evaluate(() => (window as Window & { __swUpdateCalls?: number }).__swUpdateCalls ?? 0)
+		)
+		.toBeGreaterThan(0);
+});
+
+test('ofrece actualizar cuando hay una versión esperando', async ({ page }) => {
+	await login(page);
+
+	await page.evaluate(async () => {
+		await navigator.serviceWorker.ready;
+
+		const target = window as Window & { __swMessage?: string };
+		const fakeWaiting = {
+			state: 'installed',
+			postMessage(message: unknown) {
+				target.__swMessage = JSON.stringify(message);
+			}
+		};
+
+		const container = navigator.serviceWorker as unknown as {
+			getRegistration: () => Promise<unknown>;
+		};
+		container.getRegistration = async () => ({
+			waiting: fakeWaiting,
+			update: async () => {},
+			addEventListener: () => {}
+		});
+	});
+
+	await page.getByRole('link', { name: 'Métricas' }).click();
+	await expect(page.getByText('Nueva versión disponible')).toBeVisible();
+
+	await page.getByRole('button', { name: 'Actualizar' }).click();
+	await expect
+		.poll(() =>
+			page.evaluate(() => (window as Window & { __swMessage?: string }).__swMessage ?? '')
+		)
+		.toContain('SKIP_WAITING');
+});
