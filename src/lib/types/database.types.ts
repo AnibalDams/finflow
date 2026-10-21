@@ -820,6 +820,7 @@ export type Database = {
       get_analytics: {
         Args: {
           p_from: string
+          p_offset_minutes?: number
           p_prev_from: string
           p_prev_to: string
           p_to: string

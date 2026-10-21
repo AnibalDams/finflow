@@ -4,7 +4,7 @@ import { getAccounts, getDebt } from '#lib/server/queries';
 import { mutationMessage } from '#lib/server/mutations';
 import { requireAuth } from '#lib/server/results';
 import { defaultAccount } from '#lib/server/shell';
-import { toISODate } from '#lib/utils/dates';
+import { dateAtOffset, localDateTimeToUtc } from '#lib/utils/dates';
 import { formValues, readString } from '#lib/utils/forms';
 import { debtSchema, fieldErrors, paymentSchema } from '#lib/utils/validation';
 import type { Actions, PageServerLoad } from './$types';
@@ -42,7 +42,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		payments: result.payments,
 		accounts,
 		defaultAccountId: result.debt.accountId ?? defaultAccount(accounts)?.id ?? '',
-		today: toISODate(new Date()),
+		today: dateAtOffset(locals.tzOffset),
 		currency: locals.profile?.currency ?? 'USD'
 	};
 };
@@ -57,7 +57,11 @@ export const actions: Actions = {
 			debtId: params.id,
 			amount: readString(form, 'amount'),
 			accountId: readString(form, 'accountId'),
-			occurredAt: `${rawDate || toISODate(new Date())}T12:00:00`,
+			occurredAt: localDateTimeToUtc(
+				rawDate || dateAtOffset(locals.tzOffset),
+				'12:00',
+				locals.tzOffset
+			),
 			isExtra: 'false',
 			note: readString(form, 'note')
 		});

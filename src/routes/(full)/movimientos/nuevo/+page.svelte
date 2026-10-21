@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { onMount } from 'svelte';
 	import PageHeader from '#lib/components/app/PageHeader.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import AccountSelect from '#lib/components/ui/AccountSelect.svelte';
@@ -12,6 +13,7 @@
 	import TextField from '#lib/components/ui/TextField.svelte';
 	import TextareaField from '#lib/components/ui/TextareaField.svelte';
 	import { buttonClass } from '#lib/components/ui/button-styles';
+	import { formatInputTime, toISODate } from '#lib/utils/dates';
 	import { enhanceForm } from '#lib/utils/enhance';
 	import type { FormState } from '#lib/utils/forms';
 	import type { PageProps } from './$types';
@@ -27,8 +29,7 @@
 	const secondaryAccount =
 		data.accounts.find((account) => account.id !== initialAccount)?.id ?? initialAccount;
 
-	const initialType =
-		(values.type as 'income' | 'expense' | 'transfer' | undefined) ?? data.type;
+	const initialType = (values.type as 'income' | 'expense' | 'transfer' | undefined) ?? data.type;
 
 	let type: 'income' | 'expense' | 'transfer' = $state(initialType);
 	let amount = $state(values.amount ?? '');
@@ -37,11 +38,30 @@
 	let toAccountId = $state(values.toAccountId || secondaryAccount);
 	let categoryId = $state(values.categoryId ?? '');
 	let concept = $state(values.concept ?? '');
-	let occurredAt = $state(values.occurredAt ?? data.today);
-	let occurredTime = $state(values.occurredTime ?? data.nowTime);
+	let occurredAt = $state(values.occurredAt ?? '');
+	let occurredTime = $state(values.occurredTime ?? '');
 	let notes = $state(values.notes ?? '');
 	let tags = $state(values.tags ?? '');
 	let saving = $state(false);
+
+	// El servidor puede estar en otra zona: la hora por defecto se corrige en el cliente.
+	onMount(() => {
+		if (!values.occurredAt) occurredAt = toISODate(new Date());
+		if (!values.occurredTime) occurredTime = formatInputTime(new Date());
+	});
+
+	// Instante real que se envía al servidor (la zona la conoce el navegador).
+	const occurredAtIso = $derived.by(() => {
+		if (!/^\d{4}-\d{2}-\d{2}$/.test(occurredAt) || !/^\d{2}:\d{2}$/.test(occurredTime)) {
+			return '';
+		}
+
+		const [year, month, day] = occurredAt.split('-').map(Number);
+		const [hours, minutes] = occurredTime.split(':').map(Number);
+		const date = new Date(year, month - 1, day, hours, minutes);
+
+		return Number.isNaN(date.getTime()) ? '' : date.toISOString();
+	});
 
 	const tone = $derived(
 		type === 'income' ? 'primary' : type === 'transfer' ? 'secondary' : 'tertiary'
@@ -49,7 +69,9 @@
 	const isTransfer = $derived(type === 'transfer');
 
 	const visibleCategories = $derived(
-		data.categories.filter((category) => category.kind === (type === 'income' ? 'income' : 'expense'))
+		data.categories.filter(
+			(category) => category.kind === (type === 'income' ? 'income' : 'expense')
+		)
 	);
 
 	const heading = $derived(
@@ -170,6 +192,7 @@
 		bind:time={occurredTime}
 		error={previous.occurredAt}
 	/>
+	<input type="hidden" name="occurredAtISO" value={occurredAtIso} />
 
 	<TagInput label="Etiquetas opcionales" name="tags" bind:value={tags} />
 

@@ -17,7 +17,7 @@ export async function login(page: Page): Promise<void> {
 		return;
 	}
 
-	await page.goto('/login');
+	await page.goto('/login', { waitUntil: 'domcontentloaded' });
 	await page.getByLabel('Correo electrónico').fill(DEMO.email);
 	await page.getByLabel('Contraseña').fill(DEMO.password);
 	await page.getByRole('button', { name: 'Entrar' }).click();

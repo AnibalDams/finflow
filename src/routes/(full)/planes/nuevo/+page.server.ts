@@ -3,7 +3,7 @@ import { getAccounts } from '#lib/server/queries';
 import { mutationMessage, removeFile, uploadGoalImage, validateImage } from '#lib/server/mutations';
 import { requireAuth } from '#lib/server/results';
 import { defaultAccount } from '#lib/server/shell';
-import { addMonths, toISODate } from '#lib/utils/dates';
+import { addMonths, referenceAtOffset, toISODate } from '#lib/utils/dates';
 import { formValues, readFile, readString } from '#lib/utils/forms';
 import { fieldErrors, goalSchema } from '#lib/utils/validation';
 import type { Actions, PageServerLoad } from './$types';
@@ -21,13 +21,13 @@ const VALUES = [
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const accounts = await getAccounts(locals.supabase);
-	const now = new Date();
+	const reference = referenceAtOffset(locals.tzOffset);
 
 	return {
 		accounts,
 		defaultAccountId: defaultAccount(accounts)?.id ?? '',
-		defaultDate: toISODate(addMonths(now, 6)),
-		today: toISODate(now),
+		defaultDate: toISODate(addMonths(reference, 6)),
+		today: toISODate(reference),
 		currency: locals.profile?.currency ?? 'USD'
 	};
 };

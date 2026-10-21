@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	addDays,
+	dateAtOffset,
 	daysLeftInMonth,
 	daysUntil,
 	formatCountdown,
@@ -9,12 +10,16 @@ import {
 	formatLongDate,
 	formatMonthName,
 	formatRelativeDay,
+	localDateTimeToUtc,
+	localRangeInstants,
 	monthKey,
 	monthRange,
 	monthsBetween,
 	parseISODate,
 	periodRange,
+	resolveLocalInstant,
 	startOfWeek,
+	timeAtOffset,
 	toISODate
 } from './dates';
 
@@ -118,5 +123,44 @@ describe('etiquetas de fecha', () => {
 	it('cuenta meses completos con mínimo de 1', () => {
 		expect(monthsBetween(new Date(2026, 0, 1), new Date(2026, 6, 1))).toBe(6);
 		expect(monthsBetween(new Date(2026, 0, 1), new Date(2026, 0, 20))).toBe(1);
+	});
+});
+
+describe('zona horaria', () => {
+	const instant = new Date('2026-10-21T01:00:00.000Z');
+
+	it('calcula fecha y hora locales con el offset del navegador', () => {
+		expect(dateAtOffset(240, instant)).toBe('2026-10-20');
+		expect(timeAtOffset(240, instant)).toBe('21:00');
+		expect(dateAtOffset(0, instant)).toBe('2026-10-21');
+		expect(timeAtOffset(0, instant)).toBe('01:00');
+	});
+
+	it('convierte fecha y hora locales a un instante UTC', () => {
+		expect(localDateTimeToUtc('2026-10-20', '13:12', 240)).toBe('2026-10-20T17:12:00.000Z');
+		expect(localDateTimeToUtc('2026-10-20', '13:12', 0)).toBe('2026-10-20T13:12:00.000Z');
+	});
+
+	it('convierte rangos locales a instantes UTC', () => {
+		expect(localRangeInstants({ from: '2026-10-01', to: '2026-10-31' }, 240)).toEqual({
+			fromInstant: '2026-10-01T04:00:00.000Z',
+			toInstant: '2026-11-01T03:59:59.999Z'
+		});
+	});
+
+	it('prioriza el ISO del cliente y usa el offset como respaldo', () => {
+		expect(resolveLocalInstant('2026-10-20T17:12:00.000Z', '', '', 240)).toBe(
+			'2026-10-20T17:12:00.000Z'
+		);
+		expect(resolveLocalInstant('', '2026-10-20', '13:12', 240)).toBe('2026-10-20T17:12:00.000Z');
+	});
+
+	it('interpreta fechas puras como locales al mostrar', () => {
+		expect(formatRelativeDay('2026-10-18', new Date(2026, 9, 18))).toBe('Hoy, 18 Oct');
+	});
+
+	it('formatea timestamps con la fecha local', () => {
+		const local = new Date(2026, 9, 20, 21, 0);
+		expect(formatFullDate(local.toISOString())).toBe('20 Oct 2026');
 	});
 });

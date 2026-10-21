@@ -9,7 +9,7 @@ import {
 	validateReceipt
 } from '#lib/server/mutations';
 import { requireAuth } from '#lib/server/results';
-import { toISODate } from '#lib/utils/dates';
+import { dateAtOffset, resolveLocalInstant, timeAtOffset } from '#lib/utils/dates';
 import { formValues, readFile, readString } from '#lib/utils/forms';
 import { fieldErrors, transactionSchema } from '#lib/utils/validation';
 import type { Actions, PageServerLoad } from './$types';
@@ -24,20 +24,6 @@ const VALUES = [
 	'notes',
 	'tags'
 ] as const;
-
-function occurredAtISO(rawDate: string, rawTime: string): string {
-	const date = rawDate.trim();
-	const time = rawTime.trim() || '12:00';
-
-	if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) return '';
-
-	const parsed = new Date(`${date}T${time}:00`);
-	return Number.isNaN(parsed.getTime()) ? '' : parsed.toISOString();
-}
-
-function pad(value: number): string {
-	return String(value).padStart(2, '0');
-}
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	const transaction = await getTransaction(locals.supabase, params.id);
@@ -61,8 +47,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		accounts,
 		categories,
 		receiptUrl,
-		dateValue: toISODate(occurred),
-		timeValue: `${pad(occurred.getHours())}:${pad(occurred.getMinutes())}`,
+		dateValue: dateAtOffset(locals.tzOffset, occurred),
+		timeValue: timeAtOffset(locals.tzOffset, occurred),
 		currency: locals.profile?.currency ?? 'USD'
 	};
 };
@@ -91,7 +77,12 @@ export const actions: Actions = {
 			accountId: readString(form, 'accountId'),
 			categoryId: readString(form, 'categoryId'),
 			concept: readString(form, 'concept'),
-			occurredAt: occurredAtISO(readString(form, 'occurredAt'), readString(form, 'occurredTime')),
+			occurredAt: resolveLocalInstant(
+				readString(form, 'occurredAtISO'),
+				readString(form, 'occurredAt'),
+				readString(form, 'occurredTime'),
+				locals.tzOffset
+			),
 			notes: readString(form, 'notes'),
 			tags: readString(form, 'tags')
 		});

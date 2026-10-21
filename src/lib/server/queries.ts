@@ -93,8 +93,8 @@ export async function listTransactions(
 
 	let query = db.from('transactions_detailed').select('*', { count: 'exact' });
 
-	if (filters.from) query = query.gte('occurred_at', `${filters.from}T00:00:00.000Z`);
-	if (filters.to) query = query.lte('occurred_at', `${filters.to}T23:59:59.999Z`);
+	if (filters.fromInstant) query = query.gte('occurred_at', filters.fromInstant);
+	if (filters.toInstant) query = query.lte('occurred_at', filters.toInstant);
 	if (filters.type) query = query.eq('type', filters.type);
 	// Los IDs se validan como UUID antes de interpolarlos en filtros PostgREST.
 	if (isUuid(filters.categoryId)) query = query.eq('category_id', filters.categoryId);
@@ -201,7 +201,7 @@ export async function getBudgets(db: Db, periodMonth: string): Promise<BudgetIte
 	const data = unwrap(
 		await db
 			.from('budgets')
-			.select('*, category:categories(id, name, icon, color)')
+			.select('*, category:categories!budgets_category_id_fkey(id, name, icon, color)')
 			.eq('period_month', periodMonth)
 			.order('amount', { ascending: false }),
 		'budgets'
@@ -209,12 +209,17 @@ export async function getBudgets(db: Db, periodMonth: string): Promise<BudgetIte
 	return data.map(mapBudget);
 }
 
-export async function getAnalytics(db: Db, range: PeriodRange): Promise<Analytics> {
+export async function getAnalytics(
+	db: Db,
+	range: PeriodRange,
+	offsetMinutes = 0
+): Promise<Analytics> {
 	const result = await db.rpc('get_analytics', {
 		p_from: range.from,
 		p_to: range.to,
 		p_prev_from: range.prevFrom,
-		p_prev_to: range.prevTo
+		p_prev_to: range.prevTo,
+		p_offset_minutes: offsetMinutes
 	});
 
 	if (result.error) {
@@ -225,13 +230,17 @@ export async function getAnalytics(db: Db, range: PeriodRange): Promise<Analytic
 	return mapAnalytics(result.data);
 }
 
-export async function getMonthTotals(db: Db, from: string, to: string): Promise<MonthTotals> {
+export async function getMonthTotals(
+	db: Db,
+	fromInstant: string,
+	toInstant: string
+): Promise<MonthTotals> {
 	const data = unwrap(
 		await db
 			.from('transactions')
 			.select('amount, type')
-			.gte('occurred_at', `${from}T00:00:00.000Z`)
-			.lte('occurred_at', `${to}T23:59:59.999Z`),
+			.gte('occurred_at', fromInstant)
+			.lte('occurred_at', toInstant),
 		'month totals'
 	);
 
@@ -247,10 +256,10 @@ export async function getMonthTotals(db: Db, from: string, to: string): Promise<
 
 export async function getDashboardSummary(
 	db: Db,
-	range: { from: string; to: string }
+	range: { fromInstant: string; toInstant: string }
 ): Promise<DashboardSummary> {
 	const [totals, goals, debts] = await Promise.all([
-		getMonthTotals(db, range.from, range.to),
+		getMonthTotals(db, range.fromInstant, range.toInstant),
 		getGoals(db),
 		getDebts(db)
 	]);

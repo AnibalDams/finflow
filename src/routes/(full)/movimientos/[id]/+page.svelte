@@ -26,10 +26,18 @@
 	const values: Record<string, string> = $derived(formState?.values ?? {});
 
 	const typeLabel = $derived(
-		transaction.type === 'income' ? 'Ingreso' : transaction.type === 'expense' ? 'Gasto' : 'Transferencia'
+		transaction.type === 'income'
+			? 'Ingreso'
+			: transaction.type === 'expense'
+				? 'Gasto'
+				: 'Transferencia'
 	);
 	const amountTone = $derived(
-		transaction.type === 'income' ? 'primary' : transaction.type === 'expense' ? 'tertiary' : 'secondary'
+		transaction.type === 'income'
+			? 'primary'
+			: transaction.type === 'expense'
+				? 'tertiary'
+				: 'secondary'
 	);
 
 	let amount = $state(values.amount ?? transaction.amount.toFixed(2));
@@ -38,6 +46,19 @@
 	let concept = $state(values.concept ?? transaction.concept);
 	let occurredAt = $state(values.occurredAt ?? data.dateValue);
 	let occurredTime = $state(values.occurredTime ?? data.timeValue);
+
+	// Instante real según la zona del navegador (el servidor puede estar en UTC).
+	const occurredAtIso = $derived.by(() => {
+		if (!/^\d{4}-\d{2}-\d{2}$/.test(occurredAt) || !/^\d{2}:\d{2}$/.test(occurredTime)) {
+			return '';
+		}
+
+		const [year, month, day] = occurredAt.split('-').map(Number);
+		const [hours, minutes] = occurredTime.split(':').map(Number);
+		const date = new Date(year, month - 1, day, hours, minutes);
+
+		return Number.isNaN(date.getTime()) ? '' : date.toISOString();
+	});
 	let notes = $state(values.notes ?? transaction.notes ?? '');
 	let tags = $state(values.tags ?? transaction.tagNames.join(','));
 	let removeReceipt = $state(false);
@@ -67,16 +88,20 @@
 			<span class="rounded-full bg-white/10 px-2.5 py-1 text-label-sm font-semibold">
 				{typeLabel}
 			</span>
-			<span class="text-label-sm text-inverse-on-surface/70">{formatDateTime(transaction.occurredAt)}</span>
+			<span class="text-label-sm text-inverse-on-surface/70"
+				>{formatDateTime(transaction.occurredAt)}</span
+			>
 		</div>
 
-		<p class="tnum mt-3 text-amount font-bold">
+		<p class="mt-3 tnum text-amount font-bold">
 			{formatSignedAmount(transaction.amount, transaction.type, transaction.currency)}
 		</p>
 
 		<p class="mt-1 text-body text-inverse-on-surface/80">{transaction.concept}</p>
 
-		<div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/10 pt-3 text-label-sm text-inverse-on-surface/70">
+		<div
+			class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/10 pt-3 text-label-sm text-inverse-on-surface/70"
+		>
 			<span class="flex items-center gap-1.5">
 				<Icon name={transaction.accountIcon ?? 'account_balance_wallet'} size={16} />
 				{transaction.accountName}
@@ -97,8 +122,12 @@
 	</section>
 
 	{#if data.receiptUrl}
-		<div class="flex items-center gap-3 rounded-2xl border border-hairline bg-surface-container-lowest p-3 shadow-card">
-			<span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary/12 text-secondary">
+		<div
+			class="flex items-center gap-3 rounded-2xl border border-hairline bg-surface-container-lowest p-3 shadow-card"
+		>
+			<span
+				class="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary/12 text-secondary"
+			>
 				<Icon name="description" size={20} />
 			</span>
 			<div class="min-w-0 flex-1">
@@ -139,9 +168,11 @@
 	{/if}
 
 	{#if isTransfer}
-		<div class="rounded-2xl border border-hairline bg-surface-container-lowest p-4 text-body-sm text-muted">
-			Las transferencias se registran como un único movimiento entre cuentas. Para corregir el monto,
-			elimínala y vuelve a crearla.
+		<div
+			class="rounded-2xl border border-hairline bg-surface-container-lowest p-4 text-body-sm text-muted"
+		>
+			Las transferencias se registran como un único movimiento entre cuentas. Para corregir el
+			monto, elimínala y vuelve a crearla.
 		</div>
 	{:else}
 		<form
@@ -170,7 +201,7 @@
 				<CategoryPicker
 					name="categoryId"
 					bind:value={categoryId}
-					categories={categories}
+					{categories}
 					error={previous.categoryId}
 					createHref={`/categorias/nueva?kind=${transaction.type === 'income' ? 'income' : 'expense'}&volver=/movimientos/${transaction.id}`}
 				/>
@@ -200,6 +231,7 @@
 				bind:time={occurredTime}
 				error={previous.occurredAt}
 			/>
+			<input type="hidden" name="occurredAtISO" value={occurredAtIso} />
 
 			<ReceiptField
 				name="receipt"
@@ -209,7 +241,10 @@
 
 			<TagInput label="Etiquetas" name="tags" bind:value={tags} />
 
-			<details class="rounded-2xl border border-hairline bg-surface-container-lowest p-3" open={notes.length > 0}>
+			<details
+				class="rounded-2xl border border-hairline bg-surface-container-lowest p-3"
+				open={notes.length > 0}
+			>
 				<summary class="cursor-pointer text-label-sm font-semibold text-on-surface-variant">
 					Notas
 				</summary>

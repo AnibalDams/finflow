@@ -8,7 +8,7 @@ import {
 	validateReceipt
 } from '#lib/server/mutations';
 import { requireAuth } from '#lib/server/results';
-import { toISODate } from '#lib/utils/dates';
+import { dateAtOffset, resolveLocalInstant, timeAtOffset } from '#lib/utils/dates';
 import { formValues, readFile, readString } from '#lib/utils/forms';
 import { fieldErrors, transactionSchema, transferSchema } from '#lib/utils/validation';
 import type { Actions, PageServerLoad } from './$types';
@@ -27,17 +27,6 @@ const VALUES = [
 	'tags'
 ] as const;
 
-/** Combina fecha y hora locales del formulario en un instante ISO. */
-function occurredAtISO(rawDate: string, rawTime: string): string {
-	const date = rawDate.trim();
-	const time = rawTime.trim() || '12:00';
-
-	if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) return '';
-
-	const parsed = new Date(`${date}T${time}:00`);
-	return Number.isNaN(parsed.getTime()) ? '' : parsed.toISOString();
-}
-
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const [accounts, categories, tags] = await Promise.all([
 		getAccounts(locals.supabase),
@@ -48,15 +37,14 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const requested = url.searchParams.get('tipo');
 	const type: 'income' | 'expense' | 'transfer' =
 		requested === 'income' || requested === 'transfer' ? requested : 'expense';
-	const now = new Date();
 
 	return {
 		accounts,
 		categories,
 		tagSuggestions: tags.map((tag) => tag.name),
 		type,
-		today: toISODate(now),
-		nowTime: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
+		today: dateAtOffset(locals.tzOffset),
+		nowTime: timeAtOffset(locals.tzOffset),
 		receiptPrompt: url.searchParams.get('comprobante') === '1',
 		currency: locals.profile?.currency ?? 'USD'
 	};
@@ -75,7 +63,12 @@ export const actions: Actions = {
 				toAccountId: readString(form, 'toAccountId'),
 				amount: readString(form, 'amount'),
 				concept: readString(form, 'concept'),
-				occurredAt: occurredAtISO(readString(form, 'occurredAt'), readString(form, 'occurredTime'))
+				occurredAt: resolveLocalInstant(
+					readString(form, 'occurredAtISO'),
+					readString(form, 'occurredAt'),
+					readString(form, 'occurredTime'),
+					locals.tzOffset
+				)
 			});
 
 			if (!parsed.success) {
@@ -110,7 +103,12 @@ export const actions: Actions = {
 			accountId: readString(form, 'accountId'),
 			categoryId: readString(form, 'categoryId'),
 			concept: readString(form, 'concept'),
-			occurredAt: occurredAtISO(readString(form, 'occurredAt'), readString(form, 'occurredTime')),
+			occurredAt: resolveLocalInstant(
+				readString(form, 'occurredAtISO'),
+				readString(form, 'occurredAt'),
+				readString(form, 'occurredTime'),
+				locals.tzOffset
+			),
 			notes: readString(form, 'notes'),
 			tags: readString(form, 'tags')
 		});

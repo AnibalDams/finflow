@@ -3,7 +3,15 @@ import { getAccounts, getMonthTotals } from '#lib/server/queries';
 import { mutationMessage } from '#lib/server/mutations';
 import { requireAuth } from '#lib/server/results';
 import { defaultAccount } from '#lib/server/shell';
-import { addMonths, periodRange, toISODate } from '#lib/utils/dates';
+import {
+	addMonths,
+	localDateTimeToUtc,
+	localRangeInstants,
+	parseISODate,
+	periodRange,
+	referenceAtOffset,
+	toISODate
+} from '#lib/utils/dates';
 import { addFrequency, installmentAmount } from '#lib/utils/finance';
 import { formValues, readString } from '#lib/utils/forms';
 import { debtSchema, fieldErrors } from '#lib/utils/validation';
@@ -29,18 +37,20 @@ const VALUES = [
 ] as const;
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const month = periodRange('month', new Date());
+	const reference = referenceAtOffset(locals.tzOffset);
+	const month = periodRange('month', reference);
+	const bounds = localRangeInstants(month, locals.tzOffset);
 	const [accounts, totals] = await Promise.all([
 		getAccounts(locals.supabase),
-		getMonthTotals(locals.supabase, month.from, month.to)
+		getMonthTotals(locals.supabase, bounds.fromInstant, bounds.toInstant)
 	]);
-	const nextMonth = addMonths(new Date(), 1);
+	const nextMonth = addMonths(reference, 1);
 
 	return {
 		accounts,
 		defaultAccountId: defaultAccount(accounts)?.id ?? '',
 		monthlyIncome: totals.income,
-		today: toISODate(new Date()),
+		today: toISODate(reference),
 		defaultDueDate: toISODate(nextMonth),
 		defaultDueDay: String(nextMonth.getDate()),
 		currency: locals.profile?.currency ?? 'USD'
@@ -156,15 +166,19 @@ export const actions: Actions = {
 		}
 
 		if (parsed.data.paidInstallments > 0) {
-			const start = new Date(`${parsed.data.firstDueDate}T12:00:00.000Z`);
-			const rows = Array.from({ length: parsed.data.paidInstallments }, (_, index) => ({
-				user_id: user.id,
-				debt_id: created.id,
-				amount: monthlyPayment,
-				occurred_at: addFrequency(start, index, parsed.data.paymentFrequency).toISOString(),
-				installment_number: index + 1,
-				note: 'Cuota registrada al crear la obligación'
-			}));
+			const start = parseISODate(parsed.data.firstDueDate);
+			const rows = Array.from({ length: parsed.data.paidInstallments }, (_, index) => {
+				const due = addFrequency(start, index, parsed.data.paymentFrequency);
+
+				return {
+					user_id: user.id,
+					debt_id: created.id,
+					amount: monthlyPayment,
+					occurred_at: localDateTimeToUtc(toISODate(due), '12:00', locals.tzOffset),
+					installment_number: index + 1,
+					note: 'Cuota registrada al crear la obligación'
+				};
+			});
 
 			await locals.supabase.from('debt_payments').insert(rows);
 		}

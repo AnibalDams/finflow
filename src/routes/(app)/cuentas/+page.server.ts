@@ -2,7 +2,7 @@ import { fail } from '@sveltejs/kit';
 import { getAccounts, getAnalytics, getBudgets, getCategories } from '#lib/server/queries';
 import { mutationMessage } from '#lib/server/mutations';
 import { requireAuth } from '#lib/server/results';
-import { periodRange } from '#lib/utils/dates';
+import { periodRange, referenceAtOffset } from '#lib/utils/dates';
 import { readString } from '#lib/utils/forms';
 import { sumAmounts } from '#lib/utils/money';
 import { budgetSchema, fieldErrors, type FieldErrors } from '#lib/utils/validation';
@@ -17,13 +17,14 @@ function parseTab(value: string | null): Tab {
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const tab = parseTab(url.searchParams.get('tab'));
-	const range = periodRange('month', new Date());
+	const reference = referenceAtOffset(locals.tzOffset);
+	const range = periodRange('month', reference);
 
 	const [accounts, categories, budgets, analytics] = await Promise.all([
 		getAccounts(locals.supabase, { includeArchived: true }),
 		getCategories(locals.supabase),
 		getBudgets(locals.supabase, range.from),
-		getAnalytics(locals.supabase, range)
+		getAnalytics(locals.supabase, range, locals.tzOffset)
 	]);
 
 	const spentByCategory = new Map(analytics.categories.map((item) => [item.id, item.amount]));
@@ -42,7 +43,13 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		accounts,
 		categories,
 		expenseCategories,
-		month: { ...range, label: new Date(`${range.from}T12:00:00`).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }) },
+		month: {
+			...range,
+			label: new Date(`${range.from}T12:00:00`).toLocaleDateString('es-ES', {
+				month: 'long',
+				year: 'numeric'
+			})
+		},
 		totalBalance: sumAmounts(
 			accounts.filter((account) => !account.isArchived).map((account) => account.balance)
 		),
@@ -56,7 +63,8 @@ export const actions: Actions = {
 		requireAuth(locals.user);
 		const form = await request.formData();
 		const user = requireAuth(locals.user);
-		const range = periodRange('month', new Date());
+		const reference = referenceAtOffset(locals.tzOffset);
+		const range = periodRange('month', reference);
 		const categories = await getCategories(locals.supabase);
 		const expenses = categories.filter((category) => category.kind === 'expense');
 		const errors: FieldErrors = {};

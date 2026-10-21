@@ -1,5 +1,5 @@
 import { getAnalytics } from '#lib/server/queries';
-import { periodRange, type PeriodPreset } from '#lib/utils/dates';
+import { periodRange, referenceAtOffset, type PeriodPreset } from '#lib/utils/dates';
 import type { PageServerLoad } from './$types';
 
 const PRESETS: readonly PeriodPreset[] = ['week', 'month', 'quarter', 'year'];
@@ -10,8 +10,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		? (requested as PeriodPreset)
 		: 'month';
 
-	const range = periodRange(preset);
-	const analytics = await getAnalytics(locals.supabase, range);
+	const reference = referenceAtOffset(locals.tzOffset);
+	const range = periodRange(preset, reference);
+	const analytics = await getAnalytics(locals.supabase, range, locals.tzOffset);
 
 	return {
 		preset,

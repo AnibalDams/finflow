@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { getDebts } from '#lib/server/queries';
 import { mutationMessage } from '#lib/server/mutations';
 import { requireAuth } from '#lib/server/results';
-import { daysUntil } from '#lib/utils/dates';
+import { daysUntil, referenceAtOffset } from '#lib/utils/dates';
 import { debtProjection, upcomingDebtPayments } from '#lib/utils/finance';
 import { readString } from '#lib/utils/forms';
 import { sumAmounts } from '#lib/utils/money';
@@ -28,7 +28,7 @@ const idSchema = z.uuid();
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const debts = await getDebts(locals.supabase);
-	const now = new Date();
+	const reference = referenceAtOffset(locals.tzOffset);
 	const active = debts.filter((debt) => debt.isActive && debt.remainingAmount > 0);
 	const filter = parseFilter(url.searchParams.get('tipo'));
 
@@ -56,10 +56,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			historical,
 			progress: historical > 0 ? Math.min(100, (totalPaid / historical) * 100) : 0
 		},
-		alerts: upcomingDebtPayments(debts, 30, now),
+		alerts: upcomingDebtPayments(debts, 30, reference),
 		projection: debtProjection(debts),
 		urgentIds: active
-			.filter((debt) => daysUntil(debt.nextDueDate, now) <= debt.alertDaysBefore)
+			.filter((debt) => daysUntil(debt.nextDueDate, reference) <= debt.alertDaysBefore)
 			.map((debt) => debt.id),
 		currency: locals.profile?.currency ?? 'USD'
 	};

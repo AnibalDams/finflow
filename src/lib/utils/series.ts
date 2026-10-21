@@ -42,12 +42,14 @@ export function cumulativeMonthlySeries(
 	rows: CashflowRow[],
 	accountId: string | null,
 	currentBalance: number,
-	dayCount: number
+	dayCount: number,
+	offsetMinutes = 0
 ): number[] {
 	const daily = new Array<number>(Math.max(1, dayCount)).fill(0);
 
 	for (const row of rows) {
-		const day = new Date(row.occurred_at).getDate();
+		const local = new Date(new Date(row.occurred_at).getTime() - offsetMinutes * 60_000);
+		const day = local.getUTCDate();
 		if (day < 1 || day > daily.length) continue;
 		daily[day - 1] += toCents(accountImpact(row, accountId));
 	}
@@ -65,7 +67,11 @@ export interface MonthlyBar {
 }
 
 /** Serie comparativa del periodo actual frente al anterior, alineada por índice. */
-export function alignSeries(current: number[], previous: number[], size: number): {
+export function alignSeries(
+	current: number[],
+	previous: number[],
+	size: number
+): {
 	current: number[];
 	previous: number[];
 } {

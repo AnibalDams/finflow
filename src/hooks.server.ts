@@ -13,6 +13,16 @@ function isPublicRoute(pathname: string): boolean {
 	return PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 }
 
+/** Lee la zona del usuario (cookie del cliente) y la expone en `locals`. */
+const timezoneHandle: Handle = async ({ event, resolve }) => {
+	const raw = event.cookies.get('tz_offset');
+	const parsed = raw ? Number.parseInt(raw, 10) : 0;
+
+	event.locals.tzOffset = Number.isInteger(parsed) && Math.abs(parsed) <= 840 ? parsed : 0;
+
+	return resolve(event);
+};
+
 /**
  * Crea el cliente de Supabase ligado a las cookies de la petición y expone un
  * `safeGetSession` que valida el usuario contra el servidor de Auth (nunca
@@ -125,7 +135,7 @@ const securityHeadersHandle: Handle = async ({ event, resolve }) => {
 	return response;
 };
 
-export const handle = sequence(securityHeadersHandle, supabaseHandle, authHandle);
+export const handle = sequence(timezoneHandle, securityHeadersHandle, supabaseHandle, authHandle);
 
 export const handleError: HandleServerError = ({ kind, error, event }) => {
 	if (dev) console.error(`[finflow] ${event.url.pathname}:`, error);

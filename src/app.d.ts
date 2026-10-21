@@ -13,6 +13,8 @@ declare global {
 			user: User | null;
 			/** Perfil del usuario autenticado, disponible tras el hook `handle`. */
 			profile: Profile | null;
+			/** Minutos por detrás de UTC de la zona del usuario (cookie `tz_offset`). */
+			tzOffset: number;
 		}
 		interface Error {
 			message: string;

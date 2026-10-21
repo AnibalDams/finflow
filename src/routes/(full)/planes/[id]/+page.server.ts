@@ -8,7 +8,7 @@ import {
 	validateImage
 } from '#lib/server/mutations';
 import { requireAuth } from '#lib/server/results';
-import { toISODate } from '#lib/utils/dates';
+import { dateAtOffset, localDateTimeToUtc } from '#lib/utils/dates';
 import { formValues, readFile, readString } from '#lib/utils/forms';
 import { contributionSchema, fieldErrors, goalSchema } from '#lib/utils/validation';
 import { z } from 'zod';
@@ -46,7 +46,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		contributions: result.contributions,
 		accounts,
 		imageUrl,
-		today: toISODate(new Date()),
+		today: dateAtOffset(locals.tzOffset),
 		currency: locals.profile?.currency ?? 'USD'
 	};
 };
@@ -65,7 +65,11 @@ export const actions: Actions = {
 		const parsed = contributionSchema.safeParse({
 			goalId: current.goal.id,
 			amount: readString(form, 'amount'),
-			occurredAt: `${rawDate}T12:00:00`,
+			occurredAt: localDateTimeToUtc(
+				rawDate || dateAtOffset(locals.tzOffset),
+				'12:00',
+				locals.tzOffset
+			),
 			note: readString(form, 'note')
 		});
 

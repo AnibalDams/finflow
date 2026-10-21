@@ -3,16 +3,17 @@ import { signedUrl } from '#lib/server/mutations';
 import { getDebts, getGoals, getMonthTotals } from '#lib/server/queries';
 import { summarizeDebts, summarizeGoals } from '#lib/server/results';
 import { loadShell } from '#lib/server/shell';
-import { periodRange } from '#lib/utils/dates';
+import { localRangeInstants, periodRange, referenceAtOffset } from '#lib/utils/dates';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ locals }) => {
 	const shell = await loadShell(locals);
-	const now = new Date();
-	const month = periodRange('month', now);
+	const reference = referenceAtOffset(locals.tzOffset);
+	const month = periodRange('month', reference);
+	const bounds = localRangeInstants(month, locals.tzOffset);
 
 	const [totals, goals, debts] = await Promise.all([
-		getMonthTotals(locals.supabase, month.from, month.to),
+		getMonthTotals(locals.supabase, bounds.fromInstant, bounds.toInstant),
 		getGoals(locals.supabase),
 		getDebts(locals.supabase)
 	]);
@@ -23,7 +24,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 		monthlyExpense: totals.expense,
 		monthlyBudget: shell.profile.monthlyBudget,
 		currency: shell.profile.currency,
-		reference: now
+		reference
 	});
 
 	// La foto vive en un bucket privado: el cliente recibe una URL firmada.
@@ -41,6 +42,6 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 		totals,
 		alerts,
 		summaries: { goals: summarizeGoals(goals), debts: summarizeDebts(debts) },
-		nextDue: nextDebtDue(debts, now)
+		nextDue: nextDebtDue(debts, reference)
 	};
 };

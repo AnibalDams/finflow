@@ -108,7 +108,7 @@ e2e/              # pruebas end-to-end
 
 - El dinero se calcula en **centavos enteros** y se formatea con agrupación `1,234.56`.
 - En deudas, `monthly_payment` almacena la **cuota por periodo**; el compromiso mensual se deriva de la frecuencia (52/12 semanal, 2 quincenal, 1 mensual) y el interés anual se convierte a tasa periódica (÷52, ÷24, ÷12).
-- Los agregados de periodos usan límites en UTC; la presentación es local.
+- La zona horaria del navegador se guarda en la cookie `tz_offset` (minutos). Los rangos de periodo se convierten a instantes UTC para consultar y la analítica recibe el offset; las fechas y timestamps se muestran siempre en hora local.
 - Los formularios usan `use:enhance` con un helper central que muestra toasts y respeta `redirect`. Las pestañas y filtros que viven en la URL se siembran en estado local, porque `action="?/nombre"` descarta los parámetros existentes.
 - Los gráficos son SVG hechos a mano (sin librerías); el PDF usa `jspdf`.
 - La interfaz da respuesta inmediata: barra de progreso de navegación, atenuado del contenido al cambiar de ruta, estados `loading` en cada acción y transiciones de 120–250 ms sobre `transform`/`opacity`. Todo respeta `prefers-reduced-motion`.

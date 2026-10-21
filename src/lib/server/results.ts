@@ -35,8 +35,8 @@ export function requireAuth<T>(value: T | null | undefined, message = 'Sesión n
 }
 
 export interface TransactionFilters {
-	from?: string;
-	to?: string;
+	fromInstant?: string;
+	toInstant?: string;
 	type?: TransactionType;
 	categoryId?: string;
 	accountId?: string;
