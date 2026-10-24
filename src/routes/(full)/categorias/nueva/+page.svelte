@@ -8,7 +8,8 @@
 	import { buttonClass } from '#lib/components/ui/button-styles';
 	import { enhanceForm } from '#lib/utils/enhance';
 	import type { FormState } from '#lib/utils/forms';
-	import { CATEGORY_ICONS, COLOR_PALETTE } from '#lib/utils/labels';
+	import { CATEGORY_ICON_GROUPS } from '#lib/utils/icons';
+	import { COLOR_PALETTE } from '#lib/utils/labels';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
@@ -71,7 +72,7 @@
 
 	<section class="space-y-2">
 		<h2 class="text-label-sm font-medium text-on-surface-variant">Ícono</h2>
-		<IconPicker name="icon" icons={CATEGORY_ICONS} bind:value={icon} error={previous.icon} />
+		<IconPicker name="icon" groups={CATEGORY_ICON_GROUPS} bind:value={icon} error={previous.icon} />
 	</section>
 
 	<section class="space-y-2">
@@ -111,7 +112,9 @@
 		</span>
 		<div class="min-w-0">
 			<p class="truncate text-title-sm text-ink">{name || 'Vista previa'}</p>
-			<p class="text-body-sm text-muted">{kind === 'income' ? 'Categoría de ingreso' : 'Categoría de gasto'}</p>
+			<p class="text-body-sm text-muted">
+				{kind === 'income' ? 'Categoría de ingreso' : 'Categoría de gasto'}
+			</p>
 		</div>
 	</div>
 

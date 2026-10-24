@@ -128,6 +128,8 @@ export interface Debt {
 	name: string;
 	creditor: string | null;
 	kind: DebtKind;
+	/** Icono de Material Symbols elegido para esta deuda. */
+	icon: string;
 	principalAmount: number;
 	totalInstallments: number;
 	/** Cuota por periodo (semana, quincena o mes). */

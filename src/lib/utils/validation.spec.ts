@@ -187,8 +187,13 @@ describe('planes y deudas', () => {
 			startedAt: '2026-01-10',
 			interestKind: 'msi',
 			creditor: null,
-			notes: null
+			notes: null,
+			icon: 'receipt_long'
 		});
+
+		expect(debtSchema.parse({ ...raw, icon: 'directions_car' }).icon).toBe('directions_car');
+		expect(debtSchema.safeParse({ ...raw, icon: '' }).success).toBe(false);
+		expect(debtSchema.safeParse({ ...raw, icon: 'x'.repeat(41) }).success).toBe(false);
 
 		expect(debtSchema.safeParse({ ...raw, totalInstallments: 0 }).success).toBe(false);
 		expect(debtSchema.safeParse({ ...raw, dueDay: 40 }).success).toBe(false);

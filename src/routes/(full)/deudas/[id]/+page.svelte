@@ -5,6 +5,7 @@
 	import AmountField from '#lib/components/ui/AmountField.svelte';
 	import DateField from '#lib/components/ui/DateField.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
+	import IconPicker from '#lib/components/ui/IconPicker.svelte';
 	import ProgressBar from '#lib/components/ui/ProgressBar.svelte';
 	import SegmentedControl from '#lib/components/ui/SegmentedControl.svelte';
 	import TextField from '#lib/components/ui/TextField.svelte';
@@ -12,11 +13,11 @@
 	import { enhanceForm } from '#lib/utils/enhance';
 	import type { FormState } from '#lib/utils/forms';
 	import { daysUntil, formatDayMonth, formatFullDate, parseISODate } from '#lib/utils/dates';
+	import { DEBT_ICON_GROUPS } from '#lib/utils/icons';
 	import {
 		DEBT_FREQUENCY_ICONS,
 		DEBT_FREQUENCY_LABELS,
 		DEBT_FREQUENCY_PERIODS,
-		DEBT_KIND_ICONS,
 		DEBT_KIND_LABELS,
 		INTEREST_KIND_LABELS
 	} from '#lib/utils/labels';
@@ -51,6 +52,7 @@
 
 	let editName = $state(debt.name);
 	let editCreditor = $state(debt.creditor ?? '');
+	let editIcon = $state(debt.icon);
 	let editMonthly = $state(debt.installmentAmount.toFixed(2));
 	let editFrequency = $state<DebtFrequency>(debt.paymentFrequency);
 	let editStartedAt = $state(debt.startedAt);
@@ -92,7 +94,7 @@
 			<span
 				class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary"
 			>
-				<Icon name={DEBT_KIND_ICONS[debt.kind]} size={22} />
+				<Icon name={debt.icon} size={22} />
 			</span>
 			<div class="min-w-0 flex-1">
 				<p class="text-label-sm text-muted uppercase">{DEBT_KIND_LABELS[debt.kind]}</p>
@@ -318,6 +320,16 @@
 				bind:value={editCreditor}
 				error={previous.creditor}
 			/>
+
+			<div class="space-y-2">
+				<p class="text-label-sm font-medium text-on-surface-variant">Ícono de la deuda</p>
+				<IconPicker
+					name="icon"
+					groups={DEBT_ICON_GROUPS}
+					bind:value={editIcon}
+					error={previous.icon}
+				/>
+			</div>
 
 			<div class="space-y-1.5">
 				<p class="text-label-sm font-medium text-on-surface-variant">Frecuencia de pago</p>

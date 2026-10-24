@@ -6,7 +6,7 @@
 	import { cn } from '#lib/utils/cn';
 	import { enhanceForm } from '#lib/utils/enhance';
 	import { addMonths, daysUntil, formatDayMonth, formatMonthName } from '#lib/utils/dates';
-	import { DEBT_KIND_ICONS, DEBT_KIND_LABELS, DEBT_FREQUENCY_PERIODS } from '#lib/utils/labels';
+	import { DEBT_KIND_LABELS, DEBT_FREQUENCY_PERIODS } from '#lib/utils/labels';
 	import { formatMoney } from '#lib/utils/money';
 	import type { Debt, DebtKind } from '#lib/types/domain';
 	import type { PageProps } from './$types';
@@ -212,7 +212,7 @@
 				>
 					<div class="flex items-start gap-3">
 						<span class="flex size-11 shrink-0 items-center justify-center rounded-xl {style.tile}">
-							<Icon name={DEBT_KIND_ICONS[debt.kind]} size={22} />
+							<Icon name={debt.icon} size={22} />
 						</span>
 						<div class="min-w-0 flex-1">
 							<div class="flex items-start justify-between gap-2">

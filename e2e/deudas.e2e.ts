@@ -77,3 +77,44 @@ test('registra una deuda semanal con monto inicial y cuotas pagadas', async ({ p
 	await expect(page).toHaveURL(/\/deudas$/);
 	await expect(page.getByText(name)).toHaveCount(0);
 });
+
+test('elige un icono propio por deuda y lo cambia al editarla', async ({ page }) => {
+	const name = `Deuda Icono E2E ${Date.now()}`;
+
+	await login(page);
+	await page.goto('/deudas/nueva');
+	await page.getByLabel('Nombre de la obligación').fill(name);
+	await page.getByLabel('Monto total original o saldo').fill('1,200');
+	await page.getByLabel('Total de cuotas').fill('12');
+	await page.getByLabel('Ya pagadas').fill('0');
+	await page.getByLabel('Día límite de pago').fill('10');
+	await page.getByLabel('Primer vencimiento').fill('2026-11-10');
+
+	// El buscador encuentra el icono por su sinónimo («vuelo» → Transporte).
+	await page.getByLabel('Buscar ícono').fill('vuelo');
+	await page.locator('label[title="flight"]').click();
+	await expect(page.getByRole('radio', { name: 'flight', exact: true })).toBeChecked();
+
+	await page.getByRole('button', { name: 'Registrar obligación' }).click();
+	await expect(page).toHaveURL(/\/deudas$/);
+	await expect(page.getByText(name)).toBeVisible();
+
+	await page.getByRole('link', { name: `Ver detalle de ${name}` }).click();
+	await expect(page).toHaveURL(/\/deudas\/[0-9a-f-]{36}/);
+
+	const heroIcon = page.locator('span.size-11 span.material-symbols-outlined').first();
+	await expect(heroIcon).toHaveText('flight');
+
+	// El formulario de ajuste permite cambiarlo.
+	await page.getByText('Ajustar deuda').click();
+	await page.getByLabel('Buscar ícono').fill('');
+	await page.locator('label[title="home"]').click();
+	await page.getByRole('button', { name: 'Guardar cambios' }).click();
+	await expect(heroIcon).toHaveText('home', { timeout: 20_000 });
+
+	// Limpieza.
+	acceptConfirm(page);
+	await page.getByRole('button', { name: 'Eliminar deuda' }).click();
+	await expect(page).toHaveURL(/\/deudas$/);
+	await expect(page.getByText(name)).toHaveCount(0);
+});

@@ -6,12 +6,14 @@ import { requireAuth } from '#lib/server/results';
 import { defaultAccount } from '#lib/server/shell';
 import { dateAtOffset, localDateTimeToUtc } from '#lib/utils/dates';
 import { formValues, readString } from '#lib/utils/forms';
+import { DEBT_KIND_ICONS } from '#lib/utils/labels';
 import { debtSchema, fieldErrors, paymentSchema } from '#lib/utils/validation';
 import type { Actions, PageServerLoad } from './$types';
 
 const EDIT_VALUES = [
 	'name',
 	'creditor',
+	'icon',
 	'principalAmount',
 	'initialAmount',
 	'totalInstallments',
@@ -96,11 +98,13 @@ export const actions: Actions = {
 		requireAuth(locals.user);
 		const form = await request.formData();
 		const values = formValues(form, EDIT_VALUES);
+		const rawIcon = readString(form, 'icon');
 
 		const parsed = debtSchema.safeParse({
 			name: readString(form, 'name'),
 			creditor: readString(form, 'creditor'),
 			kind: readString(form, 'kind'),
+			icon: rawIcon || undefined,
 			principalAmount: readString(form, 'principalAmount'),
 			initialAmount: readString(form, 'initialAmount') || '0',
 			totalInstallments: readString(form, 'totalInstallments'),
@@ -131,6 +135,7 @@ export const actions: Actions = {
 			.update({
 				name: parsed.data.name,
 				creditor: parsed.data.creditor,
+				icon: rawIcon || DEBT_KIND_ICONS[parsed.data.kind],
 				monthly_payment: parsed.data.monthlyPayment,
 				payment_frequency: parsed.data.paymentFrequency,
 				started_at: parsed.data.startedAt,

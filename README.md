@@ -8,8 +8,8 @@ Aplicación móvil-first de finanzas personales: movimientos, métricas, metas, 
 - **Movimientos**: lista mensual con navegación entre meses, búsqueda, filtros, alta de gasto/ingreso/transferencia, comprobante adjunto (solo imagen, sin OCR), edición y borrado desde el detalle.
 - **Métricas**: totales del periodo con comparación contra el periodo anterior, desglose por categoría, serie temporal y exportación a **CSV** (`;` y coma decimal, compatible con Excel en español) y **PDF**.
 - **Planes y metas**: aportaciones, ritmo de ahorro (adelantado / a tiempo / atrasado / vencido), proyección de fecha de alcance, pausar, completar y reactivar.
-- **Deudas**: amortización con MSI/interés fijo/interés variable, frecuencia **semanal, quincenal o mensual**, fecha de origen, monto ya entregado, cuotas pagadas con calendario, proyección con método bola de nieve, alertas de vencimiento y pagos atómicos que generan el gasto asociado.
-- **Cuentas y categorías**: cuentas con saldo inicial, moneda (no editable), cuenta principal única, archivado y borrado solo sin movimientos; categorías con icono y color; presupuestos por categoría y mes.
+- **Deudas**: amortización con MSI/interés fijo/interés variable, frecuencia **semanal, quincenal o mensual**, fecha de origen, monto ya entregado, cuotas pagadas con calendario, proyección con método bola de nieve, alertas de vencimiento, icono propio por obligación y pagos atómicos que generan el gasto asociado.
+- **Cuentas y categorías**: cuentas con saldo inicial, moneda (no editable), cuenta principal única, archivado y borrado solo sin movimientos; categorías con catálogo de iconos agrupado, buscador y color; presupuestos por categoría y mes.
 - **Ajustes**: perfil, cambio de contraseña, exportaciones y cierre de sesión.
 - **PWA instalable**: manifest, iconos propios, service worker con página offline y sección "Instalar aplicación" en Ajustes (con instrucciones para iOS).
 - **Seguridad**: RLS en todas las tablas, secretos solo por variables de entorno, validación con Zod, redirecciones internas validadas, cierre de sesión solo por POST y traducción de errores de Auth al español.
@@ -117,7 +117,7 @@ e2e/              # pruebas end-to-end
 
 ## Seguridad en producción
 
-- Las migraciones de `supabase/migrations/` se aplican en orden (0001 esquema, 0002 storage, 0003 endurecimiento e índices, 0004 frecuencia y origen de deudas, 0005 hardening de RPCs y permisos, 0006 integridad multi-tenant). No requieren la CLI ni Docker.
+- Las migraciones de `supabase/migrations/` se aplican en orden (0001 esquema, 0002 storage, 0003 endurecimiento e índices, 0004 frecuencia y origen de deudas, 0005 hardening de RPCs y permisos, 0006 integridad multi-tenant, 0007 avatares, 0008 zona horaria, 0009 icono por deuda). No requieren la CLI ni Docker.
 - Configura `SITE_URL` con el dominio de producción para que los enlaces de confirmación y recuperación no dependan del header `Host`.
 - Las cookies de sesión son `HttpOnly`, `Secure` y `SameSite=Lax`; las respuestas autenticadas se envían con `Cache-Control: private, no-store`.
 - La app aplica CSP, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` y cabeceras COOP/CORP. HSTS lo añade Vercel en el despliegue actual.

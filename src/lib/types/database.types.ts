@@ -239,6 +239,7 @@ export type Database = {
           creditor: string | null
           due_day: number
           first_due_date: string
+          icon: string
           id: string
           initial_amount: number
           interest_kind: Database["public"]["Enums"]["interest_kind"]
@@ -262,6 +263,7 @@ export type Database = {
           creditor?: string | null
           due_day?: number
           first_due_date: string
+          icon?: string
           id?: string
           initial_amount?: number
           interest_kind?: Database["public"]["Enums"]["interest_kind"]
@@ -285,6 +287,7 @@ export type Database = {
           creditor?: string | null
           due_day?: number
           first_due_date?: string
+          icon?: string
           id?: string
           initial_amount?: number
           interest_kind?: Database["public"]["Enums"]["interest_kind"]
@@ -667,6 +670,7 @@ export type Database = {
           creditor: string | null
           due_day: number | null
           first_due_date: string | null
+          icon: string | null
           id: string | null
           initial_amount: number | null
           installments_left: number | null

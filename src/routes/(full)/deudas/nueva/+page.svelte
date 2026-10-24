@@ -5,6 +5,7 @@
 	import AmountField from '#lib/components/ui/AmountField.svelte';
 	import DateField from '#lib/components/ui/DateField.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
+	import IconPicker from '#lib/components/ui/IconPicker.svelte';
 	import OptionCards from '#lib/components/ui/OptionCards.svelte';
 	import SegmentedControl from '#lib/components/ui/SegmentedControl.svelte';
 	import Switch from '#lib/components/ui/Switch.svelte';
@@ -14,6 +15,7 @@
 	import type { FormState } from '#lib/utils/forms';
 	import { addFrequency, installmentAmount, monthlyEquivalent } from '#lib/utils/finance';
 	import { parseISODate, formatFullDate } from '#lib/utils/dates';
+	import { DEBT_ICON_GROUPS } from '#lib/utils/icons';
 	import {
 		DEBT_FREQUENCY_ICONS,
 		DEBT_FREQUENCY_LABELS,
@@ -35,6 +37,7 @@
 	let name = $state(values.name ?? '');
 	let creditor = $state(values.creditor ?? '');
 	let kind = $state<DebtKind>((values.kind as DebtKind) ?? 'credit_card');
+	let icon = $state(values.icon ?? DEBT_KIND_ICONS[kind]);
 	let principalAmount = $state(values.principalAmount ?? '');
 	let initialAmount = $state(values.initialAmount ?? '');
 	let totalInstallments = $state(values.totalInstallments ?? '12');
@@ -59,6 +62,14 @@
 			icon: DEBT_KIND_ICONS[value]
 		}))
 	);
+
+	// Sugerimos el ícono del tipo elegido mientras el usuario no lo personalice.
+	let suggestedKind = kind;
+	$effect(() => {
+		if (kind === suggestedKind) return;
+		if (Object.values(DEBT_KIND_ICONS).includes(icon)) icon = DEBT_KIND_ICONS[kind];
+		suggestedKind = kind;
+	});
 
 	const monthly = $derived(
 		installmentAmount({
@@ -170,6 +181,19 @@
 			bind:value={kind}
 			error={previous.kind}
 		/>
+	</section>
+
+	<section class="mt-4 space-y-2">
+		<div class="flex items-center justify-between gap-2">
+			<h2 class="text-label-sm font-semibold tracking-wide text-on-surface-variant uppercase">
+				Ícono de la obligación
+			</h2>
+			<span class="flex items-center gap-1.5 text-label-sm text-muted">
+				<Icon name={icon} size={16} class="text-secondary" />
+				Se usa en el listado
+			</span>
+		</div>
+		<IconPicker name="icon" groups={DEBT_ICON_GROUPS} bind:value={icon} error={previous.icon} />
 	</section>
 
 	<section

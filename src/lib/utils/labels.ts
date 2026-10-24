@@ -145,34 +145,6 @@ export const ICON_CHOICES = [
 	'currency_exchange'
 ];
 
-/** Íconos sugeridos para categorías de gasto e ingreso. */
-export const CATEGORY_ICONS = [
-	'restaurant',
-	'local_cafe',
-	'shopping_cart',
-	'shopping_bag',
-	'directions_car',
-	'local_gas_station',
-	'home',
-	'bolt',
-	'wifi',
-	'phone_iphone',
-	'sports_esports',
-	'movie',
-	'fitness_center',
-	'medical_services',
-	'school',
-	'pets',
-	'flight_takeoff',
-	'card_giftcard',
-	'receipt_long',
-	'work',
-	'trending_up',
-	'payments',
-	'savings',
-	'category'
-];
-
 /** Paleta de colores alineada con los tokens del diseño. */
 export const COLOR_PALETTE = [
 	'#008358',

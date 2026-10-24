@@ -167,6 +167,7 @@ export const debtSchema = z
 		name: z.string().trim().min(3, 'Escribe el nombre de la deuda').max(80),
 		creditor: optionalText(80),
 		kind: z.enum(['credit_card', 'personal', 'family', 'mortgage', 'other']),
+		icon: z.string().trim().min(1).max(40).default('receipt_long'),
 		principalAmount: money('el monto total'),
 		initialAmount: money('el monto inicial', { allowZero: true }),
 		totalInstallments: z.coerce

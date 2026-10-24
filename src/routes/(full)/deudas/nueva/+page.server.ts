@@ -14,6 +14,7 @@ import {
 } from '#lib/utils/dates';
 import { addFrequency, installmentAmount } from '#lib/utils/finance';
 import { formValues, readString } from '#lib/utils/forms';
+import { DEBT_KIND_ICONS } from '#lib/utils/labels';
 import { debtSchema, fieldErrors } from '#lib/utils/validation';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -21,6 +22,7 @@ const VALUES = [
 	'name',
 	'creditor',
 	'kind',
+	'icon',
 	'principalAmount',
 	'initialAmount',
 	'totalInstallments',
@@ -62,11 +64,13 @@ export const actions: Actions = {
 		const user = requireAuth(locals.user);
 		const form = await request.formData();
 		const values = formValues(form, VALUES);
+		const rawIcon = readString(form, 'icon');
 
 		const parsed = debtSchema.safeParse({
 			name: readString(form, 'name'),
 			creditor: readString(form, 'creditor'),
 			kind: readString(form, 'kind'),
+			icon: rawIcon || undefined,
 			principalAmount: readString(form, 'principalAmount'),
 			initialAmount: readString(form, 'initialAmount') || '0',
 			totalInstallments: readString(form, 'totalInstallments'),
@@ -141,6 +145,7 @@ export const actions: Actions = {
 				name: parsed.data.name,
 				creditor: parsed.data.creditor,
 				kind: parsed.data.kind,
+				icon: rawIcon || DEBT_KIND_ICONS[parsed.data.kind],
 				principal_amount: parsed.data.principalAmount,
 				initial_amount: parsed.data.initialAmount,
 				total_installments: parsed.data.totalInstallments,

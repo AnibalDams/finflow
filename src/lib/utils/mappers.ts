@@ -28,6 +28,7 @@ import type {
 	Row
 } from '#lib/types/domain';
 import { monthlyEquivalent } from './finance';
+import { DEBT_KIND_ICONS } from './labels';
 
 export function toNumber(value: unknown, fallback = 0): number {
 	if (typeof value === 'number' && Number.isFinite(value)) return value;
@@ -171,6 +172,7 @@ export function mapDebt(row: View<'debt_progress'>): Debt {
 		name: toStringValue(row.name),
 		creditor: row.creditor,
 		kind: row.kind ?? 'other',
+		icon: toStringValue(row.icon, DEBT_KIND_ICONS[row.kind ?? 'other']),
 		principalAmount: toNumber(row.principal_amount),
 		totalInstallments: toNumber(row.total_installments),
 		installmentAmount: installment,

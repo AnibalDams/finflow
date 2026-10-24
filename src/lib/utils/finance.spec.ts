@@ -48,6 +48,7 @@ function buildDebt(overrides: Partial<Debt> = {}): Debt {
 		name: 'Tarjeta',
 		creditor: null,
 		kind: 'credit_card',
+		icon: 'credit_card',
 		principalAmount: 1000,
 		totalInstallments: 4,
 		installmentAmount: 250,
