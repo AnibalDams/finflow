@@ -49,16 +49,21 @@
 	const lineSeries = $derived([
 		{
 			label: `${data.range.label} (${formatMoney(analytics.total, currency)})`,
+			tooltipLabel: 'Periodo actual',
 			color: 'var(--color-primary)',
 			values: analytics.series.map((point) => point.current)
 		},
 		{
 			label: `${data.range.previousLabel} (${formatMoney(analytics.previousTotal, currency)})`,
+			tooltipLabel: 'Periodo anterior',
 			color: 'var(--color-outline-variant)',
 			values: analytics.series.map((point) => point.previous),
 			dashed: true
 		}
 	]);
+
+	/** Fecha legible de cada punto: alimenta el tooltip del gráfico. */
+	const pointDates = $derived(analytics.series.map((point) => formatDayMonth(point.date)));
 
 	const axisLabels = $derived.by(() => {
 		const points = analytics.series;
@@ -71,7 +76,7 @@
 		const previousLabel = Math.max(...labeled);
 		if (last - previousLabel >= step / 2) labeled.add(last);
 
-		return points.map((point, index) => (labeled.has(index) ? formatDayMonth(point.date) : ''));
+		return points.map((_, index) => (labeled.has(index) ? pointDates[index] : ''));
 	});
 
 	const donutSegments = $derived(
@@ -314,7 +319,14 @@
 				</p>
 
 				<div class="-mx-1 mt-3">
-					<LineChart series={lineSeries} labels={axisLabels} {currency} height={190} />
+					<LineChart
+						series={lineSeries}
+						labels={axisLabels}
+						pointLabels={pointDates}
+						{currency}
+						height={190}
+						differenceLabel="Ahorro vs anterior"
+					/>
 				</div>
 			</section>
 

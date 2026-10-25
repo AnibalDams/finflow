@@ -173,6 +173,14 @@
 		);
 	});
 
+	/** Fechas completas punto a punto: alimentan el tooltip del gráfico. */
+	const cashflowDates = $derived.by(() => {
+		const start = parseISODate(data.monthStart);
+		return Array.from({ length: data.cashflow.income.length }, (_, index) =>
+			formatDayMonth(addDays(start, index))
+		);
+	});
+
 	const goal = $derived(data.goalHighlight);
 </script>
 
@@ -413,8 +421,10 @@
 					<LineChart
 						series={cashflowSeries}
 						labels={cashflowLabels}
+						pointLabels={cashflowDates}
 						currency={data.currency}
 						height={260}
+						differenceLabel="Flujo neto"
 					/>
 				</div>
 
