@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import TransactionsTable from '#lib/components/domain/TransactionsTable.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import EmptyState from '#lib/components/ui/EmptyState.svelte';
 	import SegmentedControl from '#lib/components/ui/SegmentedControl.svelte';
 	import Sheet from '#lib/components/ui/Sheet.svelte';
 	import TransactionRow from '#lib/components/domain/TransactionRow.svelte';
 	import { buttonClass } from '#lib/components/ui/button-styles';
-	import { formatMonthName, formatRelativeDay, monthKey, toISODate } from '#lib/utils/dates';
+	import { formatRelativeDay, monthKey, toISODate } from '#lib/utils/dates';
 	import { formatMoney, sumAmounts } from '#lib/utils/money';
 	import type { TransactionItem } from '#lib/types/domain';
 	import type { PageProps } from './$types';
@@ -69,7 +70,23 @@
 	}
 </script>
 
-<div class="space-y-4 px-4 pt-4">
+<div class="space-y-4 px-4 pt-4 lg:mx-auto lg:max-w-[1440px] lg:space-y-6 lg:px-8 lg:pt-8 lg:pb-10">
+	<header class="hidden flex-wrap items-end justify-between gap-4 lg:flex">
+		<div>
+			<p class="text-label-sm font-semibold tracking-[0.16em] text-primary uppercase">
+				Registro de actividad
+			</p>
+			<h1 class="mt-1 text-title-xl tracking-tight text-ink">Movimientos</h1>
+			<p class="mt-1 text-body text-on-surface-variant">
+				Consulta, filtra y depura cada ingreso, gasto o transferencia de tu historial.
+			</p>
+		</div>
+		<a href="/movimientos/nuevo" class={buttonClass('primary', 'md')}>
+			<Icon name="add" size={18} />
+			Registrar movimiento
+		</a>
+	</header>
+
 	<header class="flex items-center justify-between gap-2">
 		<a
 			href={withParams({ mes: data.previousMonth })}
@@ -80,14 +97,17 @@
 		</a>
 
 		<div class="min-w-0 text-center">
-			<h1 class="truncate text-title-md text-ink capitalize">{data.rangeLabel}</h1>
+			<h1 class="text-capitalize truncate text-title-md text-ink lg:text-title-lg">
+				{data.rangeLabel}
+			</h1>
 			{#if !isCurrentMonth && data.month}
 				<a href={withParams({ mes: null })} class="text-label-sm font-semibold text-secondary">
 					Volver al mes actual
 				</a>
 			{:else}
 				<p class="text-label-sm text-muted">
-					{data.total} {data.total === 1 ? 'movimiento' : 'movimientos'}
+					{data.total}
+					{data.total === 1 ? 'movimiento' : 'movimientos'}
 				</p>
 			{/if}
 		</div>
@@ -101,14 +121,14 @@
 		</a>
 	</header>
 
-	<section class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4">
-		<div class="grid grid-cols-2 gap-3">
+	<section class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4 lg:p-5">
+		<div class="grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-5">
 			<div class="min-w-0">
 				<p class="flex items-center gap-1.5 text-label-xs tracking-wide text-muted uppercase">
 					<span class="size-1.5 rounded-full bg-primary" aria-hidden="true"></span>
 					Ingresos
 				</p>
-				<p class="tnum mt-1 truncate text-title-sm font-bold text-primary">
+				<p class="mt-1 truncate tnum text-title-sm font-bold text-primary lg:text-title-md">
 					+{formatMoney(data.totals.income)}
 				</p>
 			</div>
@@ -117,13 +137,24 @@
 					<span class="size-1.5 rounded-full bg-tertiary" aria-hidden="true"></span>
 					Gastos
 				</p>
-				<p class="tnum mt-1 truncate text-title-sm font-bold text-tertiary">
+				<p class="mt-1 truncate tnum text-title-sm font-bold text-tertiary lg:text-title-md">
 					−{formatMoney(data.totals.expense)}
+				</p>
+			</div>
+			<div class="hidden min-w-0 lg:block">
+				<p class="flex items-center gap-1.5 text-label-xs tracking-wide text-muted uppercase">
+					<span class="size-1.5 rounded-full bg-ink" aria-hidden="true"></span>
+					Balance del mes
+				</p>
+				<p class="mt-1 truncate tnum text-title-md font-bold text-ink">
+					{formatMoney(data.totals.income - data.totals.expense)}
 				</p>
 			</div>
 		</div>
 
-		<div class="mt-3 flex items-center justify-between gap-2 border-t border-hairline pt-3">
+		<div
+			class="mt-3 flex items-center justify-between gap-2 border-t border-hairline pt-3 lg:hidden"
+		>
 			<span class="text-body-sm text-muted">Balance del mes</span>
 			<span class="tnum text-title-sm font-bold text-ink">
 				{formatMoney(data.totals.income - data.totals.expense)}
@@ -131,7 +162,7 @@
 		</div>
 	</section>
 
-	<div class="flex gap-2">
+	<div class="flex gap-2 lg:gap-3">
 		<form method="GET" class="relative flex-1" role="search">
 			<input type="hidden" name="mes" value={data.month ?? ''} />
 			{#if data.filters.type !== 'all'}
@@ -148,20 +179,29 @@
 				value={data.filters.search}
 				placeholder="Buscar concepto o nota"
 				aria-label="Buscar movimientos"
-				class="h-11 w-full rounded-full border border-hairline bg-surface-container-lowest pr-3 pl-10 text-body text-ink placeholder:text-muted-soft focus:border-secondary focus:ring-3 focus:ring-secondary/12 focus:outline-none"
+				class="h-11 w-full rounded-full border border-hairline bg-surface-container-lowest pr-3 pl-10 text-body text-ink placeholder:text-muted-soft focus:border-secondary focus:ring-3 focus:ring-secondary/12 focus:outline-none lg:h-12 lg:pr-28"
 			/>
-			<button type="submit" class="sr-only">Buscar</button>
+			<button
+				type="submit"
+				class="sr-only lg:not-sr-only lg:absolute lg:top-1/2 lg:right-2 lg:-translate-y-1/2 lg:rounded-full lg:bg-primary lg:px-4 lg:py-1.5 lg:text-label-sm lg:font-semibold lg:text-on-primary"
+			>
+				Buscar
+			</button>
 		</form>
 
 		<button
 			type="button"
-			class="relative flex size-11 shrink-0 items-center justify-center rounded-full border border-hairline bg-surface-container-lowest text-on-surface-variant transition hover:bg-level-1"
+			class="relative flex h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-hairline bg-surface-container-lowest px-3 text-on-surface-variant transition hover:bg-level-1 lg:h-12 lg:px-4"
 			aria-label="Filtrar movimientos"
 			onclick={() => (filtersOpen = true)}
 		>
 			<Icon name="tune" size={20} />
+			<span class="hidden text-label font-semibold lg:inline">Filtros</span>
 			{#if data.hasFilters}
-				<span class="absolute top-2 right-2 size-2 rounded-full bg-tertiary" aria-hidden="true"></span>
+				<span
+					class="absolute top-2 right-2 size-2 rounded-full bg-tertiary lg:static lg:size-2"
+					aria-hidden="true"
+				></span>
 			{/if}
 		</button>
 	</div>
@@ -184,7 +224,13 @@
 			</EmptyState>
 		</div>
 	{:else}
-		<div class="space-y-4">
+		<div
+			class="hidden overflow-hidden rounded-2xl border border-hairline/70 bg-surface-container-lowest lg:block"
+		>
+			<TransactionsTable items={data.items} currency={data.profile.currency} showDate showAccount />
+		</div>
+
+		<div class="space-y-4 lg:hidden">
 			{#each groups as group (group.date)}
 				<section class="space-y-1.5">
 					<header class="flex items-baseline justify-between px-1">
@@ -219,7 +265,7 @@
 			<a
 				href={withParams({ limit: String(data.limit + 25) })}
 				data-sveltekit-noscroll
-				class={buttonClass('tonal', 'lg', true)}
+				class={buttonClass('tonal', 'lg', true, 'lg:max-w-sm')}
 			>
 				Ver {Math.min(25, remaining)} más
 				<span class="text-label-sm font-normal text-muted">({remaining} restantes)</span>
@@ -252,7 +298,9 @@
 
 		<div class="space-y-1.5">
 			<span class="block text-label-sm font-medium text-on-surface-variant">Cuenta</span>
-			<details class="group overflow-hidden rounded-xl border border-hairline bg-surface-container-lowest">
+			<details
+				class="group overflow-hidden rounded-xl border border-hairline bg-surface-container-lowest"
+			>
 				<summary
 					class="flex h-12 cursor-pointer list-none items-center gap-2 px-3 text-body text-ink [&::-webkit-details-marker]:hidden"
 				>
@@ -307,7 +355,9 @@
 
 		<div class="space-y-1.5">
 			<span class="block text-label-sm font-medium text-on-surface-variant">Categoría</span>
-			<details class="group overflow-hidden rounded-xl border border-hairline bg-surface-container-lowest">
+			<details
+				class="group overflow-hidden rounded-xl border border-hairline bg-surface-container-lowest"
+			>
 				<summary
 					class="flex h-12 cursor-pointer list-none items-center gap-2 px-3 text-body text-ink [&::-webkit-details-marker]:hidden"
 				>
@@ -374,7 +424,10 @@
 		</div>
 
 		<div class="grid grid-cols-[auto_1fr] gap-2 pt-1">
-			<a href={withParams({ tipo: null, cuenta: null, categoria: null })} class={buttonClass('ghost', 'lg')}>
+			<a
+				href={withParams({ tipo: null, cuenta: null, categoria: null })}
+				class={buttonClass('ghost', 'lg')}
+			>
 				Limpiar
 			</a>
 			<button type="submit" class={buttonClass('primary', 'lg', true)}>Aplicar filtros</button>

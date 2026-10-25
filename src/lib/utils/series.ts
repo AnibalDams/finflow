@@ -61,6 +61,48 @@ export function cumulativeMonthlySeries(
 	});
 }
 
+export interface CashflowSeries {
+	income: number[];
+	expense: number[];
+}
+
+/**
+ * Serie acumulada día a día de ingresos y gastos del mes.
+ * Las transferencias no alteran el flujo consolidado y se ignoran.
+ */
+export function cumulativeCashflowSeries(
+	rows: CashflowRow[],
+	dayCount: number,
+	offsetMinutes = 0
+): CashflowSeries {
+	const size = Math.max(1, dayCount);
+	const income = new Array<number>(size).fill(0);
+	const expense = new Array<number>(size).fill(0);
+
+	for (const row of rows) {
+		if (row.type === 'transfer') continue;
+		const local = new Date(new Date(row.occurred_at).getTime() - offsetMinutes * 60_000);
+		const day = local.getUTCDate();
+		if (day < 1 || day > size) continue;
+		if (row.type === 'income') income[day - 1] += toCents(row.amount);
+		else expense[day - 1] += toCents(row.amount);
+	}
+
+	let runningIncome = 0;
+	let runningExpense = 0;
+
+	return {
+		income: income.map((value) => {
+			runningIncome += value;
+			return fromCents(runningIncome);
+		}),
+		expense: expense.map((value) => {
+			runningExpense += value;
+			return fromCents(runningExpense);
+		})
+	};
+}
+
 export interface MonthlyBar {
 	label: string;
 	value: number;

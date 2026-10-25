@@ -25,7 +25,7 @@
 </script>
 
 <header
-	class="fixed inset-x-0 top-0 z-50 mx-auto w-full max-w-[430px] bg-surface/80 pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)] backdrop-blur-xl"
+	class="fixed inset-x-0 top-0 z-50 mx-auto w-full max-w-[430px] bg-surface/80 pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)] backdrop-blur-xl lg:hidden"
 >
 	<div class="flex h-16 items-center justify-between px-4">
 		<a
@@ -62,7 +62,7 @@
 			<a
 				href={resolve('/(app)/ajustes')}
 				class="flex size-10 items-center justify-center rounded-full"
-				aria-label="Perfil y ajustes"
+				aria-label="Abrir perfil y ajustes"
 			>
 				{#if profile.avatarUrl}
 					<img

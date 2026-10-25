@@ -7,7 +7,7 @@
 	import { buttonClass } from '#lib/components/ui/button-styles';
 	import { notifyError, notifySuccess } from '#lib/stores/toast.svelte';
 	import { cn } from '#lib/utils/cn';
-	import { formatDayMonth, formatMonthName } from '#lib/utils/dates';
+	import { diffInDays, formatDayMonth, formatMonthName, parseISODate } from '#lib/utils/dates';
 	import { csvNumber, downloadCsv, downloadPdf } from '#lib/utils/export';
 	import { formatMoney, formatPercent } from '#lib/utils/money';
 	import type { AnalyticsInsight } from '#lib/types/domain';
@@ -83,19 +83,85 @@
 		}))
 	);
 
+	const daysInRange = $derived(
+		Math.max(1, diffInDays(parseISODate(data.range.from), parseISODate(data.range.to)) + 1)
+	);
+
+	const dailyRate = $derived(analytics.total / daysInRange);
+
+	const kpis = $derived([
+		{
+			label: 'Gasto total acumulado',
+			value: formatMoney(analytics.total, currency),
+			meta: `${formatPercent(Math.abs(delta), 1)} ${delta <= 0 ? 'menos' : 'más'} que el periodo previo`,
+			icon: 'payments',
+			tone: delta <= 0 ? ('primary' as const) : ('tertiary' as const)
+		},
+		{
+			label: 'Mayor impacto',
+			value: analytics.topIncrease
+				? formatMoney(analytics.topIncrease.currentAmount, currency)
+				: '—',
+			meta: analytics.topIncrease
+				? `${analytics.topIncrease.name} · ${formatMoney(analytics.topIncrease.amount, currency)} más`
+				: 'Sin incrementos relevantes',
+			icon: 'trending_up',
+			tone: 'tertiary' as const
+		},
+		{
+			label: 'Mayor ahorro',
+			value: analytics.topDecrease
+				? formatMoney(Math.abs(analytics.topDecrease.amount), currency)
+				: '—',
+			meta: analytics.topDecrease
+				? `${analytics.topDecrease.name} · reducción del gasto`
+				: 'Aún sin reducciones comparables',
+			icon: 'savings',
+			tone: 'primary' as const
+		},
+		{
+			label: 'Ritmo de gasto diario',
+			value: `${formatMoney(dailyRate, currency)}/día`,
+			meta: `${daysInRange} días modelados`,
+			icon: 'speed',
+			tone: 'secondary' as const
+		}
+	]);
+
+	const KPI_TONES = {
+		primary: 'bg-primary/10 text-primary',
+		secondary: 'bg-secondary/10 text-secondary',
+		tertiary: 'bg-tertiary/10 text-tertiary'
+	} as const;
+
 	function budgetShare(categoryId: string): number | null {
 		const row = analytics.budgets.find((budget) => budget.id === categoryId);
 		return row ? row.share : null;
 	}
 
-	function decreasePercent(insight: AnalyticsInsight | null): number {
-		if (!insight || insight.amount >= 0) return 0;
-		const previous = insight.currentAmount + Math.abs(insight.amount);
-		return previous > 0 ? (Math.abs(insight.amount) / previous) * 100 : 0;
+	function budgetAmount(categoryId: string): number | null {
+		const row = analytics.budgets.find((budget) => budget.id === categoryId);
+		return row ? row.budget : null;
+	}
+
+	function decreasePercent(insightValue: AnalyticsInsight | null): number {
+		if (!insightValue || insightValue.amount >= 0) return 0;
+		const previous = insightValue.currentAmount + Math.abs(insightValue.amount);
+		return previous > 0 ? (Math.abs(insightValue.amount) / previous) * 100 : 0;
+	}
+
+	function statusOf(categoryId: string): { label: string; tone: string } {
+		const share = budgetShare(categoryId);
+		if (share === null) return { label: 'Sin límite', tone: 'bg-level-1 text-muted' };
+		if (share >= 100) return { label: 'Excedido', tone: 'bg-tertiary/10 text-tertiary' };
+		if (share >= 80) return { label: 'En rango', tone: 'bg-amber-500/12 text-amber-700' };
+		return { label: 'Óptimo', tone: 'bg-primary/10 text-primary' };
 	}
 
 	const monthShort = $derived(
-		formatMonthName(data.range.from).slice(0, 3).replace(/^./, (letter) => letter.toUpperCase())
+		formatMonthName(data.range.from)
+			.slice(0, 3)
+			.replace(/^./, (letter) => letter.toUpperCase())
 	);
 
 	function withParams(periodo: string): string {
@@ -154,7 +220,31 @@
 	}
 </script>
 
-<div class="space-y-4 px-4 pt-4 pb-2">
+<div
+	class="space-y-4 px-4 pt-4 pb-2 lg:mx-auto lg:max-w-[1440px] lg:space-y-6 lg:px-8 lg:pt-8 lg:pb-10"
+>
+	<header class="hidden flex-wrap items-end justify-between gap-4 lg:flex">
+		<div>
+			<p class="text-label-sm font-semibold tracking-[0.16em] text-primary uppercase">
+				Finflow Intelligence · Analítica de consumo
+			</p>
+			<h1 class="mt-1 text-title-xl tracking-tight text-ink">Estadísticas y rendimiento</h1>
+			<p class="mt-1 text-body text-on-surface-variant">
+				Diagnóstico de dispersión de capital y comparativas del periodo.
+			</p>
+		</div>
+		<div class="flex shrink-0 items-center gap-2">
+			<button type="button" class={buttonClass('outline', 'md')} onclick={exportCsv}>
+				<Icon name="table_view" size={17} class="text-primary" />
+				CSV / Excel
+			</button>
+			<button type="button" class={buttonClass('primary', 'md')} onclick={exportPdf}>
+				<Icon name="picture_as_pdf" size={17} />
+				Descargar PDF
+			</button>
+		</div>
+	</header>
+
 	<SegmentedLinks
 		value={data.preset}
 		options={[
@@ -167,128 +257,215 @@
 			{ value: 'quarter', label: 'Trimestre', href: withParams('quarter') },
 			{ value: 'year', label: 'Año', href: withParams('year') }
 		]}
+		class="lg:max-w-xl"
 	/>
 
-	<section class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4 shadow-card">
-		<header class="flex items-start justify-between gap-3">
-			<div class="min-w-0">
-				<p class="text-body text-muted">Gasto total acumulado</p>
-				<p class="mt-1 flex items-baseline gap-1.5">
-					<span class="tnum text-amount font-bold text-ink">{formatMoney(analytics.total)}</span>
-					<span class="text-body-sm font-medium text-muted">{currency}</span>
-				</p>
-			</div>
-
-			<span
-				class={cn(
-					'flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-label-sm font-semibold',
-					delta <= 0 ? 'bg-primary/10 text-primary' : 'bg-tertiary/10 text-tertiary'
-				)}
+	<section
+		class="hidden lg:grid lg:grid-cols-2 lg:gap-4 xl:grid-cols-4"
+		aria-label="Indicadores del periodo"
+	>
+		{#each kpis as kpi (kpi.label)}
+			<article
+				class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-5 shadow-card"
 			>
-				<Icon name={delta <= 0 ? 'trending_down' : 'trending_up'} size={15} />
-				{formatPercent(Math.abs(delta), 1)}
-			</span>
-		</header>
-
-		<p class="mt-3 flex gap-2 rounded-xl bg-primary/8 px-3 py-2.5 text-body-sm text-on-surface-variant">
-			<Icon name="auto_awesome" size={18} class="mt-0.5 shrink-0 text-primary" />
-			<span>{insight}</span>
-		</p>
-
-		<div class="mt-3 -mx-1">
-			<LineChart series={lineSeries} labels={axisLabels} {currency} height={165} />
-		</div>
-	</section>
-
-	<section class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4 shadow-card">
-		<header class="flex items-center justify-between gap-2">
-			<h2 class="text-title-sm text-ink">Distribución de Gastos</h2>
-			<span class="rounded-full bg-level-1 px-2.5 py-1 text-label-sm font-medium text-on-surface-variant">
-				{categories.length} {categories.length === 1 ? 'categoría' : 'categorías'}
-			</span>
-		</header>
-
-		<div class="mt-4">
-			<DonutChart
-				segments={donutSegments}
-				centerLabel="Categoría top"
-				centerValue={analytics.topCategory ? formatPercent(analytics.topCategory.share, 0) : '—'}
-				centerCaption={analytics.topCategory?.name}
-				{currency}
-			/>
-		</div>
-	</section>
-
-	<section class="space-y-3">
-		<header class="flex items-center gap-2">
-			<h2 class="text-title-md text-ink">Análisis: dónde gastas más y menos</h2>
-		</header>
-
-		{#if analytics.topIncrease}
-			<div class="rounded-2xl bg-tertiary/8 p-3.5">
-				<div class="flex items-start gap-3">
-					<span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-tertiary text-white">
-						<Icon name="trending_up" size={20} />
+				<div class="flex items-center justify-between gap-2">
+					<p class="text-label font-medium text-on-surface-variant">{kpi.label}</p>
+					<span class="flex size-9 items-center justify-center rounded-xl {KPI_TONES[kpi.tone]}">
+						<Icon name={kpi.icon} size={19} />
 					</span>
-					<div class="min-w-0 flex-1">
-						<p class="text-label-sm font-semibold tracking-wide text-tertiary uppercase">
-							Mayor gasto registrado
-						</p>
-						<p class="text-title-sm text-ink">{analytics.topIncrease.name}</p>
-						<p class="mt-0.5 text-body-sm text-on-surface-variant">
-							Gastaste {formatMoney(analytics.topIncrease.currentAmount, currency)} este periodo:
-							{formatMoney(analytics.topIncrease.amount, currency)} más que en el periodo anterior.
+				</div>
+				<p class="mt-3 truncate text-title-md font-bold tracking-tight text-ink">{kpi.value}</p>
+				<p class="mt-1 line-clamp-2 text-body-sm text-muted">{kpi.meta}</p>
+			</article>
+		{/each}
+	</section>
+
+	<div class="lg:block lg:space-y-6 xl:grid xl:grid-cols-12 xl:items-start xl:gap-6 xl:space-y-0">
+		<div class="space-y-4 lg:space-y-6 xl:col-span-7">
+			<section
+				class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4 shadow-card lg:p-5"
+			>
+				<header class="flex items-start justify-between gap-3">
+					<div class="min-w-0">
+						<p class="text-body text-muted">Gasto total acumulado</p>
+						<p class="mt-1 flex items-baseline gap-1.5">
+							<span class="tnum text-amount font-bold text-ink">{formatMoney(analytics.total)}</span
+							>
+							<span class="text-body-sm font-medium text-muted">{currency}</span>
 						</p>
 					</div>
-				</div>
-			</div>
-		{/if}
 
-		{#if analytics.topDecrease}
-			<div class="rounded-2xl bg-primary/8 p-3.5">
-				<div class="flex items-start gap-3">
-					<span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-white">
-						<Icon name="savings" size={20} />
+					<span
+						class={cn(
+							'flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-label-sm font-semibold',
+							delta <= 0 ? 'bg-primary/10 text-primary' : 'bg-tertiary/10 text-tertiary'
+						)}
+					>
+						<Icon name={delta <= 0 ? 'trending_down' : 'trending_up'} size={15} />
+						{formatPercent(Math.abs(delta), 1)}
 					</span>
-					<div class="min-w-0 flex-1">
-						<div class="flex items-start justify-between gap-2">
-							<p class="text-label-sm font-semibold tracking-wide text-primary uppercase">
-								Mayor reducción
-							</p>
-							<span class="shrink-0 rounded-full bg-primary/12 px-2 py-0.5 text-label-sm font-semibold text-primary">
-								{#if decreasePercent(analytics.topDecrease) > 0}
-									−{formatPercent(decreasePercent(analytics.topDecrease), 0)}
-								{:else}
-									Nuevo
-								{/if}
-							</span>
+				</header>
+
+				<p
+					class="mt-3 flex gap-2 rounded-xl bg-primary/8 px-3 py-2.5 text-body-sm text-on-surface-variant"
+				>
+					<Icon name="auto_awesome" size={18} class="mt-0.5 shrink-0 text-primary" />
+					<span>{insight}</span>
+				</p>
+
+				<div class="-mx-1 mt-3">
+					<LineChart series={lineSeries} labels={axisLabels} {currency} height={190} />
+				</div>
+			</section>
+
+			<section class="space-y-3">
+				<header class="flex items-center gap-2">
+					<h2 class="text-title-md text-ink">Análisis: dónde gastas más y menos</h2>
+				</header>
+
+				<div class="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
+					{#if analytics.topIncrease}
+						<div class="rounded-2xl bg-tertiary/8 p-3.5 lg:p-4">
+							<div class="flex items-start gap-3">
+								<span
+									class="flex size-10 shrink-0 items-center justify-center rounded-full bg-tertiary text-white"
+								>
+									<Icon name="trending_up" size={20} />
+								</span>
+								<div class="min-w-0 flex-1">
+									<p class="text-label-sm font-semibold tracking-wide text-tertiary uppercase">
+										Mayor gasto registrado
+									</p>
+									<p class="truncate text-title-sm text-ink">{analytics.topIncrease.name}</p>
+									<p class="mt-0.5 text-body-sm text-on-surface-variant">
+										Gastaste {formatMoney(analytics.topIncrease.currentAmount, currency)} este periodo:
+										{formatMoney(analytics.topIncrease.amount, currency)} más que en el periodo anterior.
+									</p>
+								</div>
+							</div>
 						</div>
-						<p class="text-title-sm text-ink">{analytics.topDecrease.name}</p>
-						<p class="mt-0.5 text-body-sm text-on-surface-variant">
-							Ahorraste {formatMoney(Math.abs(analytics.topDecrease.amount), currency)} frente al periodo
-							anterior en esta categoría.
-						</p>
-					</div>
-				</div>
-			</div>
-		{/if}
+					{/if}
 
-		{#if !analytics.topIncrease && !analytics.topDecrease}
-			<div class="rounded-2xl border border-dashed border-outline-variant p-4 text-center text-body-sm text-muted">
-				Registra gastos en dos periodos seguidos para ver comparativas.
-			</div>
-		{/if}
-	</section>
+					{#if analytics.topDecrease}
+						<div class="rounded-2xl bg-primary/8 p-3.5 lg:p-4">
+							<div class="flex items-start gap-3">
+								<span
+									class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-white"
+								>
+									<Icon name="savings" size={20} />
+								</span>
+								<div class="min-w-0 flex-1">
+									<div class="flex items-start justify-between gap-2">
+										<p class="text-label-sm font-semibold tracking-wide text-primary uppercase">
+											Mayor reducción
+										</p>
+										<span
+											class="shrink-0 rounded-full bg-primary/12 px-2 py-0.5 text-label-sm font-semibold text-primary"
+										>
+											{#if decreasePercent(analytics.topDecrease) > 0}
+												−{formatPercent(decreasePercent(analytics.topDecrease), 0)}
+											{:else}
+												Nuevo
+											{/if}
+										</span>
+									</div>
+									<p class="truncate text-title-sm text-ink">{analytics.topDecrease.name}</p>
+									<p class="mt-0.5 text-body-sm text-on-surface-variant">
+										Ahorraste {formatMoney(Math.abs(analytics.topDecrease.amount), currency)} frente al
+										periodo anterior en esta categoría.
+									</p>
+								</div>
+							</div>
+						</div>
+					{/if}
+				</div>
+
+				{#if !analytics.topIncrease && !analytics.topDecrease}
+					<div
+						class="rounded-2xl border border-dashed border-outline-variant p-4 text-center text-body-sm text-muted"
+					>
+						Registra gastos en dos periodos seguidos para ver comparativas.
+					</div>
+				{/if}
+			</section>
+		</div>
+
+		<div class="mt-4 space-y-4 xl:col-span-5 xl:mt-0">
+			<section
+				class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4 shadow-card lg:p-5"
+			>
+				<header class="flex items-center justify-between gap-2">
+					<h2 class="text-title-sm text-ink">Distribución de gastos</h2>
+					<span
+						class="rounded-full bg-level-1 px-2.5 py-1 text-label-sm font-medium text-on-surface-variant"
+					>
+						{categories.length}
+						{categories.length === 1 ? 'categoría' : 'categorías'}
+					</span>
+				</header>
+
+				<div class="mt-4">
+					<DonutChart
+						segments={donutSegments}
+						centerLabel="Categoría top"
+						centerValue={analytics.topCategory
+							? formatPercent(analytics.topCategory.share, 0)
+							: '—'}
+						centerCaption={analytics.topCategory?.name}
+						{currency}
+					/>
+				</div>
+			</section>
+
+			<section
+				class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4 shadow-card lg:p-5"
+			>
+				<h2 class="text-title-sm text-ink">Resumen comparativo</h2>
+				<dl class="mt-3 space-y-2.5 text-body-sm">
+					<div class="flex items-center justify-between gap-2">
+						<dt class="text-muted">Ingresos del periodo</dt>
+						<dd class="tnum font-semibold text-primary">
+							+{formatMoney(analytics.incomeTotal, currency)}
+						</dd>
+					</div>
+					<div class="flex items-center justify-between gap-2">
+						<dt class="text-muted">Gasto del periodo</dt>
+						<dd class="tnum font-semibold text-ink">−{formatMoney(analytics.total, currency)}</dd>
+					</div>
+					<div class="flex items-center justify-between gap-2">
+						<dt class="text-muted">Periodo anterior</dt>
+						<dd class="tnum font-semibold text-on-surface">
+							{formatMoney(analytics.previousTotal, currency)}
+						</dd>
+					</div>
+					<div class="flex items-center justify-between gap-2 border-t border-hairline pt-2.5">
+						<dt class="font-semibold text-ink">Variación</dt>
+						<dd class={cn('tnum font-bold', delta <= 0 ? 'text-primary' : 'text-tertiary')}>
+							{formatPercent(Math.abs(delta), 1)}
+							{delta <= 0 ? 'menos' : 'más'}
+						</dd>
+					</div>
+				</dl>
+			</section>
+		</div>
+	</div>
 
 	<section class="space-y-2.5">
 		<header class="flex items-end justify-between gap-2">
-			<h2 class="text-title-md text-ink">Desglose comparativo</h2>
+			<div>
+				<h2 class="text-title-md text-ink">Desglose comparativo</h2>
+				<p class="hidden text-body-sm text-muted lg:block">
+					Ejecutado, presupuesto asignado y tendencia por categoría.
+				</p>
+			</div>
 			<span class="text-label-sm font-semibold tracking-wide text-muted uppercase">
 				vs {data.range.previousLabel}
 			</span>
 		</header>
 
-		<div class="divide-y divide-hairline/70 rounded-2xl border border-hairline/70 bg-surface-container-lowest px-4">
+		<div
+			class="divide-y divide-hairline/70 rounded-2xl border border-hairline/70 bg-surface-container-lowest px-4 lg:hidden"
+		>
 			{#each categories as category (category.id)}
 				{@const share = budgetShare(category.id)}
 				<div class="py-3">
@@ -334,19 +511,132 @@
 					<div class="mt-2 h-1.5 overflow-hidden rounded-full bg-level-1" aria-hidden="true">
 						<div
 							class="h-full rounded-full"
-							style="width:{Math.min(100, share ?? category.share)}%;background-color:{category.color}"
+							style="width:{Math.min(
+								100,
+								share ?? category.share
+							)}%;background-color:{category.color}"
 						></div>
 					</div>
 				</div>
 			{:else}
-				<p class="py-6 text-center text-body-sm text-muted">Sin gastos registrados en este periodo.</p>
+				<p class="py-6 text-center text-body-sm text-muted">
+					Sin gastos registrados en este periodo.
+				</p>
 			{/each}
+		</div>
+
+		<div
+			class="relative hidden overflow-x-auto rounded-2xl border border-hairline/70 bg-surface-container-lowest lg:block"
+		>
+			<table class="w-full min-w-[780px] border-collapse text-left">
+				<caption class="sr-only">Desglose de gastos por categoría</caption>
+				<thead>
+					<tr
+						class="border-b border-hairline text-label-sm font-semibold tracking-wide text-muted uppercase"
+					>
+						<th scope="col" class="px-4 py-3">Categoría</th>
+						<th scope="col" class="px-4 py-3 text-right">Presupuesto</th>
+						<th scope="col" class="px-4 py-3 text-right">Ejecutado</th>
+						<th scope="col" class="w-44 px-4 py-3">% presupuesto</th>
+						<th scope="col" class="px-4 py-3 text-right">Tendencia</th>
+						<th scope="col" class="px-4 py-3">Estado</th>
+						<th scope="col" class="w-10 px-2 py-3"><span class="sr-only">Acciones</span></th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each categories as category (category.id)}
+						{@const share = budgetShare(category.id)}
+						{@const budget = budgetAmount(category.id)}
+						{@const status = statusOf(category.id)}
+						<tr
+							class="border-b border-hairline/60 transition-colors last:border-0 hover:bg-level-1/50"
+						>
+							<td class="px-4 py-3">
+								<div class="flex items-center gap-3">
+									<span
+										class="flex size-9 shrink-0 items-center justify-center rounded-full"
+										style="background-color:color-mix(in srgb, {category.color} 14%, transparent);color:{category.color}"
+									>
+										<Icon name={category.icon} size={18} />
+									</span>
+									<div class="min-w-0">
+										<p class="truncate text-label font-semibold text-ink">{category.name}</p>
+										<p class="text-body-sm text-muted">
+											{category.share.toFixed(0)}% del total gastado
+										</p>
+									</div>
+								</div>
+							</td>
+							<td class="px-4 py-3 text-right tnum text-body-sm text-on-surface">
+								{budget !== null ? formatMoney(budget, currency) : '—'}
+							</td>
+							<td class="px-4 py-3 text-right tnum text-label font-semibold text-ink">
+								{formatMoney(category.amount, currency)}
+							</td>
+							<td class="px-4 py-3">
+								<div class="flex items-center gap-2">
+									<div
+										class="h-1.5 flex-1 overflow-hidden rounded-full bg-level-1"
+										aria-hidden="true"
+									>
+										<div
+											class="h-full rounded-full"
+											style="width:{Math.min(
+												100,
+												share ?? category.share
+											)}%;background-color:{category.color}"
+										></div>
+									</div>
+									<span class="shrink-0 tnum text-label-sm font-semibold text-on-surface">
+										{share !== null ? `${share.toFixed(0)}%` : '—'}
+									</span>
+								</div>
+							</td>
+							<td
+								class="px-4 py-3 text-right tnum text-label-sm font-semibold"
+								class:text-tertiary={category.delta > 0}
+								class:text-primary={category.delta < 0}
+								class:text-muted={category.delta === 0}
+							>
+								{category.delta > 0 ? '+' : category.delta < 0 ? '−' : ''}{formatMoney(
+									Math.abs(category.delta),
+									currency
+								)}
+							</td>
+							<td class="px-4 py-3">
+								<span
+									class="inline-flex rounded-full px-2.5 py-1 text-label-sm font-semibold {status.tone}"
+								>
+									{status.label}
+								</span>
+							</td>
+							<td class="px-2 py-3 text-center">
+								<a
+									href={`/movimientos?categoria=${category.id}`}
+									class="inline-flex size-8 items-center justify-center rounded-lg text-muted transition hover:bg-level-1 hover:text-ink"
+									aria-label={`Ver movimientos de ${category.name}`}
+								>
+									<Icon name="chevron_right" size={18} />
+								</a>
+							</td>
+						</tr>
+					{:else}
+						<tr>
+							<td colspan="7" class="px-4 py-8 text-center text-body-sm text-muted">
+								Sin gastos registrados en este periodo.
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
 		</div>
 	</section>
 
-	<section class="rounded-2xl bg-secondary/8 p-4">
+	<section class="rounded-2xl bg-secondary/8 p-4 lg:hidden">
 		<div class="flex items-start gap-3">
-			<span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary/15 text-secondary">
+			<span
+				class="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary/15 text-secondary"
+			>
 				<Icon name="download" size={20} />
 			</span>
 			<div class="min-w-0">

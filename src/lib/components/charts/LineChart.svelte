@@ -18,10 +18,32 @@
 		class?: string;
 	}
 
-	let { series, labels = [], currency = 'USD', height = 190, class: className = '' }: Props = $props();
+	let {
+		series,
+		labels = [],
+		currency = 'USD',
+		height = 190,
+		class: className = ''
+	}: Props = $props();
 
-	const WIDTH = 320;
-	const PADDING = { top: 14, right: 8, bottom: 24, left: 40 };
+	let container = $state<HTMLDivElement | null>(null);
+	let measured = $state(0);
+
+	$effect(() => {
+		const element = container;
+		if (!element) return;
+
+		const observer = new ResizeObserver((entries) => {
+			const width = entries[0]?.contentRect.width ?? 0;
+			if (width > 0) measured = Math.round(width);
+		});
+
+		observer.observe(element);
+		return () => observer.disconnect();
+	});
+
+	const WIDTH = $derived(Math.max(320, measured || 320));
+	const PADDING = { top: 14, right: 18, bottom: 24, left: 40 };
 
 	const max = $derived(
 		Math.max(1, ...series.flatMap((item) => item.values.map((value) => Math.abs(value))))
@@ -42,72 +64,78 @@
 	function pathFor(values: number[]): string {
 		if (values.length === 0) return '';
 		return values
-			.map((value, index) => `${index === 0 ? 'M' : 'L'} ${xFor(index, values.length).toFixed(2)} ${yFor(value).toFixed(2)}`)
+			.map(
+				(value, index) =>
+					`${index === 0 ? 'M' : 'L'} ${xFor(index, values.length).toFixed(2)} ${yFor(value).toFixed(2)}`
+			)
 			.join(' ');
 	}
 
 	const gridLines = $derived([0, 0.25, 0.5, 0.75, 1].map((ratio) => ratio * max));
 </script>
 
-<svg
-	class={cn('block w-full', className)}
-	viewBox={`0 0 ${WIDTH} ${height}`}
-	role="img"
-	aria-label="Comparativa del periodo"
->
-	{#each gridLines as line (line)}
-		<line
-			x1={PADDING.left}
-			x2={WIDTH - PADDING.right}
-			y1={yFor(line)}
-			y2={yFor(line)}
-			stroke="var(--color-hairline)"
-			stroke-width="1"
-		/>
-		<text
-			x={PADDING.left - 6}
-			y={yFor(line) + 3.5}
-			text-anchor="end"
-			font-size="9"
-			fill="var(--color-muted-soft)"
-			>{formatCompactMoney(line, currency)}</text
-		>
-	{/each}
-
-	{#each series as item (item.label)}
-		<path
-			d={pathFor(item.values)}
-			fill="none"
-			stroke={item.color}
-			stroke-width="2.5"
-			stroke-linecap="round"
-			stroke-linejoin="round"
-			pathLength={item.dashed ? undefined : 1}
-			stroke-dasharray={item.dashed ? '5 5' : '1'}
-			class:chart-line={!item.dashed}
-		/>
-		{#each item.values as value, index (index)}
-			<circle
-				class="chart-dot"
-				cx={xFor(index, item.values.length)}
-				cy={yFor(value)}
-				r="3"
-				fill={item.color}
-				style="animation-delay:{260 + index * 50}ms"
+<div bind:this={container} class={cn('w-full', className)}>
+	<svg
+		class="block w-full"
+		style="height:{height}px"
+		viewBox={`0 0 ${WIDTH} ${height}`}
+		preserveAspectRatio="xMidYMid meet"
+		role="img"
+		aria-label="Comparativa del periodo"
+	>
+		{#each gridLines as line (line)}
+			<line
+				x1={PADDING.left}
+				x2={WIDTH - PADDING.right}
+				y1={yFor(line)}
+				y2={yFor(line)}
+				stroke="var(--color-hairline)"
+				stroke-width="1"
 			/>
+			<text
+				x={PADDING.left - 6}
+				y={yFor(line) + 3.5}
+				text-anchor="end"
+				font-size="9"
+				fill="var(--color-muted-soft)">{formatCompactMoney(line, currency)}</text
+			>
 		{/each}
-	{/each}
 
-	{#each labels as label, index (index)}
-		<text
-			x={xFor(index, labels.length)}
-			y={height - 6}
-			text-anchor="middle"
-			font-size="9"
-			fill="var(--color-muted-soft)">{label}</text
-		>
-	{/each}
-</svg>
+		{#each series as item (item.label)}
+			<path
+				d={pathFor(item.values)}
+				fill="none"
+				stroke={item.color}
+				stroke-width="2.5"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				pathLength={item.dashed ? undefined : 1}
+				stroke-dasharray={item.dashed ? '5 5' : '1'}
+				class:chart-line={!item.dashed}
+			/>
+			{#each item.values as value, index (index)}
+				<circle
+					class="chart-dot"
+					cx={xFor(index, item.values.length)}
+					cy={yFor(value)}
+					r="3"
+					fill={item.color}
+					style="animation-delay:{260 + index * 50}ms"
+				/>
+			{/each}
+		{/each}
+
+		{#each labels as label, index (index)}
+			<text
+				x={xFor(index, labels.length)}
+				y={height - 6}
+				text-anchor="middle"
+				font-size="9"
+				fill="var(--color-muted-soft)">{label}</text
+			>
+		{/each}
+	</svg>
+</div>
 
 {#if series.length > 1}
 	<div class="mt-2 flex flex-wrap items-center gap-3">

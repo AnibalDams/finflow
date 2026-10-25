@@ -5,11 +5,16 @@ import {
 	periodRange,
 	referenceAtOffset
 } from '#lib/utils/dates';
-import { getMonthTotals, listTransactions } from '#lib/server/queries';
+import { getAnalytics, getMonthTotals, listTransactions } from '#lib/server/queries';
 import { unwrap } from '#lib/server/results';
 import { toNumber } from '#lib/utils/mappers';
+import { savingsRate } from '#lib/utils/finance';
 import { sumAmounts } from '#lib/utils/money';
-import { cumulativeMonthlySeries, type CashflowRow } from '#lib/utils/series';
+import {
+	cumulativeCashflowSeries,
+	cumulativeMonthlySeries,
+	type CashflowRow
+} from '#lib/utils/series';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url, parent }) => {
@@ -35,7 +40,7 @@ export const load: PageServerLoad = async ({ locals, url, parent }) => {
 				accounts[0] ??
 				null);
 
-	const [monthRows, previousTotals, recent] = await Promise.all([
+	const [monthRows, previousTotals, recent, analytics] = await Promise.all([
 		locals.supabase
 			.from('transactions')
 			.select('amount, type, occurred_at, account_id, counter_account_id')
@@ -43,7 +48,8 @@ export const load: PageServerLoad = async ({ locals, url, parent }) => {
 			.lte('occurred_at', monthBounds.toInstant)
 			.then((result) => unwrap(result, 'movimientos del mes')),
 		getMonthTotals(locals.supabase, previousBounds.fromInstant, previousBounds.toInstant),
-		listTransactions(locals.supabase, { limit: 6, type: filter }).then((page) => page.items)
+		listTransactions(locals.supabase, { limit: 6, type: filter }).then((page) => page.items),
+		getAnalytics(locals.supabase, month, locals.tzOffset)
 	]);
 
 	const rows: CashflowRow[] = monthRows.map((row) => ({
@@ -87,6 +93,9 @@ export const load: PageServerLoad = async ({ locals, url, parent }) => {
 		net,
 		delta,
 		series,
+		cashflow: cumulativeCashflowSeries(rows, reference.getDate(), locals.tzOffset),
+		savingsRate: savingsRate(income, expense),
+		budgetCategories: analytics.budgets,
 		recent,
 		budget: {
 			limit: budget,

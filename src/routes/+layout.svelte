@@ -27,7 +27,9 @@
 	});
 </script>
 
-<div class="relative mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-background">
+<div
+	class="relative mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-background lg:max-w-none"
+>
 	{@render children()}
 </div>
 

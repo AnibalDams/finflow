@@ -46,6 +46,47 @@
 			: null
 	);
 
+	const kpis = $derived([
+		{
+			label: 'Deuda total pendiente',
+			value: formatMoney(data.totals.remaining, data.currency),
+			meta: `${data.active.length} ${data.active.length === 1 ? 'compromiso activo' : 'compromisos activos'}`,
+			icon: 'account_balance',
+			tone: 'tertiary' as const
+		},
+		{
+			label: 'Compromiso mensual',
+			value: formatMoney(data.totals.monthly, data.currency),
+			meta: `${data.active.length} ${data.active.length === 1 ? 'cuota activa' : 'cuotas activas'}`,
+			icon: 'event_repeat',
+			tone: 'secondary' as const
+		},
+		{
+			label: 'Total amortizado',
+			value: formatMoney(data.totals.paid, data.currency),
+			meta: `${Math.round(data.totals.progress)}% de ${formatMoney(data.totals.historical, data.currency)}`,
+			icon: 'savings',
+			tone: 'primary' as const
+		},
+		{
+			label: 'Proyección deuda cero',
+			value: payoffDate ?? 'Sin deudas',
+			meta:
+				data.active.length > 0 && data.projection.interestSaved > 0
+					? `Ahorro estimado ${formatMoney(data.projection.interestSaved, data.currency)}`
+					: 'Registra una deuda para proyectar',
+			icon: 'rocket_launch',
+			tone: 'ink' as const
+		}
+	]);
+
+	const KPI_TONES = {
+		primary: 'bg-primary/10 text-primary',
+		secondary: 'bg-secondary/10 text-secondary',
+		tertiary: 'bg-tertiary/10 text-tertiary',
+		ink: 'bg-level-1 text-ink'
+	} as const;
+
 	function statusOf(debt: Debt): { label: string; tone: string } {
 		const days = daysUntil(debt.nextDueDate, now);
 
@@ -67,8 +108,28 @@
 	}
 </script>
 
-<div class="space-y-4 px-4 pt-4">
-	<section class="rounded-3xl bg-inverse-surface p-5 text-inverse-on-surface shadow-hero">
+<div class="space-y-4 px-4 pt-4 lg:mx-auto lg:max-w-[1440px] lg:space-y-6 lg:px-8 lg:pt-8 lg:pb-10">
+	<header class="hidden flex-wrap items-start justify-between gap-6 lg:flex">
+		<div>
+			<p
+				class="flex items-center gap-2 text-label-sm font-semibold tracking-[0.16em] text-primary uppercase"
+			>
+				<span class="size-1.5 rounded-full bg-primary-container" aria-hidden="true"></span>
+				Módulo patrimonial pasivo
+			</p>
+			<h1 class="mt-1 text-title-xl tracking-tight text-ink">Gestor de obligaciones y deudas</h1>
+			<p class="mt-1 max-w-2xl text-body text-on-surface-variant">
+				Monitoreo riguroso de amortizaciones, optimización de flujos y calendario de vencimientos
+				proyectado.
+			</p>
+		</div>
+		<a href="/deudas/nueva" class={buttonClass('primary', 'md', false, 'shrink-0')}>
+			<Icon name="add" size={18} />
+			Registrar nueva deuda / cuota
+		</a>
+	</header>
+
+	<section class="rounded-3xl bg-inverse-surface p-5 text-inverse-on-surface shadow-hero lg:hidden">
 		<header class="flex items-center justify-between gap-2">
 			<span class="flex items-center gap-1.5 text-label-sm font-semibold tracking-wide uppercase">
 				<Icon name="account_balance" size={16} class="text-primary-container" />
@@ -128,7 +189,37 @@
 		</div>
 	</section>
 
-	<a href="/deudas/nueva" class={buttonClass('primary', 'lg', true)}>
+	<section
+		class="hidden lg:grid lg:grid-cols-2 lg:gap-4 xl:grid-cols-4"
+		aria-label="Resumen de deudas"
+	>
+		{#each kpis as kpi (kpi.label)}
+			<article
+				class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-5 shadow-card"
+			>
+				<div class="flex items-center justify-between gap-2">
+					<p class="text-label font-medium text-on-surface-variant">{kpi.label}</p>
+					<span class="flex size-9 items-center justify-center rounded-xl {KPI_TONES[kpi.tone]}">
+						<Icon name={kpi.icon} size={19} />
+					</span>
+				</div>
+				<p class="mt-3 truncate tnum text-title-lg font-bold tracking-tight text-ink">
+					{kpi.value}
+				</p>
+				<p class="mt-1 text-body-sm text-muted">{kpi.meta}</p>
+				{#if kpi.label === 'Total amortizado'}
+					<div class="mt-3 h-1.5 overflow-hidden rounded-full bg-level-1" aria-hidden="true">
+						<div
+							class="h-full rounded-full bg-primary"
+							style="width:{Math.min(100, data.totals.progress)}%"
+						></div>
+					</div>
+				{/if}
+			</article>
+		{/each}
+	</section>
+
+	<a href="/deudas/nueva" class={buttonClass('primary', 'lg', true, 'lg:hidden')}>
 		<span class="flex size-6 items-center justify-center rounded-full border-2 border-white/70">
 			<Icon name="add" size={16} />
 		</span>
@@ -160,7 +251,9 @@
 				</div>
 			</div>
 
-			<div class="-mx-1 mt-3 no-scrollbar flex gap-2 overflow-x-auto px-1 pb-1">
+			<div
+				class="-mx-1 mt-3 no-scrollbar flex gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0"
+			>
 				{#each data.alerts as alert (alert.debt.id)}
 					<a
 						href={`/deudas/${alert.debt.id}`}
@@ -186,7 +279,9 @@
 			</span>
 		</div>
 
-		<div class="-mx-4 mt-2 no-scrollbar flex gap-2 overflow-x-auto px-4 pb-1">
+		<div
+			class="-mx-4 mt-2 no-scrollbar flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0"
+		>
 			{#each filters as filter (filter.value)}
 				<a
 					href={filter.href}
@@ -202,13 +297,13 @@
 			{/each}
 		</div>
 
-		<div class="mt-2 space-y-3">
+		<div class="mt-2 space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
 			{#each data.filtered as debt (debt.id)}
 				{@const style = KIND_STYLES[debt.kind]}
 				{@const status = statusOf(debt)}
 				{@const urgent = data.urgentIds.includes(debt.id)}
 				<article
-					class="rounded-2xl border border-l-4 border-hairline/70 {style.accent} bg-surface-container-lowest p-3.5 shadow-card"
+					class="rounded-2xl border border-l-4 border-hairline/70 {style.accent} bg-surface-container-lowest p-3.5 shadow-card lg:p-5"
 				>
 					<div class="flex items-start gap-3">
 						<span class="flex size-11 shrink-0 items-center justify-center rounded-xl {style.tile}">

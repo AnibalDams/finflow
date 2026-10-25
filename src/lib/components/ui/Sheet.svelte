@@ -100,7 +100,10 @@
 <svelte:window onkeydown={onKeydown} />
 
 {#if open}
-	<div class="fixed inset-0 z-90 mx-auto flex max-w-[430px] flex-col justify-end" style="margin-block:0">
+	<div
+		class="fixed inset-0 z-90 mx-auto flex w-full max-w-[430px] flex-col justify-end lg:max-w-none lg:items-center lg:justify-center lg:p-6"
+		style="margin-block:0"
+	>
 		<button
 			type="button"
 			class="absolute inset-0 bg-ink/45 backdrop-blur-[2px]"
@@ -110,7 +113,7 @@
 		></button>
 
 		<div
-			class="relative z-10 flex max-h-[86dvh] flex-col overflow-hidden rounded-t-3xl bg-surface-container-lowest shadow-sheet outline-none"
+			class="relative z-10 flex max-h-[86dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-surface-container-lowest shadow-sheet outline-none lg:max-h-[80dvh] lg:max-w-lg lg:rounded-3xl lg:border lg:border-hairline/60 lg:shadow-elevated"
 			role="dialog"
 			aria-modal="true"
 			aria-label={title}

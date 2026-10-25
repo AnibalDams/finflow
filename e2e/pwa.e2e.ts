@@ -97,7 +97,7 @@ test('comprueba si hay una versión nueva al navegar', async ({ page }) => {
 		};
 	});
 
-	await page.getByRole('link', { name: 'Métricas' }).click();
+	await page.getByRole('link', { name: /Métricas|Estadísticas/ }).click();
 	await expect(page).toHaveURL(/\/metricas/);
 
 	await expect
@@ -131,7 +131,7 @@ test('ofrece actualizar cuando hay una versión esperando', async ({ page }) => 
 		});
 	});
 
-	await page.getByRole('link', { name: 'Métricas' }).click();
+	await page.getByRole('link', { name: /Métricas|Estadísticas/ }).click();
 	await expect(page.getByText('Nueva versión disponible')).toBeVisible();
 
 	await page.getByRole('button', { name: 'Actualizar' }).click();

@@ -6,9 +6,11 @@
 	interface Props {
 		/** Distancia desde el borde superior (bajo la cabecera correspondiente). */
 		top?: string;
+		/** Distancia en escritorio; por defecto, la misma que en móvil. */
+		topLg?: string;
 	}
 
-	let { top = '0px' }: Props = $props();
+	let { top = '0px', topLg = top }: Props = $props();
 
 	/** Navegaciones y guardados en curso comparten el mismo indicador. */
 	const busy = $derived(navigating.to !== null || pending.active);
@@ -36,10 +38,11 @@
 </script>
 
 <div
-	class="pointer-events-none fixed inset-x-0 z-100 mx-auto h-0.5 max-w-[430px] overflow-hidden transition-opacity duration-150 {shown
+	class="pointer-events-none fixed inset-x-0 top-[var(--nav-top)] z-100 mx-auto h-0.5 max-w-[430px] overflow-hidden transition-opacity duration-150 lg:top-[var(--nav-top-lg)] lg:max-w-none {shown
 		? 'opacity-100'
 		: 'opacity-0'}"
-	style:top
+	style:--nav-top={top}
+	style:--nav-top-lg={topLg}
 	aria-hidden="true"
 >
 	<div

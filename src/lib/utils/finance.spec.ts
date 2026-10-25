@@ -13,6 +13,7 @@ import {
 	monthlyEquivalent,
 	nextDueDate,
 	periodsPerMonth,
+	savingsRate,
 	upcomingDebtPayments,
 	type DebtAlert
 } from './finance';
@@ -317,5 +318,18 @@ describe('presupuesto', () => {
 describe('elapsedMonths', () => {
 	it('cuenta meses entre fechas de tipo date', () => {
 		expect(elapsedMonths('2026-01-01', '2026-07-01')).toBe(6);
+	});
+});
+
+describe('savingsRate', () => {
+	it('calcula el porcentaje de ingresos que queda libre', () => {
+		expect(savingsRate(1000, 400)).toBe(60);
+		expect(savingsRate(4200, 1850.5)).toBe(55.94);
+	});
+
+	it('se mantiene entre 0 y 100 y evita división por cero', () => {
+		expect(savingsRate(0, 0)).toBe(0);
+		expect(savingsRate(100, 300)).toBe(0);
+		expect(savingsRate(100, 0)).toBe(100);
 	});
 });

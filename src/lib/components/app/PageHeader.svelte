@@ -42,7 +42,7 @@
 
 <header
 	class={cn(
-		'sticky top-0 z-40 border-b border-hairline/60 bg-surface/85 pt-safe backdrop-blur-xl',
+		'sticky top-0 z-40 border-b border-hairline/60 bg-surface/85 pt-safe backdrop-blur-xl lg:static lg:rounded-t-3xl lg:pt-0',
 		className
 	)}
 >

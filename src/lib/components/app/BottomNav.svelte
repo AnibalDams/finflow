@@ -55,7 +55,7 @@
 {/snippet}
 
 <nav
-	class="fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-[430px] border-t border-hairline/60 bg-surface/92 pb-safe shadow-[0_-4px_20px_rgba(19,27,46,0.05)] backdrop-blur-xl"
+	class="fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-[430px] border-t border-hairline/60 bg-surface/92 pb-safe shadow-[0_-4px_20px_rgba(19,27,46,0.05)] backdrop-blur-xl lg:hidden"
 	aria-label="Navegación principal"
 >
 	<div class="relative mx-auto flex h-16 items-center justify-around px-1.5">

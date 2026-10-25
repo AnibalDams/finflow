@@ -8,7 +8,9 @@ async function setPrimary(page: Page, on: boolean): Promise<void> {
 	await expect(input).toBeChecked({ checked: on });
 }
 
-test('crea una cuenta, la marca como principal, la archiva, reactiva y elimina', async ({ page }) => {
+test('crea una cuenta, la marca como principal, la archiva, reactiva y elimina', async ({
+	page
+}) => {
 	const name = `Cuenta E2E ${Date.now()}`;
 
 	await login(page);
@@ -28,10 +30,10 @@ test('crea una cuenta, la marca como principal, la archiva, reactiva y elimina',
 	await page.getByRole('button', { name: 'Crear cuenta' }).click();
 
 	await expect(page).toHaveURL(/\/cuentas$/);
-	await expect(page.getByText(name)).toBeVisible();
+	await expect(page.getByRole('link').filter({ hasText: name }).first()).toBeVisible();
 
 	// Detalle: marcar como principal.
-	await page.getByText(name).click();
+	await page.getByRole('link').filter({ hasText: name }).first().click();
 	await expect(page).toHaveURL(/\/cuentas\/[0-9a-f-]{36}/);
 	await setPrimary(page, true);
 	await submitForm(page, 'Guardar cambios');
@@ -41,8 +43,8 @@ test('crea una cuenta, la marca como principal, la archiva, reactiva y elimina',
 	// Archivar: vuelve al listado y aparece en la sección de archivadas.
 	await page.getByRole('button', { name: 'Archivar cuenta' }).click();
 	await expect(page).toHaveURL(/\/cuentas$/);
-	await expect(page.getByText('Archivadas')).toBeVisible();
-	await page.getByText(name).click();
+	await expect(page.getByRole('heading', { name: 'Archivadas' })).toBeVisible();
+	await page.getByRole('link').filter({ hasText: name }).first().click();
 	await expect(page.getByRole('button', { name: 'Reactivar cuenta' })).toBeVisible();
 
 	// Reactivar y eliminar (la cuenta no tiene movimientos).

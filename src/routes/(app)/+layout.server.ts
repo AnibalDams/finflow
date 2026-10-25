@@ -35,6 +35,8 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 			}
 		: shell.profile;
 
+	const activeGoal = goals.find((goal) => goal.status === 'active') ?? null;
+
 	return {
 		...shell,
 		profile,
@@ -42,6 +44,16 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 		totals,
 		alerts,
 		summaries: { goals: summarizeGoals(goals), debts: summarizeDebts(debts) },
-		nextDue: nextDebtDue(debts, reference)
+		nextDue: nextDebtDue(debts, reference),
+		goalHighlight: activeGoal
+			? {
+					id: activeGoal.id,
+					name: activeGoal.name,
+					savedAmount: activeGoal.savedAmount,
+					targetAmount: activeGoal.targetAmount,
+					progressPercent: activeGoal.progressPercent,
+					targetDate: activeGoal.targetDate
+				}
+			: null
 	};
 };

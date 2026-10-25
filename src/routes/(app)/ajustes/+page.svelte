@@ -118,8 +118,20 @@
 	}
 </script>
 
-<div class="space-y-4 px-4 pt-4 pb-10">
-	<section class="rounded-3xl bg-inverse-surface p-5 text-inverse-on-surface shadow-hero">
+<div
+	class="space-y-4 px-4 pt-4 pb-10 lg:mx-auto lg:grid lg:max-w-[1440px] lg:grid-cols-12 lg:gap-6 lg:space-y-0 lg:px-8 lg:pt-8 lg:pb-10"
+>
+	<header class="hidden lg:col-span-12 lg:block">
+		<p class="text-label-sm font-semibold tracking-[0.16em] text-primary uppercase">Tu cuenta</p>
+		<h1 class="mt-1 text-title-xl tracking-tight text-ink">Configuración</h1>
+		<p class="mt-1 text-body text-on-surface-variant">
+			Administra tu perfil, seguridad, presupuesto y datos de FinFlow.
+		</p>
+	</header>
+
+	<section
+		class="rounded-3xl bg-inverse-surface p-5 text-inverse-on-surface shadow-hero lg:col-span-12 lg:p-6"
+	>
 		<div class="flex items-center gap-3">
 			<span
 				class="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-container text-title-sm font-bold text-inverse-surface"
@@ -147,186 +159,206 @@
 		</div>
 	</section>
 
-	<ProfilePhoto avatarUrl={profile.avatarUrl} hasAvatar={Boolean(profile.avatarPath)} {initials} />
+	<div class="space-y-4 lg:col-span-4">
+		<ProfilePhoto
+			avatarUrl={profile.avatarUrl}
+			hasAvatar={Boolean(profile.avatarPath)}
+			{initials}
+		/>
 
-	<a
-		href={resolve('/(app)/cuentas')}
-		class="flex items-center gap-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-3.5 shadow-card transition hover:border-secondary/40"
-	>
-		<span
-			class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary"
+		<a
+			href={resolve('/(app)/cuentas')}
+			class="flex items-center gap-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-3.5 shadow-card transition hover:border-secondary/40"
 		>
-			<Icon name="account_balance_wallet" size={20} />
-		</span>
-		<div class="min-w-0 flex-1">
-			<p class="text-body font-medium text-ink">Cuentas y categorías</p>
-			<p class="text-body-sm text-muted">Saldos, íconos y presupuestos por categoría</p>
-		</div>
-		<Icon name="chevron_right" size={20} class="shrink-0 text-muted" />
-	</a>
-
-	<section class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4">
-		<h2 class="flex items-center gap-2 text-title-sm text-ink">
-			<Icon name="person" size={18} class="text-secondary" />
-			Perfil
-		</h2>
-
-		{#if form?.intent === 'profile' && form.message}
-			<div
-				class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
-				role="alert"
+			<span
+				class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary"
 			>
-				<Icon name="error" size={18} class="mt-0.5 shrink-0" />
-				{form.message}
+				<Icon name="account_balance_wallet" size={20} />
+			</span>
+			<div class="min-w-0 flex-1">
+				<p class="text-body font-medium text-ink">Cuentas y categorías</p>
+				<p class="text-body-sm text-muted">Saldos, íconos y presupuestos por categoría</p>
 			</div>
-		{/if}
+			<Icon name="chevron_right" size={20} class="shrink-0 text-muted" />
+		</a>
+	</div>
 
-		<form
-			method="POST"
-			action="?/profile"
-			class="space-y-3"
-			use:enhance={enhanceForm({
-				success: 'Perfil actualizado',
-				onStart: () => (savingProfile = true),
-				onFinish: () => (savingProfile = false)
-			})}
+	<div class="space-y-4 lg:col-span-8">
+		<section
+			class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4 lg:p-5"
 		>
-			<TextField
-				label="Nombre completo"
-				name="fullName"
-				bind:value={fullName}
-				error={errors.fullName}
-			/>
-			<SelectField
-				label="Moneda principal"
-				name="currency"
-				options={currencyOptions}
-				bind:value={currency}
-				error={errors.currency}
-			/>
-			<AmountField
-				name="monthlyBudget"
-				label="Presupuesto mensual global"
-				bind:value={monthlyBudget}
-				{currency}
-				tone="primary"
-				quickAmounts={[]}
-				error={errors.monthlyBudget}
-			/>
+			<h2 class="flex items-center gap-2 text-title-sm text-ink">
+				<Icon name="person" size={18} class="text-secondary" />
+				Perfil
+			</h2>
+
+			{#if form?.intent === 'profile' && form.message}
+				<div
+					class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+					role="alert"
+				>
+					<Icon name="error" size={18} class="mt-0.5 shrink-0" />
+					{form.message}
+				</div>
+			{/if}
+
+			<form
+				method="POST"
+				action="?/profile"
+				class="space-y-3"
+				use:enhance={enhanceForm({
+					success: 'Perfil actualizado',
+					onStart: () => (savingProfile = true),
+					onFinish: () => (savingProfile = false)
+				})}
+			>
+				<TextField
+					label="Nombre completo"
+					name="fullName"
+					bind:value={fullName}
+					error={errors.fullName}
+				/>
+				<SelectField
+					label="Moneda principal"
+					name="currency"
+					options={currencyOptions}
+					bind:value={currency}
+					error={errors.currency}
+				/>
+				<AmountField
+					name="monthlyBudget"
+					label="Presupuesto mensual global"
+					bind:value={monthlyBudget}
+					{currency}
+					tone="primary"
+					quickAmounts={[]}
+					error={errors.monthlyBudget}
+				/>
+				<p class="text-body-sm text-muted">
+					Se usa como meta general en Inicio; los límites por categoría se editan en Cuentas.
+				</p>
+
+				<button type="submit" class={buttonClass('secondary', 'md', true)} disabled={savingProfile}>
+					{#if savingProfile}
+						<Icon name="progress_activity" size={18} class="animate-spin" />
+					{:else}
+						<Icon name="check" size={18} />
+					{/if}
+					Guardar perfil
+				</button>
+			</form>
+		</section>
+
+		<section
+			class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4"
+		>
+			<h2 class="flex items-center gap-2 text-title-sm text-ink">
+				<Icon name="lock" size={18} class="text-secondary" />
+				Contraseña
+			</h2>
+
+			{#if form?.intent === 'password' && form.message}
+				<div
+					class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+					role="alert"
+				>
+					<Icon name="error" size={18} class="mt-0.5 shrink-0" />
+					{form.message}
+				</div>
+			{/if}
+
+			<form
+				method="POST"
+				action="?/password"
+				class="space-y-3"
+				use:enhance={enhanceForm({
+					success: 'Contraseña actualizada',
+					onSuccess: () => {
+						currentPassword = '';
+						password = '';
+						passwordConfirm = '';
+					},
+					onStart: () => (savingPassword = true),
+					onFinish: () => (savingPassword = false)
+				})}
+			>
+				<TextField
+					label="Contraseña actual"
+					name="currentPassword"
+					type="password"
+					icon="lock"
+					autocomplete="current-password"
+					bind:value={currentPassword}
+					error={errors.currentPassword}
+				/>
+				<TextField
+					label="Nueva contraseña"
+					name="password"
+					type="password"
+					icon="lock"
+					autocomplete="new-password"
+					bind:value={password}
+					error={errors.password}
+					hint="Mínimo 12 caracteres, con letras y números"
+				/>
+				<TextField
+					label="Confirmar contraseña"
+					name="passwordConfirm"
+					type="password"
+					icon="lock_reset"
+					autocomplete="new-password"
+					bind:value={passwordConfirm}
+					error={errors.passwordConfirm}
+				/>
+
+				<button
+					type="submit"
+					class={buttonClass('secondary', 'md', true)}
+					disabled={savingPassword}
+				>
+					{#if savingPassword}
+						<Icon name="progress_activity" size={18} class="animate-spin" />
+					{:else}
+						<Icon name="key" size={18} />
+					{/if}
+					Cambiar contraseña
+				</button>
+			</form>
+		</section>
+
+		<section
+			class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4"
+		>
+			<h2 class="flex items-center gap-2 text-title-sm text-ink">
+				<Icon name="download" size={18} class="text-secondary" />
+				Exportar datos
+			</h2>
 			<p class="text-body-sm text-muted">
-				Se usa como meta general en Inicio; los límites por categoría se editan en Cuentas.
+				{data.movements.length} de {data.movementTotal} movimientos de {data.month.label}. Para
+				otros periodos usa
+				<a href={resolve('/(app)/metricas')} class="font-semibold text-secondary underline"
+					>Métricas</a
+				>.
 			</p>
 
-			<button type="submit" class={buttonClass('secondary', 'md', true)} disabled={savingProfile}>
-				{#if savingProfile}
-					<Icon name="progress_activity" size={18} class="animate-spin" />
-				{:else}
-					<Icon name="check" size={18} />
-				{/if}
-				Guardar perfil
-			</button>
-		</form>
-	</section>
-
-	<section class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4">
-		<h2 class="flex items-center gap-2 text-title-sm text-ink">
-			<Icon name="lock" size={18} class="text-secondary" />
-			Contraseña
-		</h2>
-
-		{#if form?.intent === 'password' && form.message}
-			<div
-				class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
-				role="alert"
-			>
-				<Icon name="error" size={18} class="mt-0.5 shrink-0" />
-				{form.message}
+			<div class="grid grid-cols-2 gap-2">
+				<button type="button" class={buttonClass('outline', 'md', true)} onclick={exportCsv}>
+					<Icon name="csv" size={18} />
+					CSV
+				</button>
+				<button type="button" class={buttonClass('outline', 'md', true)} onclick={exportPdf}>
+					<Icon name="picture_as_pdf" size={18} />
+					PDF
+				</button>
 			</div>
-		{/if}
+		</section>
+	</div>
 
-		<form
-			method="POST"
-			action="?/password"
-			class="space-y-3"
-			use:enhance={enhanceForm({
-				success: 'Contraseña actualizada',
-				onSuccess: () => {
-					currentPassword = '';
-					password = '';
-					passwordConfirm = '';
-				},
-				onStart: () => (savingPassword = true),
-				onFinish: () => (savingPassword = false)
-			})}
-		>
-			<TextField
-				label="Contraseña actual"
-				name="currentPassword"
-				type="password"
-				icon="lock"
-				autocomplete="current-password"
-				bind:value={currentPassword}
-				error={errors.currentPassword}
-			/>
-			<TextField
-				label="Nueva contraseña"
-				name="password"
-				type="password"
-				icon="lock"
-				autocomplete="new-password"
-				bind:value={password}
-				error={errors.password}
-				hint="Mínimo 12 caracteres, con letras y números"
-			/>
-			<TextField
-				label="Confirmar contraseña"
-				name="passwordConfirm"
-				type="password"
-				icon="lock_reset"
-				autocomplete="new-password"
-				bind:value={passwordConfirm}
-				error={errors.passwordConfirm}
-			/>
+	<div class="lg:col-span-12">
+		<InstallApp />
+	</div>
 
-			<button type="submit" class={buttonClass('secondary', 'md', true)} disabled={savingPassword}>
-				{#if savingPassword}
-					<Icon name="progress_activity" size={18} class="animate-spin" />
-				{:else}
-					<Icon name="key" size={18} />
-				{/if}
-				Cambiar contraseña
-			</button>
-		</form>
-	</section>
-
-	<section class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4">
-		<h2 class="flex items-center gap-2 text-title-sm text-ink">
-			<Icon name="download" size={18} class="text-secondary" />
-			Exportar datos
-		</h2>
-		<p class="text-body-sm text-muted">
-			{data.movements.length} de {data.movementTotal} movimientos de {data.month.label}. Para otros
-			periodos usa
-			<a href={resolve('/(app)/metricas')} class="font-semibold text-secondary underline"
-				>Métricas</a
-			>.
-		</p>
-
-		<div class="grid grid-cols-2 gap-2">
-			<button type="button" class={buttonClass('outline', 'md', true)} onclick={exportCsv}>
-				<Icon name="csv" size={18} />
-				CSV
-			</button>
-			<button type="button" class={buttonClass('outline', 'md', true)} onclick={exportPdf}>
-				<Icon name="picture_as_pdf" size={18} />
-				PDF
-			</button>
-		</div>
-	</section>
-
-	<InstallApp />
-
-	<section class="space-y-2">
+	<section class="space-y-2 lg:col-span-12">
 		<form
 			method="POST"
 			action="/auth/salir"

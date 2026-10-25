@@ -288,6 +288,13 @@ export function dueLabel(alert: DebtAlert): string {
 
 export type BudgetTone = 'success' | 'warning' | 'danger';
 
+/** Porcentaje de los ingresos del periodo que queda libre tras los gastos. */
+export function savingsRate(income: number, expense: number): number {
+	if (income <= 0) return 0;
+	const rate = ((income - expense) / income) * 100;
+	return Math.max(0, Math.min(100, round2(rate)));
+}
+
 export function budgetTone(percent: number): BudgetTone {
 	if (percent >= 100) return 'danger';
 	if (percent >= 80) return 'warning';
