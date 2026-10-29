@@ -62,6 +62,17 @@ npm run dev        # http://localhost:5173
 - En cada navegación del cliente (`afterNavigate`) se ejecuta `registration.update()`. Si hay una versión nueva esperando, aparece un banner **"Nueva versión disponible"** que la activa con `SKIP_WAITING` y recarga la app.
 - En **Ajustes → Instalar aplicación** aparece el botón nativo cuando el navegador lo permite; en iOS se muestran los pasos (Compartir → Añadir a pantalla de inicio). Si ya está instalada, la sección lo indica.
 
+## Notificaciones push
+
+Los avisos de cuotas y aportes se envían con Web Push (VAPID) a cada dispositivo suscrito, una vez al día y a la hora local del perfil.
+
+- **Preferencias** en Ajustes: interruptor, hora (`profiles.push_time`) y activación por dispositivo. El navegador escribe la cookie `tz_offset` y `hooks.server.ts` la persiste en `profiles.tz_offset` para que el cron calcule la hora local sin sesión.
+- **Selección de avisos**: `claim_due_notifications()` (migración `0010`) devuelve solo lo que corresponde a la ventana horaria del usuario y lo reserva en `notification_log`, con clave `(user_id, kind, ref_id, local_date)`. Ejecutarla dos veces el mismo día no duplica envíos.
+- **Cron**: `GET|POST /api/cron/notifications` con la cabecera `x-cron-secret` (o `Authorization: Bearer …`). Programa una ejecución **cada hora**; cada usuario recibe en su franja de 60 minutos.
+- **Variables**: `PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` (`npx web-push generate-vapid-keys`), `VAPID_SUBJECT`, `CRON_SECRET` y `SUPABASE_SERVICE_ROLE_KEY` (esta última solo la usa el cron, en el servidor).
+- **Programación en Supabase** (pg_cron + pg_net): guarda el secreto en Vault y ejecuta `net.http_post` contra el sitio desplegado. En Vercel Cron, el plan Hobby solo permite una ejecución diaria, así que no sirve para horas por usuario.
+- **Límites**: en iOS/iPadOS el push requiere Safari 16.4+ con la app **añadida a la pantalla de inicio**; en macOS, añadida al Dock. La entrega la gestiona el sistema operativo, no hay garantía de minuto exacto.
+
 ## Datos de demostración
 
 ```sh

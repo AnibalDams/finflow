@@ -16,6 +16,7 @@ import type {
 	AnalyticsSeriesPoint,
 	BudgetItem,
 	Category,
+	ClaimedNotification,
 	Debt,
 	DebtPayment,
 	Goal,
@@ -47,6 +48,38 @@ export function toBoolean(value: unknown, fallback = false): boolean {
 	return typeof value === 'boolean' ? value : fallback;
 }
 
+/** `HH:MM:SS` de Postgres → `HH:MM` para `input[type=time]`. */
+export function toTimeValue(value: unknown, fallback = '09:00'): string {
+	if (typeof value !== 'string') return fallback;
+	const match = /^(\d{2}):(\d{2})/.exec(value);
+	return match ? `${match[1]}:${match[2]}` : fallback;
+}
+
+/** Fila devuelta por `claim_due_notifications()`. */
+export function mapClaimedNotification(row: {
+	user_id: string;
+	kind: string;
+	ref_id: string;
+	label: string;
+	amount: number | null;
+	currency: string | null;
+	due_date: string | null;
+	days_left: number | null;
+	target_url: string | null;
+}): ClaimedNotification {
+	return {
+		userId: row.user_id,
+		kind: row.kind as ClaimedNotification['kind'],
+		refId: row.ref_id,
+		label: row.label,
+		amount: toNumber(row.amount),
+		currency: toStringValue(row.currency, 'USD'),
+		dueDate: toStringValue(row.due_date),
+		daysLeft: toNumber(row.days_left),
+		targetUrl: toStringValue(row.target_url, '/')
+	};
+}
+
 export function mapProfile(row: Row<'profiles'>): Profile {
 	return {
 		id: row.id,
@@ -54,7 +87,10 @@ export function mapProfile(row: Row<'profiles'>): Profile {
 		avatarPath: row.avatar_url,
 		avatarUrl: null,
 		currency: row.currency,
-		monthlyBudget: toNumber(row.monthly_budget)
+		monthlyBudget: toNumber(row.monthly_budget),
+		pushEnabled: toBoolean(row.push_enabled),
+		pushTime: toTimeValue(row.push_time, '09:00'),
+		tzOffset: toNumber(row.tz_offset)
 	};
 }
 

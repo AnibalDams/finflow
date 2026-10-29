@@ -78,11 +78,21 @@ const supabaseHandle: Handle = async ({ event, resolve }) => {
 
 /** Carga perfil y usuario, y protege las rutas privadas. */
 const authHandle: Handle = async ({ event, resolve }) => {
+	// El cron de notificaciones no tiene sesión: su ruta valida `CRON_SECRET`.
+	if (event.url.pathname === '/api/cron/notifications') return resolve(event);
+
 	const { user } = await event.locals.safeGetSession();
 	event.locals.user = user;
 	event.locals.profile = null;
 
 	if (!user) {
+		if (event.url.pathname.startsWith('/api/')) {
+			return new Response(JSON.stringify({ message: 'Sesión no válida' }), {
+				status: 401,
+				headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }
+			});
+		}
+
 		if (!isPublicRoute(event.url.pathname)) {
 			const target = `${event.url.pathname}${event.url.search}`;
 			redirect(303, target === '/' ? '/login' : `/login?redirectTo=${encodeURIComponent(target)}`);
@@ -95,6 +105,19 @@ const authHandle: Handle = async ({ event, resolve }) => {
 		.select('*')
 		.eq('id', user.id)
 		.maybeSingle();
+
+	// El offset lo escribe el navegador en la cookie; se persiste para que el
+	// cron pueda calcular la hora local del usuario sin sesión.
+	if (data && data.tz_offset !== event.locals.tzOffset) {
+		const { error } = await event.locals.supabase
+			.from('profiles')
+			.update({ tz_offset: event.locals.tzOffset })
+			.eq('id', user.id);
+
+		if (error) console.error('[finflow] tz_offset:', error.message);
+		else data.tz_offset = event.locals.tzOffset;
+	}
+
 	event.locals.profile = data ? mapProfile(data) : null;
 
 	// Solo navegaciones de lectura: las rutas `/auth/salir` y `/auth/confirm`

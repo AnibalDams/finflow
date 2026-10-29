@@ -74,6 +74,76 @@ self.addEventListener('message', (event) => {
 	}
 });
 
+/* ---------------------------------------------------------------------------
+ * Notificaciones push
+ *
+ * El servidor envía un JSON pequeño ({ title, body, url, tag }); aquí solo se
+ * muestra y se decide a dónde llevar al usuario al tocarla.
+ * ------------------------------------------------------------------------ */
+
+interface PushMessage {
+	title?: string;
+	body?: string;
+	url?: string;
+	tag?: string;
+}
+
+const appIcon = urlFor('icons/icon-192.png');
+
+function readPushMessage(data: PushMessageData | null): PushMessage {
+	if (!data) return {};
+
+	try {
+		const parsed = data.json() as unknown;
+		return typeof parsed === 'object' && parsed !== null ? (parsed as PushMessage) : {};
+	} catch {
+		return { body: data.text() };
+	}
+}
+
+self.addEventListener('push', (event) => {
+	const message = readPushMessage(event.data);
+	const title = message.title?.slice(0, 120) || 'FinFlow';
+	const body = message.body?.slice(0, 240) || 'Tienes un aviso pendiente en FinFlow.';
+
+	event.waitUntil(
+		self.registration.showNotification(title, {
+			body,
+			icon: appIcon,
+			badge: appIcon,
+			lang: 'es',
+			tag: message.tag,
+			data: { url: message.url ?? '/' }
+		})
+	);
+});
+
+self.addEventListener('notificationclick', (event) => {
+	event.notification.close();
+
+	const data = (event.notification.data ?? {}) as { url?: string };
+	const target = new URL(data.url ?? '/', self.location.origin);
+	const destination = `${target.pathname}${target.search}`;
+
+	event.waitUntil(
+		(async () => {
+			const windows = (await self.clients.matchAll({
+				type: 'window',
+				includeUncontrolled: true
+			})) as WindowClient[];
+
+			for (const client of windows) {
+				if (new URL(client.url).origin !== target.origin) continue;
+				await client.focus();
+				await client.navigate(destination);
+				return;
+			}
+
+			await self.clients.openWindow(destination);
+		})()
+	);
+});
+
 async function networkFirst(request: Request): Promise<Response> {
 	try {
 		return await fetch(request);

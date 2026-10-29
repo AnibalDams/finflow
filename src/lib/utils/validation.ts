@@ -258,6 +258,29 @@ export const changePasswordSchema = z
 		path: ['passwordConfirm']
 	});
 
+/* ==========================================================================
+   Notificaciones push
+   ========================================================================== */
+
+export const notificationPrefsSchema = z.object({
+	pushEnabled: z
+		.union([z.literal('on'), z.literal('true'), z.literal('false'), z.literal('')])
+		.optional()
+		.transform((value) => value === 'on' || value === 'true'),
+	pushTime: z
+		.string()
+		.trim()
+		.regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Elige una hora válida')
+});
+
+export const pushSubscriptionSchema = z.object({
+	endpoint: z.string().trim().min(10).max(1200),
+	keys: z.object({
+		p256dh: z.string().trim().min(20).max(300),
+		auth: z.string().trim().min(8).max(100)
+	})
+});
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type TransactionInput = z.infer<typeof transactionSchema>;

@@ -27,6 +27,12 @@ export interface Profile {
 	avatarUrl: string | null;
 	currency: string;
 	monthlyBudget: number;
+	/** Notificaciones push activadas por el usuario. */
+	pushEnabled: boolean;
+	/** Hora local (`HH:MM`) a la que quiere recibir los avisos. */
+	pushTime: string;
+	/** Minutos por detrás de UTC de su zona (Caracas = 240). */
+	tzOffset: number;
 }
 
 export interface Account {
@@ -219,4 +225,27 @@ export interface DashboardAlert {
 	description: string;
 	icon: string;
 	tone: 'warning' | 'danger' | 'info' | 'success';
+}
+
+/** Aviso que el cron ya reservó en `notification_log` y debe enviarse. */
+export interface ClaimedNotification {
+	userId: string;
+	kind: 'debt_due' | 'debt_overdue' | 'goal_reminder';
+	refId: string;
+	/** Nombre de la deuda o del plan. */
+	label: string;
+	amount: number;
+	currency: string;
+	/** Fecha local de vencimiento o del recordatorio. */
+	dueDate: string;
+	daysLeft: number;
+	targetUrl: string;
+}
+
+/** Cuerpo que consume el service worker al recibir un push. */
+export interface PushPayload {
+	title: string;
+	body: string;
+	url: string;
+	tag: string;
 }

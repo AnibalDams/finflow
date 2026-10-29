@@ -12,7 +12,7 @@ import { checkRateLimit } from '#lib/server/rate-limit';
 import { requireAuth } from '#lib/server/results';
 import { periodRange, localRangeInstants, referenceAtOffset } from '#lib/utils/dates';
 import { formValues, readFile, readString } from '#lib/utils/forms';
-import { changePasswordSchema, fieldErrors, profileSchema } from '#lib/utils/validation';
+import { changePasswordSchema, fieldErrors, notificationPrefsSchema, profileSchema } from '#lib/utils/validation';
 import type { Actions, PageServerLoad } from './$types';
 
 const PROFILE_VALUES = ['fullName', 'currency', 'monthlyBudget'] as const;
@@ -177,6 +177,41 @@ export const actions: Actions = {
 		}
 
 		return { ok: true };
+	},
+
+	notifications: async ({ request, locals }) => {
+		const user = requireAuth(locals.user);
+		const form = await request.formData();
+
+		const parsed = notificationPrefsSchema.safeParse({
+			pushEnabled: readString(form, 'pushEnabled'),
+			pushTime: readString(form, 'pushTime')
+		});
+
+		if (!parsed.success) {
+			return fail(400, {
+				intent: 'notifications',
+				message: 'Revisa la hora del aviso.',
+				errors: fieldErrors(parsed.error)
+			});
+		}
+
+		const { error } = await locals.supabase
+			.from('profiles')
+			.update({
+				push_enabled: parsed.data.pushEnabled,
+				push_time: parsed.data.pushTime
+			})
+			.eq('id', user.id);
+
+		if (error) {
+			return fail(400, {
+				intent: 'notifications',
+				message: mutationMessage(error.message, 'No pudimos guardar tus notificaciones.')
+			});
+		}
+
+		return { intent: 'notifications', ok: true };
 	},
 
 	password: async ({ request, locals, setHeaders }) => {

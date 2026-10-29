@@ -47,5 +47,36 @@ export const variables = defineEnvVars({
 			}
 			return url.origin;
 		}
+	},
+	PUBLIC_VAPID_PUBLIC_KEY: {
+		public: true,
+		description: 'Clave pública VAPID para Web Push (vacía desactiva las notificaciones)',
+		schema: (value) => value?.trim() ?? ''
+	},
+	VAPID_PRIVATE_KEY: {
+		public: false,
+		description: 'Clave privada VAPID (solo servidor)',
+		schema: (value) => value?.trim() ?? ''
+	},
+	VAPID_SUBJECT: {
+		public: false,
+		description: 'Contacto VAPID: mailto: o URL del sitio',
+		schema: (value) => value?.trim() || 'mailto:demo@finflow.app'
+	},
+	CRON_SECRET: {
+		public: false,
+		description: 'Secreto compartido que valida al cron de notificaciones',
+		schema: (value) => {
+			const secret = value?.trim() ?? '';
+			if (secret && secret.length < 16) {
+				throw new Error('CRON_SECRET debe tener al menos 16 caracteres');
+			}
+			return secret;
+		}
+	},
+	SUPABASE_SERVICE_ROLE_KEY: {
+		public: false,
+		description: 'Clave service_role de Supabase (solo servidor, sin RLS)',
+		schema: (value) => value?.trim() ?? ''
 	}
 });

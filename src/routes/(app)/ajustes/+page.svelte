@@ -3,9 +3,11 @@
 	import { resolve } from '$app/paths';
 	import InstallApp from '#lib/components/app/InstallApp.svelte';
 	import ProfilePhoto from '#lib/components/app/ProfilePhoto.svelte';
+	import PushDevice from '#lib/components/app/PushDevice.svelte';
 	import AmountField from '#lib/components/ui/AmountField.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import SelectField from '#lib/components/ui/SelectField.svelte';
+	import Switch from '#lib/components/ui/Switch.svelte';
 	import TextField from '#lib/components/ui/TextField.svelte';
 	import { buttonClass } from '#lib/components/ui/button-styles';
 	import { notifyError, notifySuccess } from '#lib/stores/toast.svelte';
@@ -35,6 +37,10 @@
 	let passwordConfirm = $state('');
 	let savingPassword = $state(false);
 	let leaving = $state(false);
+
+	let pushEnabled = $state(profile.pushEnabled);
+	let pushTime = $state(profile.pushTime);
+	let savingNotifications = $state(false);
 
 	const initials = $derived(
 		profile.fullName
@@ -245,6 +251,70 @@
 						<Icon name="check" size={18} />
 					{/if}
 					Guardar perfil
+				</button>
+			</form>
+		</section>
+
+		<section class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4">
+			<h2 class="flex items-center gap-2 text-title-sm text-ink">
+				<Icon name="notifications" size={18} class="text-secondary" />
+				Notificaciones
+			</h2>
+
+			{#if form?.intent === 'notifications' && form.message}
+				<div
+					class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+					role="alert"
+				>
+					<Icon name="error" size={18} class="mt-0.5 shrink-0" />
+					{form.message}
+				</div>
+			{/if}
+
+			<p class="text-body-sm text-muted">
+				Un recordatorio al día por cada cuota por vencer o vencida, hasta que la pagues, la archives
+				o la elimines.
+			</p>
+
+			<form
+				method="POST"
+				action="?/notifications"
+				class="space-y-3"
+				use:enhance={enhanceForm({
+					success: 'Preferencias de notificación guardadas',
+					onStart: () => (savingNotifications = true),
+					onFinish: () => (savingNotifications = false)
+				})}
+			>
+				<Switch
+					label="Avisarme de cuotas y aportes"
+					description="Se envía a la hora local de tu dispositivo"
+					name="pushEnabled"
+					bind:checked={pushEnabled}
+				/>
+
+				<TextField
+					label="Hora del aviso"
+					name="pushTime"
+					type="time"
+					bind:value={pushTime}
+					error={errors.pushTime}
+					hint="Elige la hora a la que quieres recibir el recordatorio"
+				/>
+
+				<PushDevice />
+
+				<button
+					type="submit"
+					class={buttonClass('secondary', 'md', true)}
+					disabled={savingNotifications}
+				>
+					{#if savingNotifications}
+						<Icon name="progress_activity" size={18} class="animate-spin" />
+					{:else}
+						<Icon name="check" size={18} />
+					{/if}
+					Guardar preferencias
 				</button>
 			</form>
 		</section>

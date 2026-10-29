@@ -458,6 +458,33 @@ export type Database = {
           },
         ]
       }
+      notification_log: {
+        Row: {
+          id: number
+          kind: string
+          local_date: string
+          ref_id: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: never
+          kind: string
+          local_date: string
+          ref_id: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: never
+          kind?: string
+          local_date?: string
+          ref_id?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -466,6 +493,9 @@ export type Database = {
           full_name: string
           id: string
           monthly_budget: number
+          push_enabled: boolean
+          push_time: string
+          tz_offset: number
           updated_at: string
         }
         Insert: {
@@ -475,6 +505,9 @@ export type Database = {
           full_name?: string
           id: string
           monthly_budget?: number
+          push_enabled?: boolean
+          push_time?: string
+          tz_offset?: number
           updated_at?: string
         }
         Update: {
@@ -484,7 +517,46 @@ export type Database = {
           full_name?: string
           id?: string
           monthly_budget?: number
+          push_enabled?: boolean
+          push_time?: string
+          tz_offset?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          failure_count: number
+          id: string
+          last_used_at: string | null
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          failure_count?: number
+          id?: string
+          last_used_at?: string | null
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          failure_count?: number
+          id?: string
+          last_used_at?: string | null
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -821,6 +893,20 @@ export type Database = {
       }
     }
     Functions: {
+      claim_due_notifications: {
+        Args: { p_now?: string }
+        Returns: {
+          user_id: string
+          kind: string
+          ref_id: string
+          label: string
+          amount: number
+          currency: string
+          due_date: string
+          days_left: number
+          target_url: string
+        }[]
+      }
       get_analytics: {
         Args: {
           p_from: string
@@ -839,6 +925,15 @@ export type Database = {
           p_occurred_at?: string
         }
         Returns: string
+      }
+      register_push_subscription: {
+        Args: {
+          p_auth: string
+          p_endpoint: string
+          p_p256dh: string
+          p_user_agent?: string
+        }
+        Returns: undefined
       }
       register_transfer: {
         Args: {
