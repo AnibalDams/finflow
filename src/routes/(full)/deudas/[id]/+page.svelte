@@ -61,7 +61,7 @@
 	let editFirstDue = $state(debt.firstDueDate);
 	let editAccount = $state(debt.accountId ?? '');
 	let editNotes = $state(debt.notes ?? '');
-	let editAlert = $state(debt.alertDaysBefore > 0);
+	let editAlertDays = $state(String(debt.alertDaysBefore));
 	let savingEdit = $state(false);
 	let deleting = $state(false);
 	let statusSaving = $state(false);
@@ -401,15 +401,17 @@
 			/>
 
 			<div class="rounded-2xl bg-level-1/70 p-3">
-				<label class="flex cursor-pointer items-center justify-between gap-3">
-					<span class="text-label font-medium text-ink">Alertar 5 días antes</span>
-					<input
-						type="checkbox"
-						bind:checked={editAlert}
-						class="size-5 rounded border-outline accent-primary"
-					/>
-				</label>
-				<input type="hidden" name="alertDaysBefore" value={editAlert ? '5' : '0'} />
+				<TextField
+					label="Avisarme antes"
+					name="alertDaysBefore"
+					type="number"
+					inputmode="numeric"
+					min="0"
+					max="30"
+					bind:value={editAlertDays}
+					error={previous.alertDaysBefore}
+					hint="Días antes del vencimiento (0 = solo el mismo día)"
+				/>
 			</div>
 
 			<div class="space-y-1.5">

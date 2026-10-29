@@ -8,7 +8,6 @@
 	import IconPicker from '#lib/components/ui/IconPicker.svelte';
 	import OptionCards from '#lib/components/ui/OptionCards.svelte';
 	import SegmentedControl from '#lib/components/ui/SegmentedControl.svelte';
-	import Switch from '#lib/components/ui/Switch.svelte';
 	import TextField from '#lib/components/ui/TextField.svelte';
 	import { buttonClass } from '#lib/components/ui/button-styles';
 	import { enhanceForm } from '#lib/utils/enhance';
@@ -51,7 +50,7 @@
 	let dueDay = $state(values.dueDay ?? data.defaultDueDay);
 	let firstDueDate = $state(values.firstDueDate ?? data.defaultDueDate);
 	let accountId = $state(values.accountId ?? data.defaultAccountId);
-	let alertEnabled = $state(values.alertDaysBefore !== '0');
+	let alertDays = $state(values.alertDaysBefore ?? '5');
 	let saving = $state(false);
 
 	const kindOptions = $derived(
@@ -422,12 +421,17 @@
 		</div>
 
 		<div class="rounded-2xl bg-level-1/70 p-3">
-			<Switch
-				label="Alertar 5 días antes"
-				description="Evita penalizaciones e intereses moratorios"
-				bind:checked={alertEnabled}
+			<TextField
+				label="Avisarme antes"
+				name="alertDaysBefore"
+				type="number"
+				inputmode="numeric"
+				min="0"
+				max="30"
+				bind:value={alertDays}
+				error={previous.alertDaysBefore}
+				hint="Días antes del vencimiento (0 = solo el mismo día)"
 			/>
-			<input type="hidden" name="alertDaysBefore" value={alertEnabled ? '5' : '0'} />
 		</div>
 	</section>
 
