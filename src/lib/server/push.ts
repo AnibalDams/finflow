@@ -7,10 +7,10 @@
  * solo se tocan las suscripciones necesarias para enviar.
  */
 
-import { createRequire } from 'node:module';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type * as WebPush from 'web-push';
+import webpush from 'web-push';
 import { PUBLIC_SUPABASE_URL, PUBLIC_VAPID_PUBLIC_KEY } from '$app/env/public';
 import {
 	CRON_SECRET,
@@ -57,12 +57,11 @@ export function verifyCronSecret(header: string | null): boolean {
 }
 
 /**
- * `web-push` es CommonJS y no expone exports nombrados al cargarse como ESM, y
- * un `import * as` deja el objeto vacío al empaquetar. Se carga con `require`
- * para tener el módulo real tanto en `vite dev` como en el runtime de Vercel.
+ * `web-push` es CommonJS: sin exports nombrados y, con un `import * as`, el
+ * objeto queda vacío al empaquetar. El import por defecto entrega el módulo
+ * real y lo mantiene rastreado en el despliegue.
  */
-const require = createRequire(import.meta.url);
-const webpush = require('web-push') as typeof WebPush;
+const push = webpush as typeof WebPush;
 
 let admin: Db | null = null;
 
@@ -78,7 +77,7 @@ let vapidReady = false;
 
 function ensureVapid(): void {
 	if (vapidReady) return;
-	webpush.setVapidDetails(VAPID_SUBJECT, PUBLIC_VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+	push.setVapidDetails(VAPID_SUBJECT, PUBLIC_VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 	vapidReady = true;
 }
 
@@ -151,7 +150,7 @@ export async function deliverNotifications(items: ClaimedNotification[]): Promis
 		await Promise.all(
 			targets.map(async (subscription) => {
 				try {
-					await webpush.sendNotification(
+					await push.sendNotification(
 						{
 							endpoint: subscription.endpoint,
 							keys: { p256dh: subscription.p256dh, auth: subscription.auth }
@@ -250,7 +249,7 @@ export async function sendTestToUser(userId: string): Promise<{ sent: number; fa
 	await Promise.all(
 		((data ?? []) as StoredSubscription[]).map(async (subscription) => {
 			try {
-				await webpush.sendNotification(
+				await push.sendNotification(
 					{
 						endpoint: subscription.endpoint,
 						keys: { p256dh: subscription.p256dh, auth: subscription.auth }
