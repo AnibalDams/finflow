@@ -7,9 +7,10 @@
  * solo se tocan las suscripciones necesarias para enviar.
  */
 
+import { createRequire } from 'node:module';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import * as webpush from 'web-push';
+import type * as WebPush from 'web-push';
 import { PUBLIC_SUPABASE_URL, PUBLIC_VAPID_PUBLIC_KEY } from '$app/env/public';
 import {
 	CRON_SECRET,
@@ -55,6 +56,14 @@ export function verifyCronSecret(header: string | null): boolean {
 	return timingSafeEqual(digest(header), digest(CRON_SECRET));
 }
 
+/**
+ * `web-push` es CommonJS y no expone exports nombrados al cargarse como ESM, y
+ * un `import * as` deja el objeto vacío al empaquetar. Se carga con `require`
+ * para tener el módulo real tanto en `vite dev` como en el runtime de Vercel.
+ */
+const require = createRequire(import.meta.url);
+const webpush = require('web-push') as typeof WebPush;
+
 let admin: Db | null = null;
 
 function adminClient(): Db {
@@ -71,6 +80,18 @@ function ensureVapid(): void {
 	if (vapidReady) return;
 	webpush.setVapidDetails(VAPID_SUBJECT, PUBLIC_VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 	vapidReady = true;
+}
+
+/**
+ * Código HTTP del servicio de push. No se usa `instanceof WebPushError` porque
+ * el módulo CJS no siempre interopera al empaquetar; el `statusCode` basta.
+ */
+function statusCodeOf(error: unknown): number {
+	if (typeof error === 'object' && error !== null && 'statusCode' in error) {
+		const status = Number((error as { statusCode?: unknown }).statusCode);
+		return Number.isFinite(status) ? status : 0;
+	}
+	return 0;
 }
 
 /**
@@ -140,7 +161,7 @@ export async function deliverNotifications(items: ClaimedNotification[]): Promis
 					);
 					delivered.push(subscription.id);
 				} catch (sendError) {
-					const status = sendError instanceof webpush.WebPushError ? sendError.statusCode : 0;
+					const status = statusCodeOf(sendError);
 
 					// 404/410: el navegador revocó la suscripción, no volverá a servir.
 					if (status === 404 || status === 410) {
@@ -239,7 +260,7 @@ export async function sendTestToUser(userId: string): Promise<{ sent: number; fa
 				);
 				sent += 1;
 			} catch (sendError) {
-				const status = sendError instanceof webpush.WebPushError ? sendError.statusCode : 0;
+				const status = statusCodeOf(sendError);
 				if (status === 404 || status === 410) {
 					await db.from('push_subscriptions').delete().eq('id', subscription.id);
 				}

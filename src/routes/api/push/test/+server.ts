@@ -26,7 +26,8 @@ export const POST: RequestHandler = async ({ locals, setHeaders }) => {
 	try {
 		const result = await sendTestToUser(user.id);
 		return Response.json(result);
-	} catch {
+	} catch (error) {
+		console.error('[finflow] push test:', (error as Error)?.message);
 		return Response.json({ message: 'No pudimos enviar la prueba.' }, { status: 500 });
 	}
 };
