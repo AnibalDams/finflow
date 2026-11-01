@@ -2,7 +2,7 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { z } from 'zod';
 import { getAccounts, getDebt } from '#lib/server/queries';
 import { mutationMessage } from '#lib/server/mutations';
-import { requireAuth } from '#lib/server/results';
+import { requireAuth, requireUuidParam } from '#lib/server/results';
 import { defaultAccount } from '#lib/server/shell';
 import { dateAtOffset, localDateTimeToUtc } from '#lib/utils/dates';
 import { formValues, readString } from '#lib/utils/forms';
@@ -31,7 +31,8 @@ const EDIT_VALUES = [
 const statusSchema = z.union([z.literal('active'), z.literal('inactive')]);
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-	const result = await getDebt(locals.supabase, params.id);
+	const id = requireUuidParam(params.id, 'No encontramos esa deuda.');
+	const result = await getDebt(locals.supabase, id);
 
 	if (!result) {
 		error(404, 'No encontramos esa deuda.');
@@ -52,11 +53,12 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 export const actions: Actions = {
 	pay: async ({ request, locals, params }) => {
 		requireAuth(locals.user);
+		const id = requireUuidParam(params.id, 'No encontramos esa deuda.');
 		const form = await request.formData();
 		const rawDate = readString(form, 'occurredAt');
 
 		const parsed = paymentSchema.safeParse({
-			debtId: params.id,
+			debtId: id,
 			amount: readString(form, 'amount'),
 			accountId: readString(form, 'accountId'),
 			occurredAt: localDateTimeToUtc(
@@ -96,6 +98,7 @@ export const actions: Actions = {
 
 	update: async ({ request, locals, params }) => {
 		requireAuth(locals.user);
+		const id = requireUuidParam(params.id, 'No encontramos esa deuda.');
 		const form = await request.formData();
 		const values = formValues(form, EDIT_VALUES);
 		const rawIcon = readString(form, 'icon');
@@ -146,7 +149,7 @@ export const actions: Actions = {
 				account_id: parsed.data.accountId || null,
 				notes: parsed.data.notes
 			})
-			.eq('id', params.id);
+			.eq('id', id);
 
 		if (updateError) {
 			return fail(400, {
@@ -161,6 +164,7 @@ export const actions: Actions = {
 
 	status: async ({ request, locals, params }) => {
 		requireAuth(locals.user);
+		const id = requireUuidParam(params.id, 'No encontramos esa deuda.');
 		const form = await request.formData();
 		const parsed = statusSchema.safeParse(readString(form, 'status'));
 
@@ -171,7 +175,7 @@ export const actions: Actions = {
 		const { error: updateError } = await locals.supabase
 			.from('debts')
 			.update({ is_active: parsed.data === 'active' })
-			.eq('id', params.id);
+			.eq('id', id);
 
 		if (updateError) {
 			return fail(400, {
@@ -184,7 +188,8 @@ export const actions: Actions = {
 
 	delete: async ({ locals, params }) => {
 		requireAuth(locals.user);
-		const { error: deleteError } = await locals.supabase.from('debts').delete().eq('id', params.id);
+		const id = requireUuidParam(params.id, 'No encontramos esa deuda.');
+		const { error: deleteError } = await locals.supabase.from('debts').delete().eq('id', id);
 
 		if (deleteError) {
 			return fail(400, {

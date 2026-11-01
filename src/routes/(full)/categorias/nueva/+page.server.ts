@@ -1,4 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
+import { safeRedirect } from '#lib/server/auth-errors';
 import { mutationMessage } from '#lib/server/mutations';
 import { requireAuth } from '#lib/server/results';
 import { formValues, readString } from '#lib/utils/forms';
@@ -6,14 +7,7 @@ import { categorySchema, fieldErrors } from '#lib/utils/validation';
 import type { Actions, PageServerLoad } from './$types';
 
 const VALUES = ['name', 'kind', 'icon', 'color'] as const;
-
-/** Solo permite volver a rutas internas. */
-function safePath(value: string | null): string {
-	if (!value) return '/cuentas?tab=categorias';
-	return value.startsWith('/') && !value.startsWith('//') && !value.includes('\\')
-		? value
-		: '/cuentas?tab=categorias';
-}
+const BACK = '/cuentas?tab=categorias';
 
 export const load: PageServerLoad = async ({ url }) => {
 	const kind: 'expense' | 'income' =
@@ -21,7 +15,7 @@ export const load: PageServerLoad = async ({ url }) => {
 
 	return {
 		kind,
-		volver: safePath(url.searchParams.get('volver'))
+		volver: safeRedirect(url.searchParams.get('volver'), BACK)
 	};
 };
 
@@ -61,6 +55,6 @@ export const actions: Actions = {
 			});
 		}
 
-		redirect(303, safePath(readString(form, 'volver') || url.searchParams.get('volver')));
+		redirect(303, safeRedirect(readString(form, 'volver') || url.searchParams.get('volver'), BACK));
 	}
 };

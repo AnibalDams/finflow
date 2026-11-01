@@ -8,7 +8,7 @@ import {
 	uploadReceipt,
 	validateReceipt
 } from '#lib/server/mutations';
-import { requireAuth } from '#lib/server/results';
+import { requireAuth, requireUuidParam } from '#lib/server/results';
 import { dateAtOffset, resolveLocalInstant, timeAtOffset } from '#lib/utils/dates';
 import { formValues, readFile, readString } from '#lib/utils/forms';
 import { fieldErrors, transactionSchema } from '#lib/utils/validation';
@@ -26,7 +26,8 @@ const VALUES = [
 ] as const;
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-	const transaction = await getTransaction(locals.supabase, params.id);
+	const id = requireUuidParam(params.id, 'No encontramos ese movimiento.');
+	const transaction = await getTransaction(locals.supabase, id);
 
 	if (!transaction) {
 		error(404, 'No encontramos ese movimiento.');
@@ -56,7 +57,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 export const actions: Actions = {
 	update: async ({ request, locals, params }) => {
 		const user = requireAuth(locals.user);
-		const current = await getTransaction(locals.supabase, params.id);
+		const id = requireUuidParam(params.id, 'No encontramos ese movimiento.');
+		const current = await getTransaction(locals.supabase, id);
 
 		if (!current) {
 			error(404, 'No encontramos ese movimiento.');
@@ -172,7 +174,8 @@ export const actions: Actions = {
 
 	delete: async ({ locals, params }) => {
 		requireAuth(locals.user);
-		const current = await getTransaction(locals.supabase, params.id);
+		const id = requireUuidParam(params.id, 'No encontramos ese movimiento.');
+		const current = await getTransaction(locals.supabase, id);
 
 		if (!current) {
 			error(404, 'No encontramos ese movimiento.');

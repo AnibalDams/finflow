@@ -1,7 +1,7 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { getAccounts } from '#lib/server/queries';
 import { mutationMessage } from '#lib/server/mutations';
-import { requireAuth } from '#lib/server/results';
+import { requireAuth, requireUuidParam } from '#lib/server/results';
 import { formValues, readString } from '#lib/utils/forms';
 import { accountSchema, fieldErrors } from '#lib/utils/validation';
 import type { Account } from '#lib/types/domain';
@@ -15,7 +15,8 @@ async function loadAccount(locals: App.Locals, id: string): Promise<Account | nu
 }
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-	const account = await loadAccount(locals, params.id);
+	const id = requireUuidParam(params.id, 'No encontramos esa cuenta.');
+	const account = await loadAccount(locals, id);
 
 	if (!account) {
 		error(404, 'No encontramos esa cuenta.');
@@ -35,6 +36,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 export const actions: Actions = {
 	update: async ({ request, locals, params }) => {
 		const user = requireAuth(locals.user);
+		const id = requireUuidParam(params.id, 'No encontramos esa cuenta.');
 		const form = await request.formData();
 		const values = formValues(form, VALUES);
 
@@ -61,7 +63,7 @@ export const actions: Actions = {
 				.update({ is_primary: false })
 				.eq('user_id', user.id)
 				.eq('is_primary', true)
-				.neq('id', params.id);
+				.neq('id', id);
 
 			if (demoteError) {
 				return fail(400, {
@@ -80,7 +82,7 @@ export const actions: Actions = {
 				icon: parsed.data.icon,
 				is_primary: parsed.data.isPrimary
 			})
-			.eq('id', params.id);
+			.eq('id', id);
 
 		if (updateError) {
 			return fail(400, {
@@ -94,13 +96,14 @@ export const actions: Actions = {
 
 	archive: async ({ request, locals, params }) => {
 		requireAuth(locals.user);
+		const id = requireUuidParam(params.id, 'No encontramos esa cuenta.');
 		const form = await request.formData();
 		const archived = readString(form, 'archived') === 'true';
 
 		const { error: updateError } = await locals.supabase
 			.from('accounts')
 			.update({ is_archived: archived, ...(archived ? { is_primary: false } : {}) })
-			.eq('id', params.id);
+			.eq('id', id);
 
 		if (updateError) {
 			return fail(400, {
@@ -115,23 +118,20 @@ export const actions: Actions = {
 
 	delete: async ({ locals, params }) => {
 		requireAuth(locals.user);
+		const id = requireUuidParam(params.id, 'No encontramos esa cuenta.');
 
 		const { count } = await locals.supabase
 			.from('transactions')
 			.select('id', { count: 'exact', head: true })
-			.eq('account_id', params.id);
+			.eq('account_id', id);
 
 		if ((count ?? 0) > 0) {
 			return fail(400, {
-				message:
-					'Esta cuenta tiene movimientos asociados. Archívala para conservar tu historial.'
+				message: 'Esta cuenta tiene movimientos asociados. Archívala para conservar tu historial.'
 			});
 		}
 
-		const { error: deleteError } = await locals.supabase
-			.from('accounts')
-			.delete()
-			.eq('id', params.id);
+		const { error: deleteError } = await locals.supabase.from('accounts').delete().eq('id', id);
 
 		if (deleteError) {
 			return fail(400, {

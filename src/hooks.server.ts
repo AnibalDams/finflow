@@ -150,6 +150,14 @@ const securityHeadersHandle: Handle = async ({ event, resolve }) => {
 	response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
 	response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
 
+	// Solo tiene sentido sobre HTTPS; en desarrollo se sirve por http.
+	if (!dev) {
+		response.headers.set(
+			'Strict-Transport-Security',
+			'max-age=63072000; includeSubDomains; preload'
+		);
+	}
+
 	// Nunca permitir que un proxy o el navegador cachee HTML con datos privados.
 	if (event.locals.user) {
 		response.headers.set('Cache-Control', 'private, no-store');

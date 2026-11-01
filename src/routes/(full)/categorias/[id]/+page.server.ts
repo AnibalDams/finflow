@@ -1,21 +1,15 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { getCategories } from '#lib/server/queries';
 import { mutationMessage } from '#lib/server/mutations';
-import { requireAuth } from '#lib/server/results';
+import { requireAuth, requireUuidParam } from '#lib/server/results';
+import { safeRedirect } from '#lib/server/auth-errors';
 import { formValues, readString } from '#lib/utils/forms';
 import { categorySchema, fieldErrors } from '#lib/utils/validation';
 import type { Category } from '#lib/types/domain';
 import type { Actions, PageServerLoad } from './$types';
 
 const VALUES = ['name', 'kind', 'icon', 'color'] as const;
-
-/** Solo permite volver a rutas internas. */
-function safePath(value: string | null): string {
-	if (!value) return '/cuentas?tab=categorias';
-	return value.startsWith('/') && !value.startsWith('//') && !value.includes('\\')
-		? value
-		: '/cuentas?tab=categorias';
-}
+const BACK = '/cuentas?tab=categorias';
 
 async function loadCategory(locals: App.Locals, id: string): Promise<Category | null> {
 	const categories = await getCategories(locals.supabase, { includeArchived: true });
@@ -23,7 +17,8 @@ async function loadCategory(locals: App.Locals, id: string): Promise<Category | 
 }
 
 export const load: PageServerLoad = async ({ locals, params, url }) => {
-	const category = await loadCategory(locals, params.id);
+	const id = requireUuidParam(params.id, 'No encontramos esa categoría.');
+	const category = await loadCategory(locals, id);
 
 	if (!category) {
 		error(404, 'No encontramos esa categoría.');
@@ -31,13 +26,14 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 
 	return {
 		category,
-		volver: safePath(url.searchParams.get('volver'))
+		volver: safeRedirect(url.searchParams.get('volver'), BACK)
 	};
 };
 
 export const actions: Actions = {
 	update: async ({ request, locals, params }) => {
 		requireAuth(locals.user);
+		const id = requireUuidParam(params.id, 'No encontramos esa categoría.');
 		const form = await request.formData();
 		const values = formValues(form, VALUES);
 
@@ -64,7 +60,7 @@ export const actions: Actions = {
 				icon: parsed.data.icon,
 				color: parsed.data.color
 			})
-			.eq('id', params.id);
+			.eq('id', id);
 
 		if (updateError) {
 			return fail(400, {
@@ -78,16 +74,17 @@ export const actions: Actions = {
 
 	archive: async ({ request, locals, params, url }) => {
 		requireAuth(locals.user);
+		const id = requireUuidParam(params.id, 'No encontramos esa categoría.');
 		const form = await request.formData();
 		const archived = readString(form, 'archived') === 'true';
 		// `action="?/..."` reemplaza los search params, así que la ruta de
 		// retorno viaja en el formulario (con la URL como respaldo).
-		const back = safePath(readString(form, 'volver') || url.searchParams.get('volver'));
+		const back = safeRedirect(readString(form, 'volver') || url.searchParams.get('volver'), BACK);
 
 		const { error: updateError } = await locals.supabase
 			.from('categories')
 			.update({ is_archived: archived })
-			.eq('id', params.id);
+			.eq('id', id);
 
 		if (updateError) {
 			return fail(400, {
@@ -102,13 +99,11 @@ export const actions: Actions = {
 
 	delete: async ({ request, locals, params, url }) => {
 		requireAuth(locals.user);
+		const id = requireUuidParam(params.id, 'No encontramos esa categoría.');
 		const form = await request.formData();
-		const back = safePath(readString(form, 'volver') || url.searchParams.get('volver'));
+		const back = safeRedirect(readString(form, 'volver') || url.searchParams.get('volver'), BACK);
 
-		const { error: deleteError } = await locals.supabase
-			.from('categories')
-			.delete()
-			.eq('id', params.id);
+		const { error: deleteError } = await locals.supabase.from('categories').delete().eq('id', id);
 
 		if (deleteError) {
 			return fail(400, {

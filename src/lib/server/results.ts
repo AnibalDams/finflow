@@ -1,5 +1,6 @@
 import { error as httpError } from '@sveltejs/kit';
 import type { PostgrestError } from '@supabase/supabase-js';
+import { isUuid } from '#lib/utils/uuid';
 import type { Analytics, Debt, Goal, TransactionType } from '#lib/types/domain';
 
 /** Error inesperado de datos: se traduce a una página de error legible. */
@@ -31,6 +32,15 @@ export function assertMutation(
 
 export function requireAuth<T>(value: T | null | undefined, message = 'Sesión no válida'): T {
 	if (value === null || value === undefined) httpError(401, message);
+	return value;
+}
+
+/**
+ * Valida el `id` de una ruta antes de usarlo en un filtro PostgREST. Un valor
+ * que no sea UUID no puede existir, así que se responde 404 sin llegar a la DB.
+ */
+export function requireUuidParam(value: string, message: string): string {
+	if (!isUuid(value)) httpError(404, message);
 	return value;
 }
 

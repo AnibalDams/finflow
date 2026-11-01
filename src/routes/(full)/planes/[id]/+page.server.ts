@@ -7,7 +7,7 @@ import {
 	uploadGoalImage,
 	validateImage
 } from '#lib/server/mutations';
-import { requireAuth } from '#lib/server/results';
+import { requireAuth, requireUuidParam } from '#lib/server/results';
 import { dateAtOffset, localDateTimeToUtc } from '#lib/utils/dates';
 import { formValues, readFile, readString } from '#lib/utils/forms';
 import { contributionSchema, fieldErrors, goalSchema } from '#lib/utils/validation';
@@ -28,7 +28,8 @@ const GOAL_VALUES = [
 const statusSchema = z.enum(['active', 'completed', 'paused']);
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-	const result = await getGoal(locals.supabase, params.id);
+	const id = requireUuidParam(params.id, 'No encontramos ese plan.');
+	const result = await getGoal(locals.supabase, id);
 
 	if (!result) {
 		error(404, 'No encontramos ese plan.');
@@ -54,7 +55,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 export const actions: Actions = {
 	contribute: async ({ request, locals, params }) => {
 		const user = requireAuth(locals.user);
-		const current = await getGoal(locals.supabase, params.id);
+		const id = requireUuidParam(params.id, 'No encontramos ese plan.');
+		const current = await getGoal(locals.supabase, id);
 
 		if (!current) error(404, 'No encontramos ese plan.');
 
@@ -113,7 +115,8 @@ export const actions: Actions = {
 
 	update: async ({ request, locals, params }) => {
 		const user = requireAuth(locals.user);
-		const current = await getGoal(locals.supabase, params.id);
+		const id = requireUuidParam(params.id, 'No encontramos ese plan.');
+		const current = await getGoal(locals.supabase, id);
 
 		if (!current) error(404, 'No encontramos ese plan.');
 
@@ -207,6 +210,7 @@ export const actions: Actions = {
 
 	status: async ({ request, locals, params }) => {
 		requireAuth(locals.user);
+		const id = requireUuidParam(params.id, 'No encontramos ese plan.');
 		const form = await request.formData();
 		const parsed = statusSchema.safeParse(readString(form, 'status'));
 
@@ -220,7 +224,7 @@ export const actions: Actions = {
 				status: parsed.data,
 				completed_at: parsed.data === 'completed' ? new Date().toISOString() : null
 			})
-			.eq('id', params.id);
+			.eq('id', id);
 
 		if (updateError) {
 			return fail(400, {
@@ -233,7 +237,8 @@ export const actions: Actions = {
 
 	delete: async ({ locals, params }) => {
 		requireAuth(locals.user);
-		const current = await getGoal(locals.supabase, params.id);
+		const id = requireUuidParam(params.id, 'No encontramos ese plan.');
+		const current = await getGoal(locals.supabase, id);
 
 		if (!current) error(404, 'No encontramos ese plan.');
 

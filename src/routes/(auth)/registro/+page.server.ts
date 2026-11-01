@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { SITE_URL } from '$app/env/private';
-import { translateAuthError } from '#lib/server/auth-errors';
+import { siteOrigin, translateAuthError } from '#lib/server/auth-errors';
 import { isPasswordBreached } from '#lib/server/password-safety';
 import { checkRateLimit } from '#lib/server/rate-limit';
 import { formValues, readString } from '#lib/utils/forms';
@@ -60,7 +60,15 @@ export const actions: Actions = {
 			});
 		}
 
-		const origin = SITE_URL || url.origin;
+		const origin = siteOrigin(url.origin, SITE_URL);
+		if (!origin) {
+			console.error('[finflow] SITE_URL no configurada: no se generan enlaces de correo.');
+			return fail(503, {
+				message: 'El registro no está disponible en este momento. Inténtalo más tarde.',
+				values
+			});
+		}
+
 		const { data, error } = await locals.supabase.auth.signUp({
 			email,
 			password,
