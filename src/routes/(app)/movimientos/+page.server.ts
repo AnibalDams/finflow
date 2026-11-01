@@ -14,19 +14,25 @@ import type { PageServerLoad } from './$types';
 
 const PAGE_SIZE = 25;
 
+/** Clave de mes para la URL (`YYYY-MM`). */
+function monthParam(date: Date): string {
+	return monthKey(date).slice(0, 7);
+}
+
+/** Acepta `YYYY-MM` (canónico) y `YYYY-MM-DD` de enlaces antiguos. */
+function parseMonth(value: string | null, fallback: Date): string | null {
+	if (value === 'todos') return null;
+	if (value && /^\d{4}-\d{2}(-\d{2})?$/.test(value)) return value.slice(0, 7);
+	return monthParam(fallback);
+}
+
 function parseType(value: string | null): TransactionType | undefined {
 	return value === 'income' || value === 'expense' || value === 'transfer' ? value : undefined;
 }
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const reference = referenceAtOffset(locals.tzOffset);
-	const rawMonth = url.searchParams.get('mes');
-	const month =
-		rawMonth === 'todos'
-			? null
-			: rawMonth && /^\d{4}-\d{2}$/.test(rawMonth)
-				? rawMonth
-				: monthKey(reference);
+	const month = parseMonth(url.searchParams.get('mes'), reference);
 
 	const range = month ? monthRange(month) : null;
 	const bounds = range ? localRangeInstants(range, locals.tzOffset) : null;
@@ -69,8 +75,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		limit,
 		month,
 		rangeLabel: range ? formatMonthName(range.from, true) : 'Todo el historial',
-		previousMonth: monthKey(addMonths(baseDate, -1)),
-		nextMonth: monthKey(addMonths(baseDate, 1)),
+		previousMonth: monthParam(addMonths(baseDate, -1)),
+		nextMonth: monthParam(addMonths(baseDate, 1)),
 		filters: {
 			type: type ?? 'all',
 			accountId: accountId ?? '',

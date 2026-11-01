@@ -30,7 +30,7 @@
 		return `/movimientos${query ? `?${query}` : ''}`;
 	}
 
-	const isCurrentMonth = $derived(data.month === monthKey(new Date()));
+	const isCurrentMonth = $derived(data.month === monthKey(new Date()).slice(0, 7));
 
 	const groups = $derived.by(() => {
 		const map = new Map<string, TransactionItem[]>();
