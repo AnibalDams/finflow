@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { checkRateLimit, resetRateLimits } from './rate-limit';
+import { checkRateLimit, peekRateLimit, resetRateLimit, resetRateLimits } from './rate-limit';
 
 describe('checkRateLimit', () => {
 	beforeEach(() => {
@@ -32,5 +32,25 @@ describe('checkRateLimit', () => {
 
 		vi.advanceTimersByTime(1_001);
 		expect(checkRateLimit('login:a', 1, 1_000).allowed).toBe(true);
+	});
+
+	it('peekRateLimit consulta el estado sin consumir intentos', () => {
+		checkRateLimit('login-account:a', 2, 60_000);
+		expect(peekRateLimit('login-account:a', 2).allowed).toBe(true);
+		expect(peekRateLimit('login-account:a', 2).allowed).toBe(true);
+
+		checkRateLimit('login-account:a', 2, 60_000);
+		expect(peekRateLimit('login-account:a', 2)).toEqual({ allowed: false, retryAfter: 60 });
+
+		vi.advanceTimersByTime(60_001);
+		expect(peekRateLimit('login-account:a', 2).allowed).toBe(true);
+	});
+
+	it('resetRateLimit libera la clave tras un acceso correcto', () => {
+		checkRateLimit('login-account:b', 1, 60_000);
+		expect(peekRateLimit('login-account:b', 1).allowed).toBe(false);
+
+		resetRateLimit('login-account:b');
+		expect(peekRateLimit('login-account:b', 1).allowed).toBe(true);
 	});
 });

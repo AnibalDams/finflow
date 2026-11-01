@@ -1,6 +1,6 @@
 import { fail } from '@sveltejs/kit';
 import { SITE_URL } from '$app/env/private';
-import { translateAuthError } from '#lib/server/auth-errors';
+import { siteOrigin, translateAuthError } from '#lib/server/auth-errors';
 import { checkRateLimit } from '#lib/server/rate-limit';
 import { formValues, readString } from '#lib/utils/forms';
 import { fieldErrors, recoverySchema } from '#lib/utils/validation';
@@ -39,7 +39,25 @@ export const actions: Actions = {
 			});
 		}
 
-		const origin = SITE_URL || url.origin;
+		// Evita que un mismo buzón reciba un bombardeo de enlaces.
+		const account = checkRateLimit(`recovery-account:${parsed.data.email}`, 5, 15 * 60_000);
+		if (!account.allowed) {
+			setHeaders({ 'retry-after': String(account.retryAfter) });
+			return fail(429, {
+				message: 'Demasiadas solicitudes. Espera unos minutos antes de reintentar.',
+				values
+			});
+		}
+
+		const origin = siteOrigin(url.origin, SITE_URL);
+		if (!origin) {
+			console.error('[finflow] SITE_URL no configurada: no se generan enlaces de correo.');
+			return fail(503, {
+				message: 'El envío de correos no está disponible. Inténtalo más tarde.',
+				values
+			});
+		}
+
 		const { error } = await locals.supabase.auth.resetPasswordForEmail(parsed.data.email, {
 			redirectTo: `${origin}/auth/confirm?next=/restablecer`
 		});

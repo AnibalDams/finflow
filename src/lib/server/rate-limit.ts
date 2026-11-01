@@ -59,6 +59,29 @@ export function checkRateLimit(key: string, limit: number, windowMs: number): Ra
 	return { allowed: true, retryAfter: 0 };
 }
 
+/**
+ * Consulta el estado de una clave **sin** consumir un intento. Se usa para
+ * limitar por cuenta contando solo los fallos: así un tercero no puede bloquear
+ * la cuenta de la víctima con intentos que nunca ocurrieron.
+ */
+export function peekRateLimit(key: string, limit: number): RateLimitResult {
+	const current = buckets.get(key);
+	const now = Date.now();
+
+	if (!current || current.resetAt <= now) return { allowed: true, retryAfter: 0 };
+	if (current.count < limit) return { allowed: true, retryAfter: 0 };
+
+	return {
+		allowed: false,
+		retryAfter: Math.max(1, Math.ceil((current.resetAt - now) / 1000))
+	};
+}
+
+/** Descarta la clave (por ejemplo, tras una autenticación correcta). */
+export function resetRateLimit(key: string): void {
+	buckets.delete(key);
+}
+
 /** Solo para pruebas: deja el limitador en estado limpio. */
 export function resetRateLimits(): void {
 	buckets.clear();

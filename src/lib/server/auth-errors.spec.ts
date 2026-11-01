@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { safeRedirect, translateAuthError } from './auth-errors';
+import { safeRedirect, siteOrigin, translateAuthError } from './auth-errors';
 
 describe('safeRedirect', () => {
 	it('permite rutas internas', () => {
@@ -14,6 +14,25 @@ describe('safeRedirect', () => {
 		expect(safeRedirect('/%5Cevil.example')).toBe('/');
 		expect(safeRedirect('/ruta\nLocation: https://evil.example')).toBe('/');
 		expect(safeRedirect(null, '/login')).toBe('/login');
+	});
+});
+
+describe('siteOrigin', () => {
+	it('prefiere la URL configurada', () => {
+		expect(siteOrigin('https://app.example', 'https://finflow.app', true)).toBe(
+			'https://finflow.app'
+		);
+	});
+
+	it('en producción rechaza el origen de la petición', () => {
+		expect(siteOrigin('https://host-manipulado.example', '', true)).toBeNull();
+		expect(siteOrigin('http://host-manipulado.example', '', true)).toBeNull();
+	});
+
+	it('en desarrollo y en localhost usa la petición', () => {
+		expect(siteOrigin('http://localhost:5173', '', true)).toBe('http://localhost:5173');
+		expect(siteOrigin('http://127.0.0.1:4173', '', true)).toBe('http://127.0.0.1:4173');
+		expect(siteOrigin('http://192.168.0.10:5173', '', false)).toBe('http://192.168.0.10:5173');
 	});
 });
 

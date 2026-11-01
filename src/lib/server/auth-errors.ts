@@ -47,3 +47,28 @@ export function safeRedirect(target: string | null | undefined, fallback = '/'):
 	}
 	return value;
 }
+
+/**
+ * Origen para los enlaces de correo (confirmación y recuperación).
+ *
+ * En producción nunca se confía en el host de la petición: sin `SITE_URL` no se
+ * generan enlaces, para que un Host manipulado no apunte el token a otro sitio.
+ * En desarrollo se acepta el origen de la petición.
+ */
+export function siteOrigin(
+	requestOrigin: string,
+	configured: string,
+	production = isProduction()
+): string | null {
+	if (configured) return configured;
+
+	const url = new URL(requestOrigin);
+	const isLocal = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+	if (isLocal || !production) return url.origin;
+
+	return null;
+}
+
+function isProduction(): boolean {
+	return import.meta.env?.PROD === true;
+}

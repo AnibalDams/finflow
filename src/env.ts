@@ -63,6 +63,18 @@ export const variables = defineEnvVars({
 		description: 'Contacto VAPID: mailto: o URL del sitio',
 		schema: (value) => value?.trim() || 'mailto:demo@finflow.app'
 	},
+	RECOVERY_COOKIE_SECRET: {
+		public: false,
+		description:
+			'Secreto para firmar la marca de recuperación de contraseña (recomendado en producción)',
+		schema: (value) => {
+			const secret = value?.trim() ?? '';
+			if (secret && secret.length < 16) {
+				throw new Error('RECOVERY_COOKIE_SECRET debe tener al menos 16 caracteres');
+			}
+			return secret;
+		}
+	},
 	CRON_SECRET: {
 		public: false,
 		description: 'Secreto compartido que valida al cron de notificaciones',

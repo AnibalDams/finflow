@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { safeRedirect, translateAuthError } from '#lib/server/auth-errors';
-import { checkRateLimit } from '#lib/server/rate-limit';
+import { checkRateLimit, peekRateLimit, resetRateLimit } from '#lib/server/rate-limit';
 import { formValues, readString } from '#lib/utils/forms';
 import { fieldErrors, loginSchema } from '#lib/utils/validation';
 import type { Actions } from './$types';
@@ -41,12 +41,26 @@ export const actions: Actions = {
 			});
 		}
 
+		// Segunda barrera por cuenta: el límite de IP no frena un ataque
+		// distribuido contra un correo concreto. Solo cuentan los fallos.
+		const accountKey = `login-account:${parsed.data.email}`;
+		const account = peekRateLimit(accountKey, 10);
+		if (!account.allowed) {
+			setHeaders({ 'retry-after': String(account.retryAfter) });
+			return fail(429, {
+				message: 'Demasiados intentos para esta cuenta. Espera unos minutos antes de reintentar.',
+				values
+			});
+		}
+
 		const { error } = await locals.supabase.auth.signInWithPassword(parsed.data);
 
 		if (error) {
+			checkRateLimit(accountKey, 10, 15 * 60_000);
 			return fail(400, { message: translateAuthError(error.message), values });
 		}
 
+		resetRateLimit(accountKey);
 		redirect(303, safeRedirect(url.searchParams.get('redirectTo')));
 	}
 };
