@@ -61,20 +61,22 @@
 	]);
 </script>
 
+<svelte:head>
+	<title>Configuración · FinFlow</title>
+</svelte:head>
+
 <div
-	class="space-y-4 px-4 pt-4 pb-10 lg:mx-auto lg:grid lg:max-w-[1440px] lg:grid-cols-12 lg:gap-6 lg:space-y-0 lg:px-8 lg:pt-8 lg:pb-10"
+	class="space-y-4 px-4 pt-4 pb-10 lg:mx-auto lg:max-w-3xl lg:space-y-6 lg:px-8 lg:pt-8 lg:pb-10"
 >
-	<header class="hidden lg:col-span-12 lg:block">
-		<p class="text-label-sm font-semibold tracking-[0.16em] text-primary uppercase">Tu cuenta</p>
+	<header class="hidden lg:block">
+		<p class="text-label-sm font-semibold tracking-[0.16em] text-primary uppercase">FinFlow</p>
 		<h1 class="mt-1 text-title-xl tracking-tight text-ink">Configuración</h1>
 		<p class="mt-1 text-body text-on-surface-variant">
-			Administra tu perfil, seguridad, presupuesto y datos de FinFlow.
+			Administra tu perfil, seguridad, presupuesto y datos de tu cuenta.
 		</p>
 	</header>
 
-	<section
-		class="rounded-3xl bg-inverse-surface p-5 text-inverse-on-surface shadow-hero lg:col-span-12 lg:p-6"
-	>
+	<section class="rounded-3xl bg-inverse-surface p-5 text-inverse-on-surface shadow-hero lg:p-6">
 		<div class="flex items-center gap-3">
 			<span
 				class="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-container text-title-sm font-bold text-inverse-surface"
@@ -102,7 +104,7 @@
 		</div>
 	</section>
 
-	<div class="space-y-4 lg:col-span-4">
+	<div class="space-y-4">
 		<ProfilePhoto
 			avatarUrl={profile.avatarUrl}
 			hasAvatar={Boolean(profile.avatarPath)}
@@ -126,7 +128,7 @@
 		</a>
 	</div>
 
-	<div class="space-y-4 lg:col-span-8">
+	<div class="space-y-4">
 		<section
 			class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4 lg:p-5"
 		>
@@ -336,11 +338,11 @@
 		</section>
 	</div>
 
-	<div class="lg:col-span-12">
+	<div>
 		<InstallApp />
 	</div>
 
-	<section class="space-y-2 lg:col-span-12">
+	<section class="space-y-2">
 		<form
 			method="POST"
 			action="/auth/salir"
