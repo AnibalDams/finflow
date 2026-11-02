@@ -1,34 +1,23 @@
 import { fail } from '@sveltejs/kit';
-import {
-	getAccounts,
-	getCategories,
-	getDebts,
-	getGoals,
-	listTransactions
-} from '#lib/server/queries';
+import { getAccounts, getCategories, getDebts, getGoals } from '#lib/server/queries';
 import { mutationMessage, removeFile, uploadAvatar, validateImage } from '#lib/server/mutations';
 import { isPasswordBreached } from '#lib/server/password-safety';
 import { checkRateLimit } from '#lib/server/rate-limit';
 import { requireAuth } from '#lib/server/results';
-import { periodRange, localRangeInstants, referenceAtOffset } from '#lib/utils/dates';
 import { formValues, readFile, readString } from '#lib/utils/forms';
-import { changePasswordSchema, fieldErrors, notificationPrefsSchema, profileSchema } from '#lib/utils/validation';
+import {
+	changePasswordSchema,
+	fieldErrors,
+	notificationPrefsSchema,
+	profileSchema
+} from '#lib/utils/validation';
 import type { Actions, PageServerLoad } from './$types';
 
 const PROFILE_VALUES = ['fullName', 'currency', 'monthlyBudget'] as const;
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = requireAuth(locals.user);
-	const reference = referenceAtOffset(locals.tzOffset);
-	const range = periodRange('month', reference);
-	const bounds = localRangeInstants(range, locals.tzOffset);
-
-	const [movements, accounts, categories, goals, debts] = await Promise.all([
-		listTransactions(locals.supabase, {
-			fromInstant: bounds.fromInstant,
-			toInstant: bounds.toInstant,
-			limit: 100
-		}),
+	const [accounts, categories, goals, debts] = await Promise.all([
 		getAccounts(locals.supabase),
 		getCategories(locals.supabase),
 		getGoals(locals.supabase),
@@ -37,15 +26,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	return {
 		email: user.email ?? '',
-		month: {
-			from: range.from,
-			label: new Date(`${range.from}T12:00:00`).toLocaleDateString('es-ES', {
-				month: 'long',
-				year: 'numeric'
-			})
-		},
-		movements: movements.items,
-		movementTotal: movements.total,
 		counts: {
 			accounts: accounts.filter((account) => !account.isArchived).length,
 			categories: categories.length,

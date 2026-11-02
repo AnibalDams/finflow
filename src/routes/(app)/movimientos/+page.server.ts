@@ -1,43 +1,27 @@
 import { getAccounts, getCategories, getMonthTotals, listTransactions } from '#lib/server/queries';
+import { readMonth, readTransactionType } from '#lib/server/transaction-filters';
 import {
 	addMonths,
 	formatMonthName,
 	localRangeInstants,
-	monthKey,
+	monthParam,
 	monthRange,
 	parseISODate,
 	referenceAtOffset
 } from '#lib/utils/dates';
 import { parseUuid } from '#lib/utils/uuid';
-import type { TransactionType } from '#lib/types/domain';
 import type { PageServerLoad } from './$types';
 
 const PAGE_SIZE = 25;
 
-/** Clave de mes para la URL (`YYYY-MM`). */
-function monthParam(date: Date): string {
-	return monthKey(date).slice(0, 7);
-}
-
-/** Acepta `YYYY-MM` (canónico) y `YYYY-MM-DD` de enlaces antiguos. */
-function parseMonth(value: string | null, fallback: Date): string | null {
-	if (value === 'todos') return null;
-	if (value && /^\d{4}-\d{2}(-\d{2})?$/.test(value)) return value.slice(0, 7);
-	return monthParam(fallback);
-}
-
-function parseType(value: string | null): TransactionType | undefined {
-	return value === 'income' || value === 'expense' || value === 'transfer' ? value : undefined;
-}
-
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const reference = referenceAtOffset(locals.tzOffset);
-	const month = parseMonth(url.searchParams.get('mes'), reference);
+	const month = readMonth(url.searchParams.get('mes'), reference);
 
 	const range = month ? monthRange(month) : null;
 	const bounds = range ? localRangeInstants(range, locals.tzOffset) : null;
 
-	const type = parseType(url.searchParams.get('tipo'));
+	const type = readTransactionType(url.searchParams.get('tipo'));
 	const accountId = parseUuid(url.searchParams.get('cuenta'));
 	const categoryId = parseUuid(url.searchParams.get('categoria'));
 	const search = url.searchParams.get('q')?.trim() || undefined;

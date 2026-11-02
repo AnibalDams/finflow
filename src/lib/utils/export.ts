@@ -1,9 +1,18 @@
 /**
- * Exportaciones generadas en el navegador: CSV (compatible con Excel en
- * español: separador `;` y coma decimal) y PDF con `jspdf`.
+ * Exportaciones generadas en el navegador: CSV, Excel (`.xlsx`), HTML y PDF.
+ *
+ * Todas parten del mismo `ReportDocument`, de modo que los cuatro formatos
+ * muestran las mismas columnas, resúmenes y totales.
  */
 
+import { buildReportHtml } from './export-html';
+import { downloadReportPdf } from './export-pdf';
+import { buildReportXlsx } from './export-xlsx';
+import { isReportNumber, type ReportCell, type ReportDocument, type ReportFormat } from './report';
+
 export type CsvCell = string | number | null | undefined;
+
+const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
 const FORMULA_PREFIX = /^[=+\-@\t\r]/;
 
@@ -36,77 +45,65 @@ export function downloadFile(fileName: string, content: string, mimeType: string
 	setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function downloadCsv(fileName: string, rows: CsvCell[][]): void {
-	downloadFile(fileName, `\uFEFF${toCsv(rows)}`, 'text/csv;charset=utf-8');
+export function downloadBinary(fileName: string, content: Uint8Array, mimeType: string): void {
+	const bytes = new Uint8Array(content);
+	const blob = new Blob([bytes.buffer], { type: mimeType });
+	const url = URL.createObjectURL(blob);
+	const link = document.createElement('a');
+	link.href = url;
+	link.download = fileName;
+	document.body.appendChild(link);
+	link.click();
+	link.remove();
+	setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export interface PdfReport {
-	title: string;
-	subtitle?: string;
-	/** Pares etiqueta → valor mostrados antes de la tabla. */
-	summary?: Array<[string, string]>;
-	head: string[];
-	body: string[][];
-	fileName: string;
-	/** Nota al pie. */
-	footnote?: string;
+function reportCellToCsv(cell: ReportCell): CsvCell {
+	if (cell === null || cell === undefined) return '';
+	if (!isReportNumber(cell)) return cell;
+	return csvNumber(cell.value);
 }
 
-/** Genera y descarga un informe PDF con una tabla tabular. */
-export async function downloadPdf(report: PdfReport): Promise<void> {
-	const [{ jsPDF }, autoTableModule] = await Promise.all([
-		import('jspdf'),
-		import('jspdf-autotable')
-	]);
+/** Matriz CSV del informe: metadatos, resumen y una sección por bloque. */
+export function reportToCsv(report: ReportDocument): CsvCell[][] {
+	const rows: CsvCell[][] = [[report.title]];
 
-	const autoTable = autoTableModule.default;
-	const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-	const margin = 40;
+	if (report.subtitle) rows.push([report.subtitle]);
+	if (report.profileName) rows.push([report.profileName]);
 
-	let y = 52;
-	doc.setFont('helvetica', 'bold');
-	doc.setFontSize(18);
-	doc.setTextColor(19, 27, 46);
-	doc.text(report.title, margin, y);
-
-	if (report.subtitle) {
-		y += 18;
-		doc.setFont('helvetica', 'normal');
-		doc.setFontSize(10);
-		doc.setTextColor(100, 116, 139);
-		doc.text(report.subtitle, margin, y);
+	if (report.summary?.length) {
+		rows.push([]);
+		for (const [label, value] of report.summary) rows.push([label, value]);
 	}
 
-	if (report.summary && report.summary.length > 0) {
-		y += 20;
-		doc.setFontSize(10);
-		for (const [label, value] of report.summary) {
-			doc.setTextColor(100, 116, 139);
-			doc.text(label, margin, y);
-			doc.setTextColor(19, 27, 46);
-			doc.text(value, margin + 150, y);
-			y += 15;
+	for (const section of report.sections) {
+		rows.push([]);
+		if (section.heading) rows.push([section.heading]);
+		rows.push(section.columns.map((column) => column.label));
+		for (const row of section.rows) {
+			rows.push(section.columns.map((_, index) => reportCellToCsv(row[index])));
 		}
 	}
 
-	autoTable(doc, {
-		head: [report.head],
-		body: report.body,
-		startY: y + 12,
-		margin: { left: margin, right: margin },
-		styles: { font: 'helvetica', fontSize: 9, cellPadding: 6, textColor: [19, 27, 46] },
-		headStyles: { fillColor: [0, 131, 88], textColor: 255, fontStyle: 'bold' },
-		alternateRowStyles: { fillColor: [241, 245, 249] },
-		theme: 'striped'
-	});
+	return rows;
+}
 
-	doc.setFontSize(8);
-	doc.setTextColor(148, 163, 184);
-	doc.text(
-		report.footnote ?? `Generado por FinFlow · ${new Date().toLocaleString('es-ES')}`,
-		margin,
-		doc.internal.pageSize.getHeight() - 28
-	);
+/** Genera y descarga el informe en el formato pedido. */
+export async function downloadReport(format: ReportFormat, report: ReportDocument): Promise<void> {
+	const base = report.fileName.replace(/\.(pdf|xlsx|csv|html)$/i, '');
 
-	doc.save(report.fileName);
+	switch (format) {
+		case 'csv':
+			downloadFile(`${base}.csv`, `\uFEFF${toCsv(reportToCsv(report))}`, 'text/csv;charset=utf-8');
+			return;
+		case 'html':
+			downloadFile(`${base}.html`, buildReportHtml(report), 'text/html;charset=utf-8');
+			return;
+		case 'xlsx':
+			downloadBinary(`${base}.xlsx`, buildReportXlsx(report), XLSX_MIME);
+			return;
+		case 'pdf':
+			await downloadReportPdf(report);
+			return;
+	}
 }

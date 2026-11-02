@@ -27,6 +27,20 @@ test('registra un gasto, lo edita y lo elimina desde el detalle', async ({ page 
 
 	await expect(page).toHaveURL(/\/movimientos(\?.*)?$/);
 	await expect(page.getByText(edited)).toHaveCount(0);
+
+	// Aprovecha la sesión para validar la exportación del historial completo.
+	await page.goto('/movimientos?mes=todos');
+	await page.getByRole('button', { name: 'Exportar', exact: true }).click();
+	const dialog = page.getByRole('dialog', { name: 'Exportar movimientos' });
+	await expect(dialog.getByRole('button', { name: /^Excel/ })).toBeVisible();
+	await expect(dialog.getByRole('button', { name: /^HTML estilizado/ })).toBeVisible();
+
+	const [download] = await Promise.all([
+		page.waitForEvent('download'),
+		dialog.getByRole('button', { name: /^CSV/ }).click()
+	]);
+
+	expect(download.suggestedFilename()).toBe('finflow-movimientos-historial.csv');
 });
 
 test('busca movimientos por concepto sin perder el mes consultado', async ({ page }) => {

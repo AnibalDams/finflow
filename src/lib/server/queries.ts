@@ -84,11 +84,14 @@ export async function getTags(db: Db): Promise<Tag[]> {
 	return data.map(mapTag);
 }
 
+/** Filas por lectura: suficiente para exportar sin saturar una respuesta. */
+const MAX_PAGE_SIZE = 500;
+
 export async function listTransactions(
 	db: Db,
 	filters: TransactionFilters = {}
 ): Promise<{ items: TransactionItem[]; total: number }> {
-	const limit = Math.min(Math.max(filters.limit ?? 25, 1), 100);
+	const limit = Math.min(Math.max(filters.limit ?? 25, 1), MAX_PAGE_SIZE);
 	const offset = Math.max(filters.offset ?? 0, 0);
 
 	let query = db.from('transactions_detailed').select('*', { count: 'exact' });
@@ -121,6 +124,30 @@ export async function listTransactions(
 		items: (result.data ?? []).map(mapTransaction),
 		total: result.count ?? 0
 	};
+}
+
+/**
+ * Recorre todas las páginas de un filtro (exportaciones). El tope protege la
+ * respuesta; `truncated` indica si quedaron filas fuera.
+ */
+export async function listAllTransactions(
+	db: Db,
+	filters: TransactionFilters = {},
+	maxRows = 5000
+): Promise<{ items: TransactionItem[]; total: number; truncated: boolean }> {
+	const items: TransactionItem[] = [];
+	let total = 0;
+
+	while (items.length < maxRows) {
+		const batchSize = Math.min(MAX_PAGE_SIZE, maxRows - items.length);
+		const page = await listTransactions(db, { ...filters, limit: batchSize, offset: items.length });
+		total = page.total;
+
+		if (page.items.length === 0) break;
+		items.push(...page.items);
+	}
+
+	return { items, total, truncated: total > items.length };
 }
 
 export async function getRecentTransactions(db: Db, limit = 6): Promise<TransactionItem[]> {

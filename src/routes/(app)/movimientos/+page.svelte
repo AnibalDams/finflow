@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import MovementExportSheet from '#lib/components/domain/MovementExportSheet.svelte';
 	import TransactionsTable from '#lib/components/domain/TransactionsTable.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import EmptyState from '#lib/components/ui/EmptyState.svelte';
@@ -15,6 +16,7 @@
 	let { data }: PageProps = $props();
 
 	let filtersOpen = $state(false);
+	let exportOpen = $state(false);
 	let typeFilter = $state(data.filters.type);
 	let accountFilter = $state(data.filters.accountId);
 	let categoryFilter = $state(data.filters.categoryId);
@@ -56,6 +58,14 @@
 
 	const remaining = $derived(Math.max(0, data.total - data.items.length));
 
+	/** Mes y filtros activos, sin la paginación de la vista. */
+	const exportQuery = $derived.by(() => {
+		const params = new URLSearchParams(page.url.searchParams.toString());
+		params.delete('limit');
+		params.delete('offset');
+		return params.toString();
+	});
+
 	const accountFilterName = $derived(
 		data.accounts.find((account) => account.id === accountFilter)?.name ?? 'Todas las cuentas'
 	);
@@ -81,10 +91,20 @@
 				Consulta, filtra y depura cada ingreso, gasto o transferencia de tu historial.
 			</p>
 		</div>
-		<a href="/movimientos/nuevo" class={buttonClass('primary', 'md')}>
-			<Icon name="add" size={18} />
-			Registrar movimiento
-		</a>
+		<div class="flex items-center gap-2">
+			<button
+				type="button"
+				class={buttonClass('outline', 'md')}
+				onclick={() => (exportOpen = true)}
+			>
+				<Icon name="download" size={18} class="text-primary" />
+				Exportar
+			</button>
+			<a href="/movimientos/nuevo" class={buttonClass('primary', 'md')}>
+				<Icon name="add" size={18} />
+				Registrar movimiento
+			</a>
+		</div>
 	</header>
 
 	<header class="flex items-center justify-between gap-2">
@@ -203,6 +223,15 @@
 					aria-hidden="true"
 				></span>
 			{/if}
+		</button>
+
+		<button
+			type="button"
+			class="flex h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-hairline bg-surface-container-lowest px-3 text-on-surface-variant transition hover:bg-level-1 lg:hidden"
+			aria-label="Exportar movimientos"
+			onclick={() => (exportOpen = true)}
+		>
+			<Icon name="download" size={20} />
 		</button>
 	</div>
 
@@ -434,3 +463,14 @@
 		</div>
 	</form>
 </Sheet>
+
+<MovementExportSheet
+	bind:open={exportOpen}
+	month={data.month}
+	label={data.rangeLabel}
+	total={data.total}
+	currency={data.profile.currency}
+	profileName={data.profile.fullName}
+	scopeQuery={exportQuery}
+	hasFilters={data.hasFilters}
+/>

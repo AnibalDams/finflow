@@ -189,6 +189,31 @@ export function monthKey(date: Date = new Date()): string {
 	return toISODate(startOfMonth(date));
 }
 
+/** Clave de mes `YYYY-MM` para URLs y filtros. */
+export function monthParam(date: Date = new Date()): string {
+	return monthKey(date).slice(0, 7);
+}
+
+/** Interpreta una clave `YYYY-MM` y devuelve el primer día local, o `null`. */
+export function parseMonthParam(value: string | null | undefined): Date | null {
+	if (!value || !/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) return null;
+	return parseISODate(`${value}-01`);
+}
+
+/** Desplaza la referencia por unidades del preset (`-1` anterior, `1` siguiente). */
+export function shiftPeriodReference(date: Date, preset: PeriodPreset, amount: number): Date {
+	switch (preset) {
+		case 'week':
+			return addDays(date, 7 * amount);
+		case 'quarter':
+			return addMonths(date, 3 * amount);
+		case 'year':
+			return addMonths(date, 12 * amount);
+		default:
+			return addMonths(date, amount);
+	}
+}
+
 /** Lunes de la semana de `date`. */
 export function startOfWeek(date: Date): Date {
 	const day = date.getDay();

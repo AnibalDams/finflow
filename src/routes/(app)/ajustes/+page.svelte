@@ -10,13 +10,9 @@
 	import Switch from '#lib/components/ui/Switch.svelte';
 	import TextField from '#lib/components/ui/TextField.svelte';
 	import { buttonClass } from '#lib/components/ui/button-styles';
-	import { notifyError, notifySuccess } from '#lib/stores/toast.svelte';
-	import { formatFullDate } from '#lib/utils/dates';
 	import { enhanceForm } from '#lib/utils/enhance';
-	import { csvNumber, downloadCsv, downloadPdf } from '#lib/utils/export';
 	import type { FormState } from '#lib/utils/forms';
-	import { CURRENCY_OPTIONS, TRANSACTION_TYPE_LABELS, currencyIcon } from '#lib/utils/labels';
-	import { formatMoney } from '#lib/utils/money';
+	import { CURRENCY_OPTIONS, currencyIcon } from '#lib/utils/labels';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
@@ -63,65 +59,6 @@
 		{ label: 'Planes activos', value: data.counts.goals, icon: 'flag' },
 		{ label: 'Deudas activas', value: data.counts.debts, icon: 'credit_card' }
 	]);
-
-	function exportCsv(): void {
-		try {
-			const rows: Array<Array<string | number>> = [
-				['Fecha', 'Concepto', 'Cuenta', 'Categoría', 'Tipo', 'Monto', 'Moneda'],
-				...data.movements.map((movement) => [
-					formatFullDate(movement.occurredAt),
-					movement.concept,
-					movement.accountName,
-					movement.categoryName ?? 'Sin categoría',
-					TRANSACTION_TYPE_LABELS[movement.type],
-					csvNumber(movement.amount),
-					movement.currency
-				])
-			];
-
-			downloadCsv(`finflow-movimientos-${data.month.from}.csv`, rows);
-			notifySuccess('Movimientos exportados');
-		} catch (error) {
-			console.error('[finflow] csv export:', error);
-			notifyError('No pudimos generar el CSV.');
-		}
-	}
-
-	async function exportPdf(): Promise<void> {
-		try {
-			const income = data.movements
-				.filter((movement) => movement.type === 'income')
-				.reduce((total, movement) => total + movement.amount, 0);
-			const expense = data.movements
-				.filter((movement) => movement.type === 'expense')
-				.reduce((total, movement) => total + movement.amount, 0);
-
-			await downloadPdf({
-				title: 'Movimientos del mes',
-				subtitle: `${data.month.label} · ${profile.fullName}`,
-				summary: [
-					['Movimientos', String(data.movements.length)],
-					['Ingresos', formatMoney(income, profile.currency)],
-					['Gastos', formatMoney(expense, profile.currency)],
-					['Balance', formatMoney(income - expense, profile.currency)]
-				],
-				head: ['Fecha', 'Concepto', 'Cuenta', 'Tipo', 'Monto'],
-				body: data.movements.map((movement) => [
-					formatFullDate(movement.occurredAt),
-					movement.concept,
-					movement.accountName,
-					TRANSACTION_TYPE_LABELS[movement.type],
-					formatMoney(movement.amount, movement.currency)
-				]),
-				fileName: `finflow-movimientos-${data.month.from}.pdf`,
-				footnote: 'Generado con FinFlow.'
-			});
-			notifySuccess('Informe PDF descargado');
-		} catch (error) {
-			console.error('[finflow] pdf export:', error);
-			notifyError('No pudimos generar el PDF.');
-		}
-	}
 </script>
 
 <div
@@ -255,7 +192,9 @@
 			</form>
 		</section>
 
-		<section class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4">
+		<section
+			class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4"
+		>
 			<h2 class="flex items-center gap-2 text-title-sm text-ink">
 				<Icon name="notifications" size={18} class="text-secondary" />
 				Notificaciones
@@ -394,33 +333,6 @@
 					Cambiar contraseña
 				</button>
 			</form>
-		</section>
-
-		<section
-			class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4"
-		>
-			<h2 class="flex items-center gap-2 text-title-sm text-ink">
-				<Icon name="download" size={18} class="text-secondary" />
-				Exportar datos
-			</h2>
-			<p class="text-body-sm text-muted">
-				{data.movements.length} de {data.movementTotal} movimientos de {data.month.label}. Para
-				otros periodos usa
-				<a href={resolve('/(app)/metricas')} class="font-semibold text-secondary underline"
-					>Métricas</a
-				>.
-			</p>
-
-			<div class="grid grid-cols-2 gap-2">
-				<button type="button" class={buttonClass('outline', 'md', true)} onclick={exportCsv}>
-					<Icon name="csv" size={18} />
-					CSV
-				</button>
-				<button type="button" class={buttonClass('outline', 'md', true)} onclick={exportPdf}>
-					<Icon name="picture_as_pdf" size={18} />
-					PDF
-				</button>
-			</div>
 		</section>
 	</div>
 

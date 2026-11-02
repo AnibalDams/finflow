@@ -4,16 +4,28 @@
 	import LineChart from '#lib/components/charts/LineChart.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import SegmentedLinks from '#lib/components/ui/SegmentedLinks.svelte';
+	import Sheet from '#lib/components/ui/Sheet.svelte';
 	import { buttonClass } from '#lib/components/ui/button-styles';
 	import { notifyError, notifySuccess } from '#lib/stores/toast.svelte';
 	import { cn } from '#lib/utils/cn';
-	import { diffInDays, formatDayMonth, formatMonthName, parseISODate } from '#lib/utils/dates';
-	import { csvNumber, downloadCsv, downloadPdf } from '#lib/utils/export';
+	import {
+		addMonths,
+		diffInDays,
+		formatDayMonth,
+		formatMonthName,
+		monthParam,
+		parseISODate
+	} from '#lib/utils/dates';
+	import { downloadReport } from '#lib/utils/export';
 	import { formatMoney, formatPercent } from '#lib/utils/money';
+	import type { ReportDocument } from '#lib/utils/report';
 	import type { AnalyticsInsight } from '#lib/types/domain';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	let pickerOpen = $state(false);
+	let pickerYear = $state(0);
 
 	const analytics = $derived(data.analytics);
 	const currency = $derived(data.currency);
@@ -23,8 +35,8 @@
 		data.preset === 'month'
 			? formatMonthName(data.range.from, true)
 			: data.preset === 'year'
-				? String(new Date(data.range.from).getFullYear())
-				: `${formatDayMonth(data.range.from)} – ${formatDayMonth(data.range.to)}`
+				? String(data.year)
+				: data.range.label
 	);
 
 	const categories = $derived(analytics.categories.filter((category) => category.amount > 0));
@@ -169,58 +181,79 @@
 			.replace(/^./, (letter) => letter.toUpperCase())
 	);
 
-	function withParams(periodo: string): string {
+	function withParams(changes: Record<string, string | null>): string {
 		const params = new URLSearchParams(page.url.searchParams.toString());
-		params.set('periodo', periodo);
-		return `/metricas?${params.toString()}`;
-	}
-
-	const csvRows = $derived<Array<Array<string | number>>>([
-		['Categoría', 'Monto', 'Periodo anterior', 'Variación', '% del total'],
-		...categories.map((category) => [
-			category.name,
-			csvNumber(category.amount),
-			csvNumber(category.previousAmount),
-			csvNumber(category.delta),
-			csvNumber(category.share)
-		])
-	]);
-
-	function exportCsv(): void {
-		try {
-			downloadCsv(`finflow-informe-${data.range.from}.csv`, csvRows);
-			notifySuccess('Informe CSV descargado');
-		} catch (error) {
-			console.error('[finflow] csv export:', error);
-			notifyError('No pudimos generar el CSV.');
+		for (const [key, value] of Object.entries(changes)) {
+			if (value === null || value === '') params.delete(key);
+			else params.set(key, value);
 		}
+		const query = params.toString();
+		return `/metricas${query ? `?${query}` : ''}`;
 	}
 
-	async function exportPdf(): Promise<void> {
-		try {
-			await downloadPdf({
-				title: 'Informe financiero',
-				subtitle: periodLabel,
-				summary: [
-					['Gasto total', formatMoney(analytics.total, currency)],
-					['Ingresos', formatMoney(analytics.incomeTotal, currency)],
-					['Periodo anterior', formatMoney(analytics.previousTotal, currency)],
-					['Variación', formatPercent(delta, 1)]
+	function openPicker(): void {
+		pickerYear = data.year;
+		pickerOpen = true;
+	}
+
+	function monthHref(year: number, month: number): string {
+		const value = `${year}-${String(month).padStart(2, '0')}`;
+		return withParams({ periodo: 'month', ref: `${value}-01` });
+	}
+
+	const previousMonthRef = $derived(
+		`${monthParam(addMonths(parseISODate(`${data.currentMonth}-01`), -1))}-01`
+	);
+
+	const pickerMonths = $derived(
+		Array.from({ length: 12 }, (_, index) => {
+			const month = index + 1;
+			const value = `${pickerYear}-${String(month).padStart(2, '0')}`;
+			return { value, label: formatMonthName(parseISODate(`${value}-01`)) };
+		})
+	);
+
+	const report = $derived<ReportDocument>({
+		title: 'Informe financiero',
+		subtitle: periodLabel,
+		profileName: data.profileName,
+		currency,
+		summary: [
+			['Gasto total', formatMoney(analytics.total, currency)],
+			['Ingresos', formatMoney(analytics.incomeTotal, currency)],
+			['Periodo anterior', formatMoney(analytics.previousTotal, currency)],
+			['Variación', formatPercent(delta, 1)]
+		],
+		sections: [
+			{
+				heading: 'Desglose por categoría',
+				columns: [
+					{ label: 'Categoría' },
+					{ label: 'Monto', align: 'right' },
+					{ label: 'Anterior', align: 'right' },
+					{ label: 'Variación', align: 'right' },
+					{ label: '% total', align: 'right' }
 				],
-				head: ['Categoría', 'Monto', 'Anterior', 'Variación', '% total'],
-				body: categories.map((category) => [
+				rows: categories.map((category) => [
 					category.name,
-					formatMoney(category.amount, currency),
-					formatMoney(category.previousAmount, currency),
-					formatMoney(category.delta, currency),
-					`${category.share.toFixed(1)}%`
-				]),
-				fileName: `finflow-informe-${data.range.from}.pdf`
-			});
-			notifySuccess('Informe PDF descargado');
+					{ value: category.amount, format: 'money' },
+					{ value: category.previousAmount, format: 'money' },
+					{ value: category.delta, format: 'money' },
+					{ value: category.share, format: 'percent' }
+				])
+			}
+		],
+		fileName: `finflow-informe-${data.range.from}`,
+		note: `Comparativa contra ${data.range.previousLabel}. Documento generado por FinFlow.`
+	});
+
+	async function exportReport(format: 'pdf' | 'csv'): Promise<void> {
+		try {
+			await downloadReport(format, report);
+			notifySuccess(format === 'pdf' ? 'Informe PDF descargado' : 'Informe CSV descargado');
 		} catch (error) {
-			console.error('[finflow] pdf export:', error);
-			notifyError('No pudimos generar el PDF.');
+			console.error(`[finflow] ${format} export:`, error);
+			notifyError(format === 'pdf' ? 'No pudimos generar el PDF.' : 'No pudimos generar el CSV.');
 		}
 	}
 </script>
@@ -239,28 +272,65 @@
 			</p>
 		</div>
 		<div class="flex shrink-0 items-center gap-2">
-			<button type="button" class={buttonClass('outline', 'md')} onclick={exportCsv}>
+			<button
+				type="button"
+				class={buttonClass('outline', 'md')}
+				onclick={() => exportReport('csv')}
+			>
 				<Icon name="table_view" size={17} class="text-primary" />
-				CSV / Excel
+				Datos CSV
 			</button>
-			<button type="button" class={buttonClass('primary', 'md')} onclick={exportPdf}>
+			<button
+				type="button"
+				class={buttonClass('primary', 'md')}
+				onclick={() => exportReport('pdf')}
+			>
 				<Icon name="picture_as_pdf" size={17} />
 				Descargar PDF
 			</button>
 		</div>
 	</header>
 
+	<div class="flex items-center gap-2">
+		<a
+			href={withParams({ ref: data.previousRef })}
+			class="flex size-10 shrink-0 items-center justify-center rounded-full bg-level-1 text-on-surface-variant transition hover:bg-surface-container"
+			aria-label="Periodo anterior"
+		>
+			<Icon name="chevron_left" size={20} />
+		</a>
+
+		<button
+			type="button"
+			class="flex h-10 min-w-0 flex-1 items-center justify-center gap-2 rounded-full border border-hairline bg-surface-container-lowest px-3 text-ink transition hover:bg-level-1"
+			aria-haspopup="dialog"
+			onclick={openPicker}
+		>
+			<Icon name="calendar_month" size={18} class="shrink-0 text-primary" />
+			<span class="truncate text-label font-semibold">{periodLabel}</span>
+			<Icon name="expand_more" size={18} class="shrink-0 text-muted" />
+		</button>
+
+		<a
+			href={withParams({ ref: data.nextRef })}
+			class="flex size-10 shrink-0 items-center justify-center rounded-full bg-level-1 text-on-surface-variant transition hover:bg-surface-container"
+			aria-label="Periodo siguiente"
+		>
+			<Icon name="chevron_right" size={20} />
+		</a>
+	</div>
+
 	<SegmentedLinks
 		value={data.preset}
 		options={[
-			{ value: 'week', label: 'Semana', href: withParams('week') },
+			{ value: 'week', label: 'Semana', href: withParams({ periodo: 'week' }) },
 			{
 				value: 'month',
 				label: `Mes (${monthShort})`,
-				href: withParams('month')
+				href: withParams({ periodo: 'month' })
 			},
-			{ value: 'quarter', label: 'Trimestre', href: withParams('quarter') },
-			{ value: 'year', label: 'Año', href: withParams('year') }
+			{ value: 'quarter', label: 'Trimestre', href: withParams({ periodo: 'quarter' }) },
+			{ value: 'year', label: 'Año', href: withParams({ periodo: 'year' }) }
 		]}
 		class="lg:max-w-xl"
 	/>
@@ -660,14 +730,98 @@
 		</div>
 
 		<div class="mt-3 grid grid-cols-2 gap-2">
-			<button type="button" class={buttonClass('outline', 'md', true)} onclick={exportPdf}>
+			<button
+				type="button"
+				class={buttonClass('outline', 'md', true)}
+				onclick={() => exportReport('pdf')}
+			>
 				<Icon name="picture_as_pdf" size={18} class="text-tertiary" />
 				Informe PDF
 			</button>
-			<button type="button" class={buttonClass('outline', 'md', true)} onclick={exportCsv}>
+			<button
+				type="button"
+				class={buttonClass('outline', 'md', true)}
+				onclick={() => exportReport('csv')}
+			>
 				<Icon name="table_view" size={18} class="text-primary" />
 				Datos CSV
 			</button>
 		</div>
 	</section>
 </div>
+
+<Sheet title="Elegir periodo" bind:open={pickerOpen}>
+	<div class="space-y-5 pb-2">
+		<div class="flex items-center justify-between gap-2">
+			<button
+				type="button"
+				class="flex size-9 items-center justify-center rounded-full bg-level-1 text-on-surface-variant transition hover:bg-surface-container"
+				aria-label="Año anterior"
+				onclick={() => (pickerYear -= 1)}
+			>
+				<Icon name="chevron_left" size={20} />
+			</button>
+			<p class="tnum text-title-md font-semibold text-ink" aria-live="polite">{pickerYear}</p>
+			<button
+				type="button"
+				class="flex size-9 items-center justify-center rounded-full bg-level-1 text-on-surface-variant transition hover:bg-surface-container"
+				aria-label="Año siguiente"
+				onclick={() => (pickerYear += 1)}
+			>
+				<Icon name="chevron_right" size={20} />
+			</button>
+		</div>
+
+		<div class="grid grid-cols-3 gap-2" aria-label="Meses del año">
+			{#each pickerMonths as month (month.value)}
+				<a
+					href={monthHref(pickerYear, Number(month.value.slice(5, 7)))}
+					class={cn(
+						'flex h-10 items-center justify-center rounded-xl border text-label font-medium transition',
+						data.month === month.value
+							? 'border-transparent bg-primary text-on-primary'
+							: 'border-hairline bg-surface-container-lowest text-on-surface hover:bg-level-1'
+					)}
+					aria-current={data.month === month.value ? 'page' : undefined}
+					onclick={() => (pickerOpen = false)}
+				>
+					{month.label}
+				</a>
+			{/each}
+		</div>
+
+		<div class="space-y-2 border-t border-hairline pt-4">
+			<p class="text-label-sm font-semibold tracking-wide text-muted uppercase">Atajos</p>
+			<div class="grid grid-cols-2 gap-2">
+				<a
+					href={withParams({ periodo: 'month', ref: null })}
+					class={buttonClass('outline', 'md', true)}
+					onclick={() => (pickerOpen = false)}
+				>
+					Este mes
+				</a>
+				<a
+					href={withParams({ periodo: 'month', ref: previousMonthRef })}
+					class={buttonClass('outline', 'md', true)}
+					onclick={() => (pickerOpen = false)}
+				>
+					Mes pasado
+				</a>
+				<a
+					href={withParams({ periodo: 'quarter', ref: null })}
+					class={buttonClass('outline', 'md', true)}
+					onclick={() => (pickerOpen = false)}
+				>
+					Este trimestre
+				</a>
+				<a
+					href={withParams({ periodo: 'year', ref: null })}
+					class={buttonClass('outline', 'md', true)}
+					onclick={() => (pickerOpen = false)}
+				>
+					Este año
+				</a>
+			</div>
+		</div>
+	</div>
+</Sheet>

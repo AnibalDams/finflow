@@ -34,18 +34,6 @@ test('avisa cuando las contraseñas no coinciden', async ({ page }) => {
 	await expect(page.getByText('Las contraseñas no coinciden')).toBeVisible();
 });
 
-test('exporta el CSV de movimientos del mes', async ({ page }) => {
-	await login(page);
-	await page.goto('/ajustes');
-
-	const [download] = await Promise.all([
-		page.waitForEvent('download'),
-		page.getByRole('button', { name: 'CSV' }).click()
-	]);
-
-	expect(download.suggestedFilename()).toMatch(/^finflow-movimientos-\d{4}-\d{2}-01\.csv$/);
-});
-
 test('sube y elimina la foto de perfil', async ({ page }) => {
 	const png = Buffer.from(
 		'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',

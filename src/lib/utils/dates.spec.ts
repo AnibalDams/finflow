@@ -13,11 +13,14 @@ import {
 	localDateTimeToUtc,
 	localRangeInstants,
 	monthKey,
+	monthParam,
 	monthRange,
 	monthsBetween,
 	parseISODate,
+	parseMonthParam,
 	periodRange,
 	resolveLocalInstant,
+	shiftPeriodReference,
 	startOfWeek,
 	timeAtOffset,
 	toISODate
@@ -36,6 +39,15 @@ describe('fechas base', () => {
 		// 18 Oct 2026 es domingo: la semana empieza el lunes 12.
 		expect(toISODate(startOfWeek(new Date(2026, 9, 18)))).toBe('2026-10-12');
 		expect(toISODate(addDays(new Date(2026, 9, 18), 3))).toBe('2026-10-21');
+	});
+
+	it('serializa e interpreta la clave de mes para URLs', () => {
+		expect(monthParam(new Date(2026, 9, 18))).toBe('2026-10');
+		expect(toISODate(parseMonthParam('2026-10') ?? new Date(0))).toBe('2026-10-01');
+		expect(parseMonthParam('2026-13')).toBeNull();
+		expect(parseMonthParam('2026-1')).toBeNull();
+		expect(parseMonthParam('octubre')).toBeNull();
+		expect(parseMonthParam(null)).toBeNull();
 	});
 });
 
@@ -85,6 +97,14 @@ describe('periodRange', () => {
 			prevTo: '2025-12-31',
 			previousLabel: '2025'
 		});
+	});
+
+	it('desplaza la referencia según el preset', () => {
+		const reference = new Date(2026, 9, 18);
+		expect(toISODate(shiftPeriodReference(reference, 'week', -1))).toBe('2026-10-11');
+		expect(toISODate(shiftPeriodReference(reference, 'month', 1))).toBe('2026-11-18');
+		expect(toISODate(shiftPeriodReference(reference, 'quarter', -1))).toBe('2026-07-18');
+		expect(toISODate(shiftPeriodReference(reference, 'year', 1))).toBe('2027-10-18');
 	});
 });
 
