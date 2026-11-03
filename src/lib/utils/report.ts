@@ -19,9 +19,13 @@ export interface ReportNumber {
 
 export type ReportCell = string | number | null | undefined | ReportNumber;
 
+export type ReportColumnKind = 'text' | 'category' | 'type' | 'date';
+
 export interface ReportColumn {
 	label: string;
 	align?: ReportAlign;
+	/** Pista visual para HTML (fechas, categorías y tipos de movimiento). */
+	kind?: ReportColumnKind;
 }
 
 export interface ReportSection {
@@ -29,6 +33,49 @@ export interface ReportSection {
 	columns: ReportColumn[];
 	rows: ReportCell[][];
 }
+
+export interface ReportBarItem {
+	label: string;
+	value: number;
+	color?: string;
+}
+
+export interface ReportBarsChart {
+	kind: 'bars';
+	title: string;
+	subtitle?: string;
+	currency?: string;
+	items: ReportBarItem[];
+	/** Lectura breve bajo las barras. */
+	note?: string;
+}
+
+export interface ReportDonutChart {
+	kind: 'donut';
+	title: string;
+	subtitle?: string;
+	currency?: string;
+	items: Array<{ label: string; value: number; color?: string }>;
+	centerLabel?: string;
+}
+
+export interface ReportLineSeries {
+	label: string;
+	values: number[];
+	color?: string;
+	dashed?: boolean;
+}
+
+export interface ReportLineChart {
+	kind: 'line';
+	title: string;
+	subtitle?: string;
+	currency?: string;
+	labels: string[];
+	series: ReportLineSeries[];
+}
+
+export type ReportChart = ReportBarsChart | ReportDonutChart | ReportLineChart;
 
 export interface ReportDocument {
 	title: string;
@@ -39,6 +86,8 @@ export interface ReportDocument {
 	currency?: string;
 	/** Pares etiqueta → valor mostrados como tarjetas de resumen. */
 	summary?: Array<[string, string]>;
+	/** Gráficos opcionales (solo el render HTML los dibuja). */
+	charts?: ReportChart[];
 	sections: ReportSection[];
 	/** Nombre del archivo sin extensión. */
 	fileName: string;

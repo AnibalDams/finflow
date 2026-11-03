@@ -10,6 +10,38 @@ const REPORT: ReportDocument = {
 	profileName: 'Sofía Ramírez',
 	currency: 'USD',
 	summary: [['Movimientos', '42']],
+	charts: [
+		{
+			kind: 'bars',
+			title: 'Ingresos y gastos',
+			currency: 'USD',
+			items: [
+				{ label: 'Ingresos', value: 4200, color: '#006c49' },
+				{ label: 'Gastos', value: 1851.73, color: '#bc0b3b' }
+			],
+			note: 'Balance del periodo: $2,348.27'
+		},
+		{
+			kind: 'donut',
+			title: 'Gastos por categoría',
+			currency: 'USD',
+			centerLabel: 'Gastos',
+			items: [
+				{ label: 'Casa', value: 1000, color: '#006c49' },
+				{ label: 'Comida', value: 851.73 }
+			]
+		},
+		{
+			kind: 'line',
+			title: 'Evolución diaria',
+			currency: 'USD',
+			labels: ['1', '2', '3'],
+			series: [
+				{ label: 'Ingresos', values: [100, 0, 50], color: '#006c49' },
+				{ label: 'Gastos', values: [10, 20, 15], color: '#bc0b3b' }
+			]
+		}
+	],
 	sections: [
 		{
 			heading: 'Detalle',
@@ -18,6 +50,11 @@ const REPORT: ReportDocument = {
 				['Café & pan', { value: 1234.5, format: 'money' }],
 				['Ahorro', { value: 12.5, format: 'percent' }]
 			]
+		},
+		{
+			heading: 'Tipos',
+			columns: [{ label: 'Tipo', kind: 'type' }],
+			rows: [['Gasto'], ['Ingreso']]
 		}
 	],
 	fileName: 'finflow-movimientos-2026-10-01'
@@ -76,7 +113,7 @@ describe('displayCell', () => {
 });
 
 describe('buildReportHtml', () => {
-	it('escapa contenido y conserva las tarjetas de resumen', () => {
+	it('escapa contenido, conserva el resumen y dibuja los gráficos', () => {
 		const html = buildReportHtml(REPORT, new Date('2026-10-25T12:00:00.000Z'));
 
 		expect(html).toContain('&lt;octubre&gt;');
@@ -85,6 +122,18 @@ describe('buildReportHtml', () => {
 		expect(html).toContain('$1,234.50');
 		expect(html).toContain('Movimientos');
 		expect(html).toContain('<table>');
+
+		expect(html).toContain('Gráficos del informe');
+		expect(html.match(/<article class="chart-card/g)).toHaveLength(3);
+		expect(html).toContain('<svg');
+		expect(html).toContain('role="img"');
+		expect(html).toContain('data-chart="line"');
+		expect(html).toContain('Ingresos y gastos');
+		expect(html).toContain('Gastos por categoría');
+		expect(html).toContain('Evolución diaria');
+		expect(html).toContain('chart-note');
+		expect(html).toContain('pill pill-expense');
+		expect(html).toContain('pill pill-income');
 	});
 });
 

@@ -2,11 +2,11 @@
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import Sheet from '#lib/components/ui/Sheet.svelte';
 	import { notifyError, notifySuccess } from '#lib/stores/toast.svelte';
-	import { formatFullDate } from '#lib/utils/dates';
+	import { formatFullDate, formatMonthName, toISODate } from '#lib/utils/dates';
 	import { downloadReport } from '#lib/utils/export';
 	import { TRANSACTION_TYPE_LABELS } from '#lib/utils/labels';
-	import { formatMoney, sumAmounts } from '#lib/utils/money';
-	import type { ReportDocument, ReportFormat } from '#lib/utils/report';
+	import { formatMoney, formatPercent, sumAmounts } from '#lib/utils/money';
+	import type { ReportChart, ReportDocument, ReportFormat } from '#lib/utils/report';
 	import type { TransactionItem } from '#lib/types/domain';
 
 	interface Props {
@@ -110,6 +110,141 @@
 		return payload;
 	}
 
+	const CHART_COLORS = [
+		'#006c49',
+		'#4648d4',
+		'#bc0b3b',
+		'#b45309',
+		'#0e7490',
+		'#7c3aed',
+		'#64748b'
+	];
+
+	/** Gráficos del informe con lo que realmente se exporta. */
+	function buildCharts(items: TransactionItem[], income: number, expense: number): ReportChart[] {
+		if (income === 0 && expense === 0) return [];
+
+		const balance = income - expense;
+		const balanceShare = income > 0 ? (balance / income) * 100 : null;
+		const balanceNote =
+			balanceShare === null
+				? `Balance del periodo: ${formatMoney(balance, currency)}`
+				: `Balance del periodo: ${formatMoney(balance, currency)} · ${formatPercent(balanceShare, 0)} de los ingresos`;
+
+		const charts: ReportChart[] = [
+			{
+				kind: 'bars',
+				title: 'Ingresos y gastos',
+				subtitle: 'Comparativa del periodo',
+				currency,
+				items: [
+					{ label: 'Ingresos', value: income, color: '#006c49' },
+					{ label: 'Gastos', value: expense, color: '#bc0b3b' }
+				],
+				note: balanceNote
+			}
+		];
+
+		const byCategory = new Map<string, { value: number; color?: string }>();
+		for (const item of items) {
+			if (item.type !== 'expense') continue;
+			const name = item.categoryName ?? 'Sin categoría';
+			const current = byCategory.get(name) ?? { value: 0, color: item.categoryColor ?? undefined };
+			current.value += item.amount;
+			byCategory.set(name, current);
+		}
+
+		const categories = [...byCategory.entries()].sort((a, b) => b[1].value - a[1].value);
+		if (categories.length > 0) {
+			const top = categories.slice(0, 6);
+			const rest = categories.slice(6);
+			const donutItems = top.map(([name, entry], index) => ({
+				label: name,
+				value: entry.value,
+				color: entry.color ?? CHART_COLORS[index % CHART_COLORS.length]
+			}));
+
+			if (rest.length > 0) {
+				donutItems.push({
+					label: rest.length === 1 ? rest[0][0] : 'Otras categorías',
+					value: rest.reduce((sum, [, entry]) => sum + entry.value, 0),
+					color: rest.length === 1 ? (rest[0][1].color ?? '#94a3b8') : '#94a3b8'
+				});
+			}
+
+			charts.push({
+				kind: 'donut',
+				title: 'Gastos por categoría',
+				subtitle: 'Distribución del periodo',
+				currency,
+				items: donutItems,
+				centerLabel: 'Gastos'
+			});
+		}
+
+		if (month) {
+			const [year, monthNumber] = month.split('-').map(Number);
+			const days = new Date(year, monthNumber, 0).getDate();
+			const dailyIncome = Array<number>(days).fill(0);
+			const dailyExpense = Array<number>(days).fill(0);
+
+			for (const item of items) {
+				const day = new Date(item.occurredAt).getDate();
+				if (day < 1 || day > days) continue;
+				if (item.type === 'income') dailyIncome[day - 1] += item.amount;
+				else if (item.type === 'expense') dailyExpense[day - 1] += item.amount;
+			}
+
+			charts.push({
+				kind: 'line',
+				title: 'Evolución diaria',
+				subtitle: 'Ingresos y gastos por día',
+				currency,
+				labels: Array.from({ length: days }, (_, index) => String(index + 1)),
+				series: [
+					{ label: 'Ingresos', values: dailyIncome, color: '#006c49' },
+					{ label: 'Gastos', values: dailyExpense, color: '#bc0b3b' }
+				]
+			});
+		} else {
+			const byMonth = new Map<string, { income: number; expense: number }>();
+			for (const item of items) {
+				const key = toISODate(new Date(item.occurredAt)).slice(0, 7);
+				const bucket = byMonth.get(key) ?? { income: 0, expense: 0 };
+				if (item.type === 'income') bucket.income += item.amount;
+				else if (item.type === 'expense') bucket.expense += item.amount;
+				byMonth.set(key, bucket);
+			}
+
+			const keys = [...byMonth.keys()].sort().slice(-12);
+			if (keys.length > 1) {
+				charts.push({
+					kind: 'line',
+					title: 'Evolución mensual',
+					subtitle: 'Últimos periodos con actividad',
+					currency,
+					labels: keys.map(
+						(key) => `${formatMonthName(`${key}-01`).slice(0, 3)} ${key.slice(2, 4)}`
+					),
+					series: [
+						{
+							label: 'Ingresos',
+							values: keys.map((key) => byMonth.get(key)?.income ?? 0),
+							color: '#006c49'
+						},
+						{
+							label: 'Gastos',
+							values: keys.map((key) => byMonth.get(key)?.expense ?? 0),
+							color: '#bc0b3b'
+						}
+					]
+				});
+			}
+		}
+
+		return charts;
+	}
+
 	function buildReport(items: TransactionItem[]): ReportDocument {
 		const income = sumAmounts(
 			items.filter((item) => item.type === 'income').map((item) => item.amount)
@@ -132,15 +267,16 @@
 				['Gastos', formatMoney(expense, currency)],
 				['Balance', formatMoney(income - expense, currency)]
 			],
+			charts: buildCharts(items, income, expense),
 			sections: [
 				{
 					heading: 'Detalle de movimientos',
 					columns: [
-						{ label: 'Fecha' },
+						{ label: 'Fecha', kind: 'date' },
 						{ label: 'Concepto' },
 						{ label: 'Cuenta' },
-						{ label: 'Categoría' },
-						{ label: 'Tipo' },
+						{ label: 'Categoría', kind: 'category' },
+						{ label: 'Tipo', kind: 'type' },
 						{ label: 'Monto', align: 'right' },
 						{ label: 'Moneda', align: 'center' }
 					],
