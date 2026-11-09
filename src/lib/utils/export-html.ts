@@ -120,12 +120,12 @@ function renderLineChart(chart: ReportLineChart, index: number): string {
 					? series.values
 							.map(
 								(value, i) =>
-									`<circle cx="${pointX(i)}" cy="${pointY(value)}" r="3" fill="${color}" stroke="#ffffff" stroke-width="1.5"><title>${escapeHtml(series.label)} · ${escapeHtml(formatValue(value, currency))}</title></circle>`
+									`<circle class="dot-marker" cx="${pointX(i)}" cy="${pointY(value)}" r="3" fill="${color}" stroke="#ffffff" stroke-width="1.5"><title>${escapeHtml(series.label)} · ${escapeHtml(formatValue(value, currency))}</title></circle>`
 							)
 							.join('')
 					: '';
 
-			return `<path d="${path}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"${series.dashed ? ' stroke-dasharray="5 5"' : ''} />${dots}`;
+			return `<path class="chart-line" d="${path}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"${series.dashed ? ' stroke-dasharray="5 5"' : ''} />${dots}`;
 		})
 		.join('');
 
@@ -498,6 +498,9 @@ export function buildReportHtml(report: ReportDocument, generatedAt: Date = new 
 </main>
 <script>
 (function () {
+  // Los SVG se escalan con el viewBox: textos, puntos y trazos se dividen por
+  // ese factor para conservar su tamaño en pantalla. Solo se tocan los
+  // elementos marcados; los arcos del donut (circle r=76) deben quedar intactos.
   function fitCharts() {
     document.querySelectorAll('svg[data-chart]').forEach(function (svg) {
       var view = svg.viewBox.baseVal;
@@ -508,10 +511,10 @@ export function buildReportHtml(report: ReportDocument, generatedAt: Date = new 
         var base = text.classList.contains('donut-total') ? 18 : text.classList.contains('donut-caption') ? 10 : 12;
         text.style.fontSize = (base / scale) + 'px';
       });
-      svg.querySelectorAll('circle').forEach(function (circle) {
+      svg.querySelectorAll('circle.dot-marker').forEach(function (circle) {
         circle.setAttribute('r', String(3 / scale));
       });
-      svg.querySelectorAll('path[stroke]').forEach(function (path) {
+      svg.querySelectorAll('path.chart-line').forEach(function (path) {
         path.style.strokeWidth = (2.2 / scale) + 'px';
       });
     });

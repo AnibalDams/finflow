@@ -134,6 +134,13 @@ describe('buildReportHtml', () => {
 		expect(html).toContain('chart-note');
 		expect(html).toContain('pill pill-expense');
 		expect(html).toContain('pill pill-income');
+
+		// El ajuste de tamaño no debe tocar los arcos del donut (circle r=76).
+		expect(html).toContain('class="dot-marker"');
+		expect(html).toContain('path.chart-line');
+		expect(html).toContain('circle.dot-marker');
+		expect(html).not.toContain("querySelectorAll('circle')");
+		expect(html).not.toContain("querySelectorAll('path[stroke]')");
 	});
 });
 
