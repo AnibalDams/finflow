@@ -191,6 +191,7 @@
 		bind:date={occurredAt}
 		bind:time={occurredTime}
 		error={previous.occurredAt}
+		desktop
 	/>
 	<input type="hidden" name="occurredAtISO" value={occurredAtIso} />
 

@@ -12,6 +12,7 @@ import {
 	formatRelativeDay,
 	localDateTimeToUtc,
 	localRangeInstants,
+	monthGrid,
 	monthKey,
 	monthParam,
 	monthRange,
@@ -48,6 +49,33 @@ describe('fechas base', () => {
 		expect(parseMonthParam('2026-1')).toBeNull();
 		expect(parseMonthParam('octubre')).toBeNull();
 		expect(parseMonthParam(null)).toBeNull();
+	});
+});
+
+describe('monthGrid', () => {
+	it('empieza en lunes y rellena con los meses vecinos', () => {
+		// Octubre de 2026 empieza en jueves: la rejilla arranca el lunes 28 de septiembre.
+		const cells = monthGrid(new Date(2026, 9, 18));
+
+		expect(cells).toHaveLength(42);
+		expect(cells[0]).toEqual({ date: '2026-09-28', day: 28, inMonth: false });
+		expect(cells[41]).toEqual({ date: '2026-11-08', day: 8, inMonth: false });
+		expect(cells.filter((cell) => cell.inMonth)).toHaveLength(31);
+		expect(cells.find((cell) => cell.inMonth)?.date).toBe('2026-10-01');
+	});
+
+	it('no desplaza la primera celda cuando el mes empieza en lunes', () => {
+		const cells = monthGrid(new Date(2027, 1, 10));
+
+		expect(cells[0]).toEqual({ date: '2027-02-01', day: 1, inMonth: true });
+		expect(cells.filter((cell) => cell.inMonth)).toHaveLength(28);
+	});
+
+	it('atraviesa el cambio de año sin desfase', () => {
+		const cells = monthGrid(new Date(2025, 11, 15));
+
+		expect(cells[0].date).toBe('2025-12-01');
+		expect(cells[41].date).toBe('2026-01-11');
 	});
 });
 

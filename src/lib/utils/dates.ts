@@ -226,6 +226,33 @@ export function startOfQuarter(date: Date): Date {
 	return new Date(date.getFullYear(), quarterStartMonth, 1);
 }
 
+export interface MonthGridCell {
+	/** `YYYY-MM-DD` de la celda. */
+	date: string;
+	/** Día del mes. */
+	day: number;
+	/** `false` cuando la celda pertenece al mes anterior o al siguiente. */
+	inMonth: boolean;
+}
+
+/**
+ * Rejilla de 6 semanas (42 celdas) del mes de `reference`.
+ * La semana empieza en lunes, igual que `startOfWeek`.
+ */
+export function monthGrid(reference: Date): MonthGridCell[] {
+	const first = startOfMonth(reference);
+	const start = startOfWeek(first);
+
+	return Array.from({ length: 42 }, (_, index) => {
+		const day = addDays(start, index);
+		return {
+			date: toISODate(day),
+			day: day.getDate(),
+			inMonth: day.getMonth() === first.getMonth() && day.getFullYear() === first.getFullYear()
+		};
+	});
+}
+
 export interface PeriodRange {
 	from: string;
 	to: string;

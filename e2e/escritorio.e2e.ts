@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { login } from './helpers';
+import { acceptConfirm, login } from './helpers';
 
 test.describe('escritorio', () => {
 	test.use({ viewport: { width: 1440, height: 900 } });
@@ -51,6 +51,43 @@ test.describe('escritorio', () => {
 			() => document.documentElement.scrollWidth - document.documentElement.clientWidth
 		);
 		expect(overflow).toBeLessThanOrEqual(1);
+	});
+
+	test('registra un movimiento con el selector de fecha y hora de escritorio', async ({ page }) => {
+		const concept = `Selector E2E ${Date.now()}`;
+
+		await login(page);
+		await page.goto('/movimientos/nuevo');
+
+		await page.getByLabel('Monto a registrar').fill('4.56');
+		await page.getByLabel('Concepto o nota').fill(concept);
+
+		await page.getByRole('button', { name: /^Fecha:/ }).click();
+		const calendar = page.getByRole('dialog', { name: 'Fecha' });
+		await expect(calendar).toBeVisible();
+		await calendar.getByRole('button', { name: 'Hoy' }).click();
+		await expect(calendar).toBeHidden();
+
+		await page.getByRole('button', { name: /^Hora:/ }).click();
+		const clock = page.getByRole('dialog', { name: 'Hora' });
+		await expect(clock).toBeVisible();
+		await clock.getByRole('button', { name: 'Hora 13' }).click();
+		await clock.getByRole('button', { name: 'Minuto 12' }).click();
+		await clock.getByRole('button', { name: 'Listo' }).click();
+		await expect(clock).toBeHidden();
+
+		await page.getByRole('button', { name: 'Guardar gasto' }).click();
+		await expect(page).toHaveURL(/\/movimientos(\?.*)?$/);
+
+		await page.getByText(concept).first().click();
+		await expect(page).toHaveURL(/\/movimientos\/[0-9a-f-]{36}/);
+		// La hora elegida llega al detalle sin desfase.
+		await expect(page.getByText(/01:12/)).toBeVisible();
+
+		acceptConfirm(page);
+		await page.getByRole('button', { name: 'Eliminar movimiento' }).click();
+		await expect(page).toHaveURL(/\/movimientos(\?.*)?$/);
+		await expect(page.getByText(concept)).toHaveCount(0);
 	});
 });
 

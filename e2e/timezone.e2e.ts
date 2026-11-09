@@ -3,7 +3,9 @@ import { acceptConfirm, login } from './helpers';
 
 // El servidor de las pruebas corre en UTC y el navegador en UTC-4: reproduce
 // el desfase de zona horaria de producción.
-test.use({ timezoneId: 'America/Caracas' });
+// Se ejecuta en móvil a propósito: es la vista que usa el selector nativo de
+// fecha y hora.
+test.use({ timezoneId: 'America/Caracas', viewport: { width: 390, height: 844 } });
 
 function localDateInCaracas(): string {
 	const parts = new Intl.DateTimeFormat('en-CA', {
@@ -33,9 +35,11 @@ test('guarda la hora local y agrupa el movimiento bajo "Hoy"', async ({ page }) 
 	await page.getByRole('button', { name: 'Guardar gasto' }).click();
 
 	await expect(page).toHaveURL(/\/movimientos(\?.*)?$/);
-	await expect(page.getByText(/^Hoy,/).first()).toBeVisible();
+	// En móvil se muestra la lista agrupada; la tabla de escritorio sigue en el
+	// DOM pero oculta, así que se apunta a los nodos visibles.
+	await expect(page.getByRole('heading', { name: /^Hoy,/ }).first()).toBeVisible();
 
-	const row = page.locator('a[href^="/movimientos/"]').filter({ hasText: concept }).first();
+	const row = page.locator('a[href^="/movimientos/"]:visible').filter({ hasText: concept }).first();
 	await expect(row).toBeVisible();
 	await row.click();
 
