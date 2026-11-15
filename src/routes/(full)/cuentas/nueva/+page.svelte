@@ -91,7 +91,7 @@
 
 	{#if form?.message}
 		<div
-			class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+			class="flex items-start gap-2 rounded-control bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
 			role="alert"
 		>
 			<Icon name="error" size={18} class="mt-0.5 shrink-0" />
@@ -112,7 +112,7 @@
 		/>
 	</section>
 
-	<section class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4">
+	<section class="space-y-3 rounded-card border border-hairline/70 bg-surface-container-lowest p-4">
 		<h2 class="text-title-sm text-ink">Datos de la cuenta</h2>
 
 		<TextField
@@ -146,10 +146,10 @@
 		</p>
 	</section>
 
-	<section class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4">
+	<section class="space-y-3 rounded-card border border-hairline/70 bg-surface-container-lowest p-4">
 		<h2 class="text-title-sm text-ink">Apariencia</h2>
 		<IconPicker name="icon" icons={ICON_CHOICES} bind:value={icon} error={previous.icon} />
-		<div class="rounded-2xl bg-level-1/70 p-3">
+		<div class="rounded-card bg-level-1/70 p-3">
 			<Switch
 				label="Cuenta principal"
 				description="Se usa por defecto al registrar movimientos"

@@ -38,7 +38,7 @@
 <DesktopTopBar accounts={data.accounts} profile={data.profile} alerts={data.alerts} />
 
 <main
-	class="flex w-full flex-1 flex-col pt-16 pb-28 transition-opacity duration-150 lg:pt-[72px] lg:pb-0 lg:pl-[280px]"
+	class="flex w-full flex-1 flex-col pt-16 pb-28 transition-opacity duration-150 lg:pt-[72px] lg:pb-0 lg:pl-[248px]"
 	class:opacity-60={navigating.to !== null}
 	aria-busy={navigating.to !== null}
 >

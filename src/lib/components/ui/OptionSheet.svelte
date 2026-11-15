@@ -143,7 +143,7 @@
 				aria-selected={selected}
 				disabled={option.disabled}
 				class={cn(
-					'flex w-full items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40',
+					'flex w-full items-center gap-3 rounded-card border px-3 py-2.5 text-left transition active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40',
 					selected
 						? cn('border-transparent', TONE[tone].row)
 						: 'border-hairline/70 bg-surface-container-lowest hover:bg-level-1/60'
@@ -153,7 +153,7 @@
 				{#if option.icon}
 					<span
 						class={cn(
-							'flex size-10 shrink-0 items-center justify-center rounded-xl',
+							'flex size-10 shrink-0 items-center justify-center rounded-control',
 							selected ? TONE[tone].tile : 'bg-level-1 text-on-surface-variant'
 						)}
 					>

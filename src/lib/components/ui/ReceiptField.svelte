@@ -57,12 +57,18 @@
 
 	{#if file}
 		<div
-			class="flex items-center gap-3 rounded-2xl border border-hairline bg-surface-container-lowest p-3 shadow-card"
+			class="flex items-center gap-3 rounded-card border border-hairline bg-surface-container-lowest p-3 shadow-card"
 		>
 			{#if previewUrl}
-				<img src={previewUrl} alt="Vista previa del comprobante" class="size-10 rounded-full object-cover" />
+				<img
+					src={previewUrl}
+					alt="Vista previa del comprobante"
+					class="size-10 rounded-full object-cover"
+				/>
 			{:else}
-				<span class="flex size-10 items-center justify-center rounded-full bg-secondary/12 text-secondary">
+				<span
+					class="flex size-10 items-center justify-center rounded-full bg-secondary/12 text-secondary"
+				>
 					<Icon name="description" size={20} />
 				</span>
 			{/if}
@@ -90,8 +96,10 @@
 			</button>
 		</div>
 	{:else}
-		<div class="flex items-center gap-3 rounded-2xl bg-secondary/8 p-3">
-			<span class="flex size-11 shrink-0 items-center justify-center rounded-full bg-secondary text-white">
+		<div class="flex items-center gap-3 rounded-card bg-secondary/8 p-3">
+			<span
+				class="flex size-11 shrink-0 items-center justify-center rounded-full bg-secondary text-on-secondary"
+			>
 				<Icon name="document_scanner" size={22} />
 			</span>
 
@@ -102,7 +110,7 @@
 
 			<label
 				for={inputId}
-				class="shrink-0 cursor-pointer rounded-full bg-secondary px-4 py-2 text-label text-white transition hover:bg-secondary/90"
+				class="shrink-0 cursor-pointer rounded-full bg-secondary px-4 py-2 text-label text-on-secondary transition hover:bg-secondary/90"
 			>
 				Subir
 			</label>

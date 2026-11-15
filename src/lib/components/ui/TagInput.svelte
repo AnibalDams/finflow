@@ -12,7 +12,14 @@
 		class?: string;
 	}
 
-	let { name, value = $bindable(''), label, placeholder = '+ Nueva', max = 8, class: className = '' }: Props = $props();
+	let {
+		name,
+		value = $bindable(''),
+		label,
+		placeholder = '+ Nueva',
+		max = 8,
+		class: className = ''
+	}: Props = $props();
 
 	let draft = $state('');
 
@@ -51,10 +58,10 @@
 		<p class="text-label-sm font-medium text-on-surface-variant">{label}</p>
 	{/if}
 
-	<input type="hidden" {name} value={value} />
+	<input type="hidden" {name} {value} />
 
 	<div
-		class="flex flex-wrap items-center gap-2 rounded-2xl border border-hairline bg-surface-container-lowest p-2.5 transition focus-within:border-secondary focus-within:ring-3 focus-within:ring-secondary/12"
+		class="flex flex-wrap items-center gap-2 rounded-card border border-hairline bg-surface-container-lowest p-2.5 transition focus-within:border-secondary focus-within:ring-3 focus-within:ring-secondary/12"
 	>
 		{#each tags as tag (tag)}
 			<span

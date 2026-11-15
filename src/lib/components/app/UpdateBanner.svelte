@@ -8,7 +8,7 @@
 		class="pointer-events-none fixed inset-x-0 top-[calc(env(safe-area-inset-top)+72px)] z-100 mx-auto w-full max-w-[430px] px-4"
 	>
 		<div
-			class="animate-rise pointer-events-auto flex items-center gap-2.5 rounded-2xl bg-inverse-surface px-3.5 py-2.5 text-inverse-on-surface shadow-elevated"
+			class="animate-rise pointer-events-auto flex items-center gap-2.5 rounded-card bg-inverse-surface px-3.5 py-2.5 text-inverse-on-surface shadow-elevated"
 			role="status"
 		>
 			<Icon name="system_update" size={18} />

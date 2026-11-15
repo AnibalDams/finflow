@@ -5,6 +5,7 @@
  */
 
 import { formatCompactMoney, formatMoney, formatPercent } from '#lib/utils/money';
+import { DEFAULT_REPORT_PALETTE, type ReportPalette } from '#lib/theme/report';
 import {
 	displayCell,
 	isReportNumber,
@@ -16,8 +17,6 @@ import {
 	type ReportDonutChart,
 	type ReportLineChart
 } from './report';
-
-const PALETTE = ['#006c49', '#4648d4', '#bc0b3b', '#b45309', '#0e7490', '#7c3aed', '#64748b'];
 
 function escapeHtml(value: string): string {
 	return value
@@ -57,11 +56,11 @@ function renderCell(value: ReportCell, currency: string, column: ReportColumn): 
 	return `<td class="${className}${negative}">${text}</td>`;
 }
 
-function legendLine(color: string, dashed = false): string {
-	return `<i class="legend-line${dashed ? ' dashed' : ''}" style="--c:${safeColor(color, PALETTE[0])}"></i>`;
+function legendLine(color: string, palette: ReportPalette, dashed = false): string {
+	return `<i class="legend-line${dashed ? ' dashed' : ''}" style="--c:${safeColor(color, palette.primary)}"></i>`;
 }
 
-function renderLineChart(chart: ReportLineChart, index: number): string {
+function renderLineChart(chart: ReportLineChart, index: number, palette: ReportPalette): string {
 	const currency = chart.currency ?? 'USD';
 	const width = 640;
 	const height = 252;
@@ -111,7 +110,7 @@ function renderLineChart(chart: ReportLineChart, index: number): string {
 
 	const lines = chart.series
 		.map((series) => {
-			const color = safeColor(series.color, PALETTE[0]);
+			const color = safeColor(series.color, palette.primary);
 			const path = series.values
 				.map((value, i) => `${i === 0 ? 'M' : 'L'} ${pointX(i)} ${pointY(value)}`)
 				.join(' ');
@@ -144,8 +143,8 @@ function renderLineChart(chart: ReportLineChart, index: number): string {
 		<desc>${escapeHtml(desc)}</desc>
 		<defs>
 			<linearGradient id="area-${index}" x1="0" y1="0" x2="0" y2="1">
-				<stop offset="0%" stop-color="#006c49" stop-opacity="0.20" />
-				<stop offset="100%" stop-color="#006c49" stop-opacity="0" />
+				<stop offset="0%" stop-color="var(--primary)" stop-opacity="0.20" />
+				<stop offset="100%" stop-color="var(--primary)" stop-opacity="0" />
 			</linearGradient>
 		</defs>
 		${grid}
@@ -155,7 +154,7 @@ function renderLineChart(chart: ReportLineChart, index: number): string {
 	</svg>`;
 }
 
-function renderDonutChart(chart: ReportDonutChart): string {
+function renderDonutChart(chart: ReportDonutChart, palette: ReportPalette): string {
 	const currency = chart.currency ?? 'USD';
 	const items = chart.items.filter((item) => item.value > 0);
 	const total = items.reduce((sum, item) => sum + item.value, 0);
@@ -176,7 +175,7 @@ function renderDonutChart(chart: ReportDonutChart): string {
 			const length = (item.value / total) * circumference;
 			const gap = items.length > 1 ? Math.min(3, length * 0.1) : 0;
 			const dash = Math.max(0, length - gap);
-			const color = safeColor(item.color, PALETTE[index % PALETTE.length]);
+			const color = safeColor(item.color, palette.series[index % palette.series.length]);
 			const segment = `<circle cx="${center}" cy="${center}" r="${radius}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-dasharray="${dash} ${circumference - dash}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${center} ${center})"><title>${escapeHtml(item.label)} · ${escapeHtml(formatMoney(item.value, currency))}</title></circle>`;
 			offset += length;
 			return segment;
@@ -185,7 +184,7 @@ function renderDonutChart(chart: ReportDonutChart): string {
 
 	const legend = items
 		.map((item, index) => {
-			const color = safeColor(item.color, PALETTE[index % PALETTE.length]);
+			const color = safeColor(item.color, palette.series[index % palette.series.length]);
 			const percent = (item.value / total) * 100;
 			const percentLabel =
 				percent > 0 && percent < 0.1 ? '<0.1%' : formatPercent(percent, percent >= 10 ? 0 : 1);
@@ -211,13 +210,13 @@ function renderDonutChart(chart: ReportDonutChart): string {
 	</div>`;
 }
 
-function renderBarsChart(chart: ReportBarsChart): string {
+function renderBarsChart(chart: ReportBarsChart, palette: ReportPalette): string {
 	const currency = chart.currency ?? 'USD';
 	const max = niceMax(Math.max(1, ...chart.items.map((item) => item.value)));
 
 	const rows = chart.items
 		.map((item, index) => {
-			const color = safeColor(item.color, PALETTE[index % PALETTE.length]);
+			const color = safeColor(item.color, palette.series[index % palette.series.length]);
 			const width = Math.max(0, Math.min(100, (item.value / max) * 100));
 
 			return `<div class="bar-row">
@@ -235,23 +234,23 @@ function renderBarsChart(chart: ReportBarsChart): string {
 	}`;
 }
 
-function renderChart(chart: ReportChart, index: number): string {
+function renderChart(chart: ReportChart, index: number, palette: ReportPalette): string {
 	let body = '';
 	let legend = '';
 
 	switch (chart.kind) {
 		case 'bars':
-			body = renderBarsChart(chart);
+			body = renderBarsChart(chart, palette);
 			break;
 		case 'donut':
-			body = renderDonutChart(chart);
+			body = renderDonutChart(chart, palette);
 			break;
 		case 'line':
-			body = renderLineChart(chart, index);
+			body = renderLineChart(chart, index, palette);
 			legend = `<div class="legend">${chart.series
 				.map(
 					(series) =>
-						`<span class="legend-item">${legendLine(series.color ?? PALETTE[0], series.dashed)}${escapeHtml(series.label)}</span>`
+						`<span class="legend-item">${legendLine(series.color ?? palette.primary, palette, series.dashed)}${escapeHtml(series.label)}</span>`
 				)
 				.join('')}</div>`;
 			break;
@@ -269,25 +268,37 @@ function renderChart(chart: ReportChart, index: number): string {
 	</article>`;
 }
 
-const STYLES = `
+function renderStyles(palette: ReportPalette): string {
+	return `
 :root {
-  --ink: #0f172a;
-  --muted: #64748b;
-  --hairline: #e2e8f0;
-  --surface: #ffffff;
-  --canvas: #faf8ff;
-  --level-1: #f1f5f9;
-  --primary: #006c49;
-  --secondary: #4648d4;
-  --tertiary: #bc0b3b;
+  --ink: ${palette.ink};
+  --muted: ${palette.muted};
+  --hairline: ${palette.hairline};
+  --surface: ${palette.surface};
+  --canvas: ${palette.canvas};
+  --level-1: ${palette.level1};
+  --primary: ${palette.primary};
+  --primary-fixed: ${palette.primaryFixed};
+  --secondary: ${palette.secondary};
+  --tertiary: ${palette.tertiary};
+  --hero-from: ${palette.heroFrom};
+  --hero-mid: ${palette.heroMid};
+  --hero-to: ${palette.heroTo};
+  --hero-glow: ${palette.heroGlow};
+  --income-surface: ${palette.incomeSurface};
+  --income-text: ${palette.incomeText};
+  --expense-surface: ${palette.expenseSurface};
+  --expense-text: ${palette.expenseText};
+  --plan-surface: ${palette.planSurface};
+  --plan-text: ${palette.planText};
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   background:
-    radial-gradient(700px 320px at 8% -8%, rgba(0, 108, 73, .08), transparent 70%),
-    radial-gradient(600px 300px at 96% 4%, rgba(70, 72, 212, .07), transparent 70%),
+    radial-gradient(700px 320px at 8% -8%, color-mix(in srgb, var(--primary) 8%, transparent), transparent 70%),
+    radial-gradient(600px 300px at 96% 4%, color-mix(in srgb, var(--secondary) 7%, transparent), transparent 70%),
     var(--canvas);
   color: var(--ink);
   font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -298,14 +309,14 @@ body {
 .hero {
   position: relative; overflow: hidden;
   display: flex; flex-wrap: wrap; justify-content: space-between; gap: 18px;
-  padding: 28px 30px; border-radius: 24px; color: #ffffff;
-  background: linear-gradient(122deg, #006c49 0%, #00563c 46%, #003927 100%);
-  box-shadow: 0 26px 60px -34px rgba(0, 66, 43, .75);
+  padding: 28px 30px; border-radius: 28px; color: #ffffff;
+  background: linear-gradient(122deg, var(--hero-from) 0%, var(--hero-mid) 46%, var(--hero-to) 100%);
+  box-shadow: 0 26px 60px -34px color-mix(in srgb, var(--hero-to) 75%, transparent);
 }
 .hero::after {
   content: ''; position: absolute; right: -70px; bottom: -130px;
   width: 320px; height: 320px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(111, 251, 190, .30), transparent 66%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--hero-glow) 30%, transparent), transparent 66%);
   pointer-events: none;
 }
 .hero-main { position: relative; z-index: 1; min-width: 0; }
@@ -326,7 +337,7 @@ body {
   border: 1px solid var(--hairline); border-radius: 18px; padding: 16px 18px 15px;
   box-shadow: 0 14px 30px -26px rgba(15, 23, 42, .35);
 }
-.card::before { content: ''; position: absolute; inset: 0 0 auto; height: 3px; background: linear-gradient(90deg, var(--primary), #4edea3); }
+.card::before { content: ''; position: absolute; inset: 0 0 auto; height: 3px; background: linear-gradient(90deg, var(--primary), var(--primary-fixed)); }
 .card dt { color: var(--muted); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; }
 .card dd { margin: 7px 0 0; font-size: 21px; font-weight: 750; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
 .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin: 28px 0 11px; }
@@ -382,9 +393,9 @@ td.center, th.center { text-align: center; }
 td.category { font-weight: 550; }
 td.date { color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .pill { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 650; line-height: 1.4; white-space: nowrap; }
-.pill-income { background: #e8f7ef; color: #006c49; }
-.pill-expense { background: #fdecef; color: #bc0b3b; }
-.pill-transfer { background: #eef0ff; color: #4648d4; }
+.pill-income { background: var(--income-surface); color: var(--income-text); }
+.pill-expense { background: var(--expense-surface); color: var(--expense-text); }
+.pill-transfer { background: var(--plan-surface); color: var(--plan-text); }
 .negative { color: var(--tertiary); }
 .note { margin-top: 24px; color: var(--muted); font-size: 12px; }
 .footer { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--hairline); display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 11px; }
@@ -420,9 +431,14 @@ td.date { color: var(--muted); white-space: nowrap; font-variant-numeric: tabula
   .note, .footer { font-size: 9.5px; }
 }
 `;
+}
 
 /** Genera el documento HTML completo. */
-export function buildReportHtml(report: ReportDocument, generatedAt: Date = new Date()): string {
+export function buildReportHtml(
+	report: ReportDocument,
+	generatedAt: Date = new Date(),
+	palette: ReportPalette = DEFAULT_REPORT_PALETTE
+): string {
 	const currency = report.currency ?? 'USD';
 	const title = escapeHtml(report.title);
 	const stamp = new Intl.DateTimeFormat('es-ES', {
@@ -445,7 +461,7 @@ export function buildReportHtml(report: ReportDocument, generatedAt: Date = new 
 				<h2>Gráficos del informe</h2>
 				<p>${escapeHtml(report.subtitle ?? '')}</p>
 			</div>
-			<div class="charts">${report.charts.map(renderChart).join('')}</div>
+			<div class="charts">${report.charts.map((chart, index) => renderChart(chart, index, palette)).join('')}</div>
 		</section>`
 		: '';
 
@@ -475,7 +491,7 @@ export function buildReportHtml(report: ReportDocument, generatedAt: Date = new 
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>${title}</title>
-<style>${STYLES}</style>
+<style>${renderStyles(palette)}</style>
 </head>
 <body>
 <main class="page">

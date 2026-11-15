@@ -137,7 +137,7 @@
 				aria-current={isToday ? 'date' : undefined}
 				aria-pressed={isSelected}
 				class={cn(
-					'flex h-9 items-center justify-center rounded-xl text-body font-semibold transition',
+					'flex h-9 items-center justify-center rounded-control text-body font-semibold transition',
 					isSelected
 						? 'bg-secondary text-on-secondary shadow-card'
 						: isToday
@@ -157,7 +157,7 @@
 	<footer class="pt-1">
 		<button
 			type="button"
-			class="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl bg-secondary/10 text-label-sm font-semibold text-secondary transition hover:bg-secondary/15"
+			class="flex h-9 w-full items-center justify-center gap-1.5 rounded-control bg-secondary/10 text-label-sm font-semibold text-secondary transition hover:bg-secondary/15"
 			onclick={chooseToday}
 		>
 			<Icon name="today" size={18} />

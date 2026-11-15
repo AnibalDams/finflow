@@ -43,7 +43,7 @@
 
 <section
 	class={cn(
-		'rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4 shadow-card',
+		'rounded-card border border-hairline/70 bg-surface-container-lowest p-4 shadow-card',
 		detailed && 'p-5',
 		className
 	)}
@@ -146,7 +146,7 @@
 
 			<a
 				href="/cuentas?tab=presupuestos"
-				class="mt-4 flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-level-1 text-label font-semibold text-ink transition hover:bg-surface-container"
+				class="mt-4 flex h-10 w-full items-center justify-center gap-2 rounded-control bg-level-1 text-label font-semibold text-ink transition hover:bg-surface-container"
 			>
 				<Icon name="tune" size={17} />
 				Ajustar límites de categoría
@@ -176,7 +176,7 @@
 			</div>
 		{/if}
 	{:else}
-		<div class="mt-4 rounded-xl bg-level-1/70 p-3 text-body-sm text-on-surface-variant">
+		<div class="mt-4 rounded-control bg-level-1/70 p-3 text-body-sm text-on-surface-variant">
 			Define un presupuesto mensual global en
 			<a href="/ajustes" class="font-semibold text-secondary underline">Ajustes</a>
 			para ver tu avance aquí.

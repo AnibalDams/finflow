@@ -30,10 +30,12 @@
 	<div class="flex h-16 items-center justify-between px-4">
 		<a
 			href={resolve('/(app)')}
-			class="flex items-center gap-2.5 rounded-xl"
+			class="flex items-center gap-2.5 rounded-control"
 			aria-label="Ir al inicio de FinFlow"
 		>
-			<span class="flex size-8 items-center justify-center rounded-xl bg-primary text-on-primary">
+			<span
+				class="flex size-8 items-center justify-center rounded-control bg-primary text-on-primary"
+			>
 				<Icon name="account_balance_wallet" size={18} filled />
 			</span>
 			<span class="flex flex-col">

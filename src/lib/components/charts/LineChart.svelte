@@ -376,7 +376,7 @@
 	{#if active}
 		<div
 			bind:clientHeight={tooltipHeight}
-			class="pointer-events-none absolute z-10 w-max max-w-[220px] rounded-xl border border-hairline bg-surface-container-lowest px-3 py-2 shadow-hero"
+			class="pointer-events-none absolute z-10 w-max max-w-[220px] rounded-control border border-hairline bg-surface-container-lowest px-3 py-2 shadow-hero"
 			style="left:{tooltipLeft}px;top:{tooltipTop}px;transform:translateX(-50%)"
 			role="status"
 			aria-live="polite"

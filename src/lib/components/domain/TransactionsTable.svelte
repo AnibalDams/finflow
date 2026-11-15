@@ -74,7 +74,7 @@
 					<td class="max-w-80 px-3 py-3">
 						<a href={`/movimientos/${item.id}`} class="group flex min-w-0 items-center gap-3">
 							<span
-								class="flex size-9 shrink-0 items-center justify-center rounded-xl"
+								class="flex size-9 shrink-0 items-center justify-center rounded-control"
 								style="background-color:color-mix(in srgb, {accent} 14%, transparent);color:{accent}"
 								aria-hidden="true"
 							>
@@ -135,7 +135,7 @@
 					<td class="px-2 py-3 text-center">
 						<a
 							href={`/movimientos/${item.id}`}
-							class="inline-flex size-8 items-center justify-center rounded-lg text-muted transition hover:bg-level-1 hover:text-ink"
+							class="inline-flex size-8 items-center justify-center rounded-control text-muted transition hover:bg-level-1 hover:text-ink"
 							aria-label={`Ver detalle de ${item.concept}`}
 						>
 							<Icon name="chevron_right" size={18} />

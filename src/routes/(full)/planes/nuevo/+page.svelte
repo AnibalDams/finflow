@@ -49,9 +49,7 @@
 
 	const target = $derived(parseAmountInput(targetAmount) ?? 0);
 	const saved = $derived(parseAmountInput(initialAmount) ?? 0);
-	const plan = $derived(
-		contributionPlan({ target, saved, targetDate, reference: now })
-	);
+	const plan = $derived(contributionPlan({ target, saved, targetDate, reference: now }));
 	const coverage = $derived(target > 0 ? Math.min(100, (saved / target) * 100) : 0);
 	const monthsLeft = $derived(targetDate ? monthsBetween(now, parseISODate(targetDate)) : 12);
 
@@ -128,7 +126,7 @@
 		Define lo que deseas comprar o vivir y proyecta tu ahorro con precisión financiera.
 	</p>
 
-	<div class="relative mt-4 h-40 overflow-hidden rounded-2xl bg-secondary/10">
+	<div class="relative mt-4 h-40 overflow-hidden rounded-card bg-secondary/10">
 		{#if preview}
 			<img src={preview} alt="Imagen del plan" class="size-full object-cover" />
 		{:else}
@@ -173,7 +171,7 @@
 
 	{#if form?.message}
 		<div
-			class="mt-4 flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+			class="mt-4 flex items-start gap-2 rounded-control bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
 			role="alert"
 		>
 			<Icon name="error" size={18} class="mt-0.5 shrink-0" />
@@ -181,7 +179,9 @@
 		</div>
 	{/if}
 
-	<section class="mt-4 space-y-4 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4">
+	<section
+		class="mt-4 space-y-4 rounded-card border border-hairline/70 bg-surface-container-lowest p-4"
+	>
 		<header class="flex items-center justify-between gap-2">
 			<h2 class="text-label-sm font-bold tracking-wide text-on-surface-variant uppercase">
 				1. Datos de la meta
@@ -228,7 +228,9 @@
 		</div>
 	</section>
 
-	<section class="mt-4 space-y-4 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4">
+	<section
+		class="mt-4 space-y-4 rounded-card border border-hairline/70 bg-surface-container-lowest p-4"
+	>
 		<header class="flex items-center justify-between gap-2">
 			<h2 class="text-label-sm font-bold tracking-wide text-on-surface-variant uppercase">
 				2. Estrategia financiera
@@ -258,18 +260,20 @@
 
 		<input type="hidden" name="monthlyContribution" value={plan.monthlyAmount.toFixed(2)} />
 
-		<div class="rounded-2xl bg-secondary/8 p-4">
+		<div class="rounded-card bg-secondary/8 p-4">
 			<div class="flex items-center justify-between gap-2">
 				<p class="text-label-sm font-semibold tracking-wide text-secondary uppercase">
 					Cálculo en vivo
 				</p>
-				<span class="flex size-8 items-center justify-center rounded-full bg-secondary/12 text-secondary">
+				<span
+					class="flex size-8 items-center justify-center rounded-full bg-secondary/12 text-secondary"
+				>
 					<Icon name="calculate" size={18} />
 				</span>
 			</div>
 
 			<p class="mt-1 text-title-sm text-ink">Cuota mensual sugerida</p>
-			<p class="tnum mt-1 flex items-baseline gap-1">
+			<p class="mt-1 flex items-baseline gap-1 tnum">
 				<span class="text-amount font-bold text-secondary">{formatMoney(plan.monthlyAmount)}</span>
 				<span class="text-body-sm font-medium text-muted">/ mes</span>
 			</p>
@@ -305,7 +309,7 @@
 			error={previous.accountId}
 		/>
 
-		<div class="rounded-2xl bg-level-1/70 p-3">
+		<div class="rounded-card bg-level-1/70 p-3">
 			<Switch
 				name="reminderEnabled"
 				bind:checked={reminderEnabled}
@@ -314,12 +318,14 @@
 			/>
 
 			{#if reminderEnabled}
-				<div class="mt-2 flex items-center justify-between gap-2 border-t border-hairline/70 pt-2.5">
+				<div
+					class="mt-2 flex items-center justify-between gap-2 border-t border-hairline/70 pt-2.5"
+				>
 					<span class="text-body-sm text-on-surface-variant">Día del recordatorio</span>
 					<button
 						type="button"
 						bind:this={reminderTrigger}
-						class="pressable flex items-center gap-1.5 rounded-xl border border-hairline bg-surface-container-lowest px-2.5 py-1.5 text-label font-medium text-ink"
+						class="pressable flex items-center gap-1.5 rounded-control border border-hairline bg-surface-container-lowest px-2.5 py-1.5 text-label font-medium text-ink"
 						aria-haspopup="listbox"
 						aria-expanded={reminderSheetOpen}
 						aria-label={`Día del recordatorio: ${reminderDay}`}
@@ -344,7 +350,7 @@
 		</div>
 	</section>
 
-	<div class="mt-4 flex items-start gap-2.5 rounded-2xl bg-secondary/6 p-3.5">
+	<div class="mt-4 flex items-start gap-2.5 rounded-card bg-secondary/6 p-3.5">
 		<Icon name="verified_user" size={20} class="mt-0.5 shrink-0 text-secondary" />
 		<p class="text-body-sm text-on-surface-variant">
 			Tu dinero permanecerá separado en una bóveda de alta rentabilidad con comisiones de retiro

@@ -171,7 +171,7 @@
 		const share = budgetShare(categoryId);
 		if (share === null) return { label: 'Sin límite', tone: 'bg-level-1 text-muted' };
 		if (share >= 100) return { label: 'Excedido', tone: 'bg-tertiary/10 text-tertiary' };
-		if (share >= 80) return { label: 'En rango', tone: 'bg-amber-500/12 text-amber-700' };
+		if (share >= 80) return { label: 'En rango', tone: 'bg-warning/12 text-warning-ink' };
 		return { label: 'Óptimo', tone: 'bg-primary/10 text-primary' };
 	}
 
@@ -341,11 +341,13 @@
 	>
 		{#each kpis as kpi (kpi.label)}
 			<article
-				class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-5 shadow-card"
+				class="rounded-card border border-hairline/70 bg-surface-container-lowest p-5 shadow-card"
 			>
 				<div class="flex items-center justify-between gap-2">
 					<p class="text-label font-medium text-on-surface-variant">{kpi.label}</p>
-					<span class="flex size-9 items-center justify-center rounded-xl {KPI_TONES[kpi.tone]}">
+					<span
+						class="flex size-9 items-center justify-center rounded-control {KPI_TONES[kpi.tone]}"
+					>
 						<Icon name={kpi.icon} size={19} />
 					</span>
 				</div>
@@ -358,7 +360,7 @@
 	<div class="lg:block lg:space-y-6 xl:grid xl:grid-cols-12 xl:items-start xl:gap-6 xl:space-y-0">
 		<div class="space-y-4 lg:space-y-6 xl:col-span-7">
 			<section
-				class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4 shadow-card lg:p-5"
+				class="rounded-card border border-hairline/70 bg-surface-container-lowest p-4 shadow-card lg:p-5"
 			>
 				<header class="flex items-start justify-between gap-3">
 					<div class="min-w-0">
@@ -382,7 +384,7 @@
 				</header>
 
 				<p
-					class="mt-3 flex gap-2 rounded-xl bg-primary/8 px-3 py-2.5 text-body-sm text-on-surface-variant"
+					class="mt-3 flex gap-2 rounded-control bg-primary/8 px-3 py-2.5 text-body-sm text-on-surface-variant"
 				>
 					<Icon name="auto_awesome" size={18} class="mt-0.5 shrink-0 text-primary" />
 					<span>{insight}</span>
@@ -407,10 +409,10 @@
 
 				<div class="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
 					{#if analytics.topIncrease}
-						<div class="rounded-2xl bg-tertiary/8 p-3.5 lg:p-4">
+						<div class="rounded-card bg-tertiary/8 p-3.5 lg:p-4">
 							<div class="flex items-start gap-3">
 								<span
-									class="flex size-10 shrink-0 items-center justify-center rounded-full bg-tertiary text-white"
+									class="flex size-10 shrink-0 items-center justify-center rounded-full bg-tertiary text-on-tertiary"
 								>
 									<Icon name="trending_up" size={20} />
 								</span>
@@ -429,10 +431,10 @@
 					{/if}
 
 					{#if analytics.topDecrease}
-						<div class="rounded-2xl bg-primary/8 p-3.5 lg:p-4">
+						<div class="rounded-card bg-primary/8 p-3.5 lg:p-4">
 							<div class="flex items-start gap-3">
 								<span
-									class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-white"
+									class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary"
 								>
 									<Icon name="savings" size={20} />
 								</span>
@@ -464,7 +466,7 @@
 
 				{#if !analytics.topIncrease && !analytics.topDecrease}
 					<div
-						class="rounded-2xl border border-dashed border-outline-variant p-4 text-center text-body-sm text-muted"
+						class="rounded-card border border-dashed border-outline-variant p-4 text-center text-body-sm text-muted"
 					>
 						Registra gastos en dos periodos seguidos para ver comparativas.
 					</div>
@@ -474,7 +476,7 @@
 
 		<div class="mt-4 space-y-4 xl:col-span-5 xl:mt-0">
 			<section
-				class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4 shadow-card lg:p-5"
+				class="rounded-card border border-hairline/70 bg-surface-container-lowest p-4 shadow-card lg:p-5"
 			>
 				<header class="flex items-center justify-between gap-2">
 					<h2 class="text-title-sm text-ink">Distribución de gastos</h2>
@@ -500,7 +502,7 @@
 			</section>
 
 			<section
-				class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4 shadow-card lg:p-5"
+				class="rounded-card border border-hairline/70 bg-surface-container-lowest p-4 shadow-card lg:p-5"
 			>
 				<h2 class="text-title-sm text-ink">Resumen comparativo</h2>
 				<dl class="mt-3 space-y-2.5 text-body-sm">
@@ -546,7 +548,7 @@
 		</header>
 
 		<div
-			class="divide-y divide-hairline/70 rounded-2xl border border-hairline/70 bg-surface-container-lowest px-4 lg:hidden"
+			class="divide-y divide-hairline/70 rounded-card border border-hairline/70 bg-surface-container-lowest px-4 lg:hidden"
 		>
 			{#each categories as category (category.id)}
 				{@const share = budgetShare(category.id)}
@@ -608,7 +610,7 @@
 		</div>
 
 		<div
-			class="relative hidden overflow-x-auto rounded-2xl border border-hairline/70 bg-surface-container-lowest lg:block"
+			class="relative hidden overflow-x-auto rounded-card border border-hairline/70 bg-surface-container-lowest lg:block"
 		>
 			<table class="w-full min-w-[780px] border-collapse text-left">
 				<caption class="sr-only">Desglose de gastos por categoría</caption>
@@ -695,7 +697,7 @@
 							<td class="px-2 py-3 text-center">
 								<a
 									href={`/movimientos?categoria=${category.id}`}
-									class="inline-flex size-8 items-center justify-center rounded-lg text-muted transition hover:bg-level-1 hover:text-ink"
+									class="inline-flex size-8 items-center justify-center rounded-control text-muted transition hover:bg-level-1 hover:text-ink"
 									aria-label={`Ver movimientos de ${category.name}`}
 								>
 									<Icon name="chevron_right" size={18} />
@@ -714,7 +716,7 @@
 		</div>
 	</section>
 
-	<section class="rounded-2xl bg-secondary/8 p-4 lg:hidden">
+	<section class="rounded-card bg-secondary/8 p-4 lg:hidden">
 		<div class="flex items-start gap-3">
 			<span
 				class="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary/15 text-secondary"
@@ -777,7 +779,7 @@
 				<a
 					href={monthHref(pickerYear, Number(month.value.slice(5, 7)))}
 					class={cn(
-						'flex h-10 items-center justify-center rounded-xl border text-label font-medium transition',
+						'flex h-10 items-center justify-center rounded-control border text-label font-medium transition',
 						data.month === month.value
 							? 'border-transparent bg-primary text-on-primary'
 							: 'border-hairline bg-surface-container-lowest text-on-surface hover:bg-level-1'

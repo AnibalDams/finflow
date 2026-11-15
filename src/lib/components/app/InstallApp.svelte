@@ -23,7 +23,7 @@
 	}
 </script>
 
-<section class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4">
+<section class="space-y-3 rounded-card border border-hairline/70 bg-surface-container-lowest p-4">
 	<h2 class="flex items-center gap-2 text-title-sm text-ink">
 		<Icon name="add_to_home_screen" size={18} class="text-secondary" />
 		Instalar aplicación
@@ -35,7 +35,7 @@
 		</p>
 	{:else if install.installed}
 		<div
-			class="flex items-start gap-2.5 rounded-xl bg-primary/8 p-3 text-body-sm text-on-surface-variant"
+			class="flex items-start gap-2.5 rounded-control bg-primary/8 p-3 text-body-sm text-on-surface-variant"
 		>
 			<Icon name="check_circle" size={18} class="mt-0.5 shrink-0 text-primary" filled />
 			<p>FinFlow ya está instalada. Ábrela desde tu pantalla de inicio.</p>
@@ -60,7 +60,7 @@
 				Instalar FinFlow
 			</button>
 		{:else if install.ios}
-			<div class="rounded-xl bg-secondary/8 p-3 text-body-sm text-on-surface-variant">
+			<div class="rounded-control bg-secondary/8 p-3 text-body-sm text-on-surface-variant">
 				<p class="font-semibold text-ink">En iPhone o iPad</p>
 				<p class="mt-1">
 					Abre FinFlow en Safari, toca <span class="font-semibold">Compartir</span> y elige
@@ -68,7 +68,7 @@
 				</p>
 			</div>
 		{:else}
-			<div class="rounded-xl bg-level-1/70 p-3 text-body-sm text-on-surface-variant">
+			<div class="rounded-control bg-level-1/70 p-3 text-body-sm text-on-surface-variant">
 				Usa el menú de tu navegador y elige
 				<span class="font-semibold">Instalar aplicación</span> o
 				<span class="font-semibold">Añadir a pantalla de inicio</span>.

@@ -66,7 +66,7 @@
 
 	<div
 		class={cn(
-			'rounded-2xl border border-dashed p-3 transition',
+			'rounded-card border border-dashed p-3 transition',
 			error ? 'border-tertiary/60 bg-tertiary/4' : 'border-outline-variant bg-level-1/50'
 		)}
 	>
@@ -76,11 +76,11 @@
 					<img
 						src={previewUrl}
 						alt="Vista previa del comprobante"
-						class="size-14 rounded-xl object-cover"
+						class="size-14 rounded-control object-cover"
 					/>
 				{:else}
 					<span
-						class="flex size-14 items-center justify-center rounded-xl bg-surface-container-lowest text-muted"
+						class="flex size-14 items-center justify-center rounded-control bg-surface-container-lowest text-muted"
 					>
 						<Icon name="description" size={24} />
 					</span>
@@ -111,7 +111,7 @@
 		{:else}
 			<label for={inputId} class="flex cursor-pointer items-center gap-3">
 				<span
-					class="flex size-11 items-center justify-center rounded-xl bg-surface-container-lowest text-primary"
+					class="flex size-11 items-center justify-center rounded-control bg-surface-container-lowest text-primary"
 				>
 					<Icon name="upload_file" size={22} />
 				</span>

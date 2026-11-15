@@ -21,7 +21,9 @@
 		...rest
 	}: Props = $props();
 
-	const areaId = $derived(id ?? `textarea-${name ?? label?.toLowerCase().replace(/\s+/g, '-') ?? 'field'}`);
+	const areaId = $derived(
+		id ?? `textarea-${name ?? label?.toLowerCase().replace(/\s+/g, '-') ?? 'field'}`
+	);
 </script>
 
 <div class="space-y-1.5">
@@ -37,15 +39,14 @@
 		{rows}
 		bind:value
 		class={cn(
-			'w-full resize-none rounded-xl border bg-surface-container-lowest px-3.5 py-3 text-body text-ink transition placeholder:text-muted-soft focus:outline-none',
+			'w-full resize-none rounded-control border bg-surface-container-lowest px-3.5 py-3 text-body text-ink transition placeholder:text-muted-soft focus:outline-none',
 			error
 				? 'border-tertiary/60 focus:border-tertiary focus:ring-3 focus:ring-tertiary/12'
 				: 'border-hairline focus:border-secondary focus:ring-3 focus:ring-secondary/12',
 			className
 		)}
 		aria-invalid={error ? 'true' : undefined}
-		{...rest}
-	></textarea>
+		{...rest}></textarea>
 
 	{#if error}
 		<p class="text-body-sm font-medium text-tertiary">{error}</p>

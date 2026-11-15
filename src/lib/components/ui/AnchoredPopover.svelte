@@ -112,7 +112,7 @@
 	{#if open}
 		<div
 			class={cn(
-				'absolute z-50 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-3 shadow-elevated',
+				'absolute z-50 rounded-card border border-hairline/70 bg-surface-container-lowest p-3 shadow-elevated',
 				align === 'end' ? 'right-0' : 'left-0',
 				placement === 'top' ? 'bottom-full mb-2' : 'top-full mt-2',
 				className

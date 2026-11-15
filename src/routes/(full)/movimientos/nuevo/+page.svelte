@@ -99,7 +99,7 @@
 >
 	{#if form?.message}
 		<div
-			class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+			class="flex items-start gap-2 rounded-control bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
 			role="alert"
 		>
 			<Icon name="error" size={18} class="mt-0.5 shrink-0" />
@@ -197,7 +197,7 @@
 
 	<TagInput label="Etiquetas opcionales" name="tags" bind:value={tags} />
 
-	<details class="rounded-2xl border border-hairline bg-surface-container-lowest p-3">
+	<details class="rounded-card border border-hairline bg-surface-container-lowest p-3">
 		<summary class="cursor-pointer text-label-sm font-semibold text-on-surface-variant">
 			Añadir una nota
 		</summary>

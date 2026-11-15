@@ -18,7 +18,7 @@
 <a
 	{href}
 	class={cn(
-		'flex items-center gap-3 rounded-2xl border p-3.5 transition',
+		'flex items-center gap-3 rounded-card border p-3.5 transition',
 		archived
 			? 'border-hairline/70 bg-level-1/50 opacity-80 hover:border-outline-variant'
 			: 'pressable border-hairline/70 bg-surface-container-lowest shadow-card hover:border-secondary/40',
@@ -27,7 +27,7 @@
 >
 	<span
 		class={cn(
-			'flex shrink-0 items-center justify-center rounded-xl',
+			'flex shrink-0 items-center justify-center rounded-control',
 			compact ? 'size-10' : 'size-11',
 			archived ? 'bg-level-1 text-muted' : 'bg-secondary/10 text-secondary'
 		)}

@@ -25,7 +25,9 @@
 		...rest
 	}: Props = $props();
 
-	const inputId = $derived(id ?? `field-${name ?? label?.toLowerCase().replace(/\s+/g, '-') ?? 'input'}`);
+	const inputId = $derived(
+		id ?? `field-${name ?? label?.toLowerCase().replace(/\s+/g, '-') ?? 'input'}`
+	);
 </script>
 
 <div class="space-y-1.5">
@@ -50,7 +52,7 @@
 			{name}
 			bind:value
 			class={cn(
-				'h-12 w-full rounded-xl border bg-surface-container-lowest px-3.5 text-body-lg text-ink transition placeholder:text-muted-soft focus:outline-none',
+				'h-12 w-full rounded-control border bg-surface-container-lowest px-3.5 text-body-lg text-ink transition placeholder:text-muted-soft focus:outline-none',
 				icon ? 'pl-10.5' : '',
 				prefix ? 'pl-8' : '',
 				error

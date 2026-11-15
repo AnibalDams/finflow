@@ -199,7 +199,7 @@
 
 	{#if form?.message}
 		<div
-			class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+			class="flex items-start gap-2 rounded-control bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
 			role="alert"
 		>
 			<Icon name="error" size={18} class="mt-0.5 shrink-0" />
@@ -208,12 +208,10 @@
 	{/if}
 
 	{#if tab === 'cuentas'}
-		<section
-			class="rounded-3xl bg-inverse-surface p-5 text-inverse-on-surface shadow-hero lg:hidden"
-		>
+		<section class="rounded-panel hero-surface p-5 shadow-hero lg:hidden">
 			<header class="flex items-center justify-between gap-2">
 				<span class="text-label-sm font-semibold tracking-wide uppercase">Patrimonio total</span>
-				<span class="rounded-full bg-white/10 px-2.5 py-1 text-label-sm font-semibold">
+				<span class="rounded-full bg-hero-overlay px-2.5 py-1 text-label-sm font-semibold">
 					{activeAccounts.length}
 					{activeAccounts.length === 1 ? 'cuenta' : 'cuentas'}
 				</span>
@@ -222,10 +220,10 @@
 				<span class="text-[2rem] leading-none font-bold">
 					{formatMoney(data.totalBalance, data.currency)}
 				</span>
-				<span class="text-body-sm text-inverse-on-surface/60">{data.currency}</span>
+				<span class="text-body-sm text-hero-foreground/60">{data.currency}</span>
 			</p>
-			<div class="mt-4 flex items-center gap-2 text-label-sm text-inverse-on-surface/70">
-				<Icon name="savings" size={16} class="text-primary-container" />
+			<div class="mt-4 flex items-center gap-2 text-label-sm text-hero-foreground/70">
+				<Icon name="savings" size={16} class="text-primary-fixed" />
 				El saldo se calcula con tus movimientos confirmados.
 			</div>
 		</section>
@@ -236,11 +234,13 @@
 		>
 			{#each kpis as kpi (kpi.label)}
 				<article
-					class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-5 shadow-card"
+					class="rounded-card border border-hairline/70 bg-surface-container-lowest p-5 shadow-card"
 				>
 					<div class="flex items-center justify-between gap-2">
 						<p class="text-label font-medium text-on-surface-variant">{kpi.label}</p>
-						<span class="flex size-9 items-center justify-center rounded-xl {KPI_TONES[kpi.tone]}">
+						<span
+							class="flex size-9 items-center justify-center rounded-control {KPI_TONES[kpi.tone]}"
+						>
 							<Icon name={kpi.icon} size={19} />
 						</span>
 					</div>
@@ -251,7 +251,9 @@
 		</section>
 
 		<a href="/cuentas/nueva" class={buttonClass('primary', 'lg', true, 'lg:hidden')}>
-			<span class="flex size-6 items-center justify-center rounded-full border-2 border-white/70">
+			<span
+				class="flex size-6 items-center justify-center rounded-full border-2 border-hero-foreground/70"
+			>
 				<Icon name="add" size={16} />
 			</span>
 			Nueva cuenta
@@ -300,7 +302,7 @@
 
 				{#if activeAccounts.length === 0 && archivedAccounts.length === 0}
 					<div
-						class="rounded-2xl border border-dashed border-outline-variant px-4 py-10 text-center"
+						class="rounded-card border border-dashed border-outline-variant px-4 py-10 text-center"
 					>
 						<p class="text-body text-on-surface-variant">Aún no tienes cuentas registradas.</p>
 						<a href="/cuentas/nueva" class="mt-3 inline-flex text-label font-semibold text-primary">
@@ -313,11 +315,11 @@
 			<aside class="space-y-4 xl:col-span-4">
 				{#if primaryAccount}
 					<section
-						class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-5 shadow-card"
+						class="rounded-card border border-hairline/70 bg-surface-container-lowest p-5 shadow-card"
 					>
 						<header class="flex items-start gap-3">
 							<span
-								class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary"
+								class="flex size-12 shrink-0 items-center justify-center rounded-control bg-secondary/10 text-secondary"
 							>
 								<Icon name={primaryAccount.icon} size={24} />
 							</span>
@@ -378,7 +380,7 @@
 						</div>
 						<a
 							href={`/movimientos?cuenta=${primaryAccount.id}`}
-							class="mt-2 flex h-10 items-center justify-center gap-1.5 rounded-xl bg-level-1 text-label font-semibold text-ink transition hover:bg-surface-container"
+							class="mt-2 flex h-10 items-center justify-center gap-1.5 rounded-control bg-level-1 text-label font-semibold text-ink transition hover:bg-surface-container"
 						>
 							<Icon name="receipt_long" size={17} />
 							Ver movimientos
@@ -388,7 +390,7 @@
 
 				{#if distribution.length > 0}
 					<section
-						class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-5 shadow-card"
+						class="rounded-card border border-hairline/70 bg-surface-container-lowest p-5 shadow-card"
 					>
 						<h2 class="text-title-sm text-ink">Distribución del patrimonio</h2>
 						<div class="mt-4 space-y-3">
@@ -420,10 +422,10 @@
 
 				<a
 					href="/cuentas?tab=presupuestos"
-					class="flex items-center gap-3 rounded-2xl border border-hairline/70 bg-secondary/6 p-4 transition hover:border-secondary/40"
+					class="flex items-center gap-3 rounded-card border border-hairline/70 bg-secondary/6 p-4 transition hover:border-secondary/40"
 				>
 					<span
-						class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary/12 text-secondary"
+						class="flex size-10 shrink-0 items-center justify-center rounded-control bg-secondary/12 text-secondary"
 					>
 						<Icon name="savings" size={20} />
 					</span>
@@ -442,7 +444,7 @@
 					<AccountRow {account} href={`/cuentas/${account.id}`} />
 				{:else}
 					<div
-						class="rounded-2xl border border-dashed border-outline-variant px-4 py-8 text-center"
+						class="rounded-card border border-dashed border-outline-variant px-4 py-8 text-center"
 					>
 						<p class="text-body text-on-surface-variant">Aún no tienes cuentas registradas.</p>
 					</div>
@@ -472,7 +474,7 @@
 					</a>
 				</div>
 				<div
-					class="divide-y divide-hairline/70 rounded-2xl border border-hairline/70 bg-surface-container-lowest px-4"
+					class="divide-y divide-hairline/70 rounded-card border border-hairline/70 bg-surface-container-lowest px-4"
 				>
 					{#each expenseCategories as category (category.id)}
 						<a href={categoryHref(category.kind, category.id)} class="flex items-center gap-3 py-3">
@@ -503,7 +505,7 @@
 					</a>
 				</div>
 				<div
-					class="divide-y divide-hairline/70 rounded-2xl border border-hairline/70 bg-surface-container-lowest px-4"
+					class="divide-y divide-hairline/70 rounded-card border border-hairline/70 bg-surface-container-lowest px-4"
 				>
 					{#each incomeCategories as category (category.id)}
 						<a href={categoryHref(category.kind, category.id)} class="flex items-center gap-3 py-3">
@@ -526,7 +528,7 @@
 		<div
 			class="space-y-4 lg:block lg:space-y-4 xl:grid xl:grid-cols-12 xl:items-start xl:gap-6 xl:space-y-0"
 		>
-			<section class="rounded-2xl bg-secondary/6 p-4 lg:p-5 xl:col-span-5">
+			<section class="rounded-card bg-secondary/6 p-4 lg:p-5 xl:col-span-5">
 				<div class="flex items-start justify-between gap-2">
 					<div>
 						<p class="text-label-sm font-semibold tracking-wide text-secondary uppercase">
@@ -570,7 +572,7 @@
 			>
 				<div class="space-y-2 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
 					{#each data.expenseCategories as category (category.id)}
-						<div class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-3.5">
+						<div class="rounded-card border border-hairline/70 bg-surface-container-lowest p-3.5">
 							<div class="flex items-center gap-3">
 								<span
 									class="flex size-9 shrink-0 items-center justify-center rounded-full"
@@ -585,7 +587,7 @@
 									</p>
 								</div>
 								<label
-									class="flex shrink-0 items-center gap-1 rounded-xl border border-hairline bg-level-1/60 px-2.5 py-1.5"
+									class="flex shrink-0 items-center gap-1 rounded-control border border-hairline bg-level-1/60 px-2.5 py-1.5"
 								>
 									<span class="text-label-sm text-muted">{currencySymbol(data.currency)}</span>
 									<input
@@ -629,7 +631,7 @@
 						</div>
 					{:else}
 						<div
-							class="rounded-2xl border border-dashed border-outline-variant px-4 py-8 text-center lg:col-span-2"
+							class="rounded-card border border-dashed border-outline-variant px-4 py-8 text-center lg:col-span-2"
 						>
 							<p class="text-body text-on-surface-variant">
 								Crea categorías de gasto para asignarles un límite mensual.

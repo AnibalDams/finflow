@@ -83,12 +83,12 @@
 <PageHeader title="Detalle del movimiento" backHref="/movimientos" />
 
 <div class="space-y-4 px-4 pt-4 pb-10">
-	<section class="rounded-3xl bg-inverse-surface p-5 text-inverse-on-surface shadow-hero">
+	<section class="rounded-panel hero-surface p-5 shadow-hero">
 		<div class="flex items-center justify-between gap-2">
-			<span class="rounded-full bg-white/10 px-2.5 py-1 text-label-sm font-semibold">
+			<span class="rounded-full bg-hero-overlay px-2.5 py-1 text-label-sm font-semibold">
 				{typeLabel}
 			</span>
-			<span class="text-label-sm text-inverse-on-surface/70"
+			<span class="text-label-sm text-hero-foreground/70"
 				>{formatDateTime(transaction.occurredAt)}</span
 			>
 		</div>
@@ -97,10 +97,10 @@
 			{formatSignedAmount(transaction.amount, transaction.type, transaction.currency)}
 		</p>
 
-		<p class="mt-1 text-body text-inverse-on-surface/80">{transaction.concept}</p>
+		<p class="mt-1 text-body text-hero-foreground/80">{transaction.concept}</p>
 
 		<div
-			class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/10 pt-3 text-label-sm text-inverse-on-surface/70"
+			class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-hero-foreground/10 pt-3 text-label-sm text-hero-foreground/70"
 		>
 			<span class="flex items-center gap-1.5">
 				<Icon name={transaction.accountIcon ?? 'account_balance_wallet'} size={16} />
@@ -123,7 +123,7 @@
 
 	{#if data.receiptUrl}
 		<div
-			class="flex items-center gap-3 rounded-2xl border border-hairline bg-surface-container-lowest p-3 shadow-card"
+			class="flex items-center gap-3 rounded-card border border-hairline bg-surface-container-lowest p-3 shadow-card"
 		>
 			<span
 				class="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary/12 text-secondary"
@@ -159,7 +159,7 @@
 
 	{#if form?.message}
 		<div
-			class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+			class="flex items-start gap-2 rounded-control bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
 			role="alert"
 		>
 			<Icon name="error" size={18} class="mt-0.5 shrink-0" />
@@ -169,7 +169,7 @@
 
 	{#if isTransfer}
 		<div
-			class="rounded-2xl border border-hairline bg-surface-container-lowest p-4 text-body-sm text-muted"
+			class="rounded-card border border-hairline bg-surface-container-lowest p-4 text-body-sm text-muted"
 		>
 			Las transferencias se registran como un único movimiento entre cuentas. Para corregir el
 			monto, elimínala y vuelve a crearla.
@@ -243,7 +243,7 @@
 			<TagInput label="Etiquetas" name="tags" bind:value={tags} />
 
 			<details
-				class="rounded-2xl border border-hairline bg-surface-container-lowest p-3"
+				class="rounded-card border border-hairline bg-surface-container-lowest p-3"
 				open={notes.length > 0}
 			>
 				<summary class="cursor-pointer text-label-sm font-semibold text-on-surface-variant">

@@ -25,7 +25,9 @@
 
 	{#if !data.hasRecoverySession}
 		<div class="flex flex-col gap-3">
-			<div class="flex items-start gap-2.5 rounded-2xl bg-amber-500/10 p-3.5 text-amber-800">
+			<div
+				class="flex items-start gap-2.5 rounded-card bg-warning/10 p-3.5 text-warning-ink-strong"
+			>
 				<Icon name="link_off" size={20} />
 				<p class="text-body-sm">
 					Este enlace ya no es válido o expiró. Solicita uno nuevo para continuar.

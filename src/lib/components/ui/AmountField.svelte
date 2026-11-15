@@ -54,7 +54,7 @@
 <div class={cn('space-y-1.5', className)}>
 	<div
 		class={cn(
-			'rounded-2xl border bg-surface-container-lowest px-4 py-4 shadow-card transition',
+			'rounded-card border bg-surface-container-lowest px-4 py-4 shadow-card transition',
 			error
 				? 'border-tertiary/60'
 				: 'border-hairline focus-within:border-secondary focus-within:ring-3 focus-within:ring-secondary/12'
@@ -66,7 +66,8 @@
 
 		<div class="mx-auto mt-2 flex max-w-72 items-center gap-2">
 			<span class="shrink-0 text-title-md font-bold {TONE_TEXT[tone]}">
-				{currency} {currencySymbol(currency)}
+				{currency}
+				{currencySymbol(currency)}
 			</span>
 			<input
 				bind:this={input}
@@ -79,7 +80,7 @@
 				placeholder="0.00"
 				aria-label={label}
 				aria-invalid={error ? 'true' : undefined}
-				class="tnum min-w-0 flex-1 bg-transparent text-right text-amount font-bold text-ink placeholder:text-outline-variant focus:outline-none"
+				class="min-w-0 flex-1 bg-transparent text-right tnum text-amount font-bold text-ink placeholder:text-outline-variant focus:outline-none"
 			/>
 		</div>
 

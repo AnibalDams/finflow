@@ -5,7 +5,7 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
 
 const VARIANTS: Record<ButtonVariant, string> = {
 	primary:
-		'bg-primary text-on-primary shadow-[0_8px_18px_-10px_rgba(0,108,73,0.75)] hover:bg-primary/90 active:bg-primary/95',
+		'bg-primary text-on-primary shadow-[0_8px_18px_-10px_var(--ff-glow)] hover:bg-primary/90 active:bg-primary/95',
 	secondary: 'bg-secondary text-on-secondary hover:bg-secondary/90',
 	tonal: 'bg-primary/10 text-primary hover:bg-primary/15',
 	outline: 'border border-outline-variant bg-surface-container-lowest text-ink hover:bg-level-1',
@@ -14,9 +14,9 @@ const VARIANTS: Record<ButtonVariant, string> = {
 };
 
 const SIZES: Record<ButtonSize, string> = {
-	sm: 'h-9 gap-1.5 px-3.5 text-label-sm rounded-lg',
-	md: 'h-11 gap-2 px-4 text-label rounded-xl',
-	lg: 'h-13 gap-2 px-5 text-[15px] font-semibold rounded-xl'
+	sm: 'h-9 gap-1.5 px-3.5 text-label-sm rounded-control',
+	md: 'h-11 gap-2 px-4 text-label rounded-control',
+	lg: 'h-13 gap-2 px-5 text-[15px] font-semibold rounded-control'
 };
 
 /** Clases compartidas por botones y enlaces con apariencia de botón. */

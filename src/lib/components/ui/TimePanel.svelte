@@ -79,7 +79,7 @@
 		<div>
 			<p class="px-1 pb-1 text-label-xs tracking-[0.12em] text-muted uppercase">Hora</p>
 			<div
-				class="relative no-scrollbar max-h-52 overflow-y-auto rounded-xl border border-hairline/70 p-1"
+				class="relative no-scrollbar max-h-52 overflow-y-auto rounded-control border border-hairline/70 p-1"
 				role="group"
 				aria-label="Horas"
 				bind:this={hourList}
@@ -91,7 +91,7 @@
 						aria-label={`Hora ${option}`}
 						aria-pressed={option === hour}
 						class={cn(
-							'flex h-8 w-full items-center justify-center rounded-lg text-body font-semibold transition',
+							'flex h-8 w-full items-center justify-center rounded-control text-body font-semibold transition',
 							option === hour ? 'bg-secondary text-on-secondary' : 'text-ink hover:bg-secondary/8'
 						)}
 						onclick={() => pickHour(option)}
@@ -105,7 +105,7 @@
 		<div>
 			<p class="px-1 pb-1 text-label-xs tracking-[0.12em] text-muted uppercase">Minutos</p>
 			<div
-				class="relative no-scrollbar max-h-52 overflow-y-auto rounded-xl border border-hairline/70 p-1"
+				class="relative no-scrollbar max-h-52 overflow-y-auto rounded-control border border-hairline/70 p-1"
 				role="group"
 				aria-label="Minutos"
 				bind:this={minuteList}
@@ -117,7 +117,7 @@
 						aria-label={`Minuto ${option}`}
 						aria-pressed={option === minute}
 						class={cn(
-							'flex h-8 w-full items-center justify-center rounded-lg text-body font-semibold transition',
+							'flex h-8 w-full items-center justify-center rounded-control text-body font-semibold transition',
 							option === minute ? 'bg-secondary text-on-secondary' : 'text-ink hover:bg-secondary/8'
 						)}
 						onclick={() => pickMinute(option)}

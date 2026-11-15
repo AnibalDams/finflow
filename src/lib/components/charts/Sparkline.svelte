@@ -14,11 +14,14 @@
 		class?: string;
 	}
 
+	// Por defecto el trazo usa el token del hero: la paleta activa lo recolorea.
+	// Los topes del degradado llevan `stop-opacity`, así el color puede venir de
+	// una variable CSS sin perder la transparencia.
 	let {
 		values,
-		stroke = '#6ffbbe',
-		fillTop = 'rgba(111,251,190,0.35)',
-		fillBottom = 'rgba(111,251,190,0)',
+		stroke = 'var(--color-primary-fixed)',
+		fillTop = 'var(--color-primary-fixed)',
+		fillBottom = 'var(--color-primary-fixed)',
 		height = 80,
 		strokeWidth = 2.5,
 		class: className = ''
@@ -59,15 +62,15 @@
 <svg
 	class={cn('block w-full', className)}
 	viewBox={`0 0 ${WIDTH} ${BASELINE + 2}`}
-	height={height}
+	{height}
 	preserveAspectRatio="none"
 	role="img"
 	aria-label="Tendencia del periodo"
 >
 	<defs>
 		<linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-			<stop offset="0%" stop-color={fillTop} />
-			<stop offset="100%" stop-color={fillBottom} />
+			<stop offset="0%" stop-color={fillTop} stop-opacity="0.35" />
+			<stop offset="100%" stop-color={fillBottom} stop-opacity="0" />
 		</linearGradient>
 	</defs>
 
@@ -76,7 +79,7 @@
 		class="spark-line"
 		d={geometry.line}
 		fill="none"
-		stroke={stroke}
+		{stroke}
 		stroke-width={strokeWidth}
 		stroke-linecap="round"
 		stroke-linejoin="round"
@@ -90,7 +93,7 @@
 		cy={geometry.last.y}
 		r="4"
 		fill={stroke}
-		stroke="#1b2537"
+		stroke="var(--color-hero)"
 		stroke-width="2"
 		vector-effect="non-scaling-stroke"
 	/>
