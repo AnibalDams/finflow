@@ -15,7 +15,7 @@
 >
 	{#key page.route.id}
 		<div
-			class="animate-page-in flex w-full flex-1 flex-col lg:mx-auto lg:w-full lg:max-w-4xl lg:flex-none lg:rounded-3xl lg:border lg:border-hairline/70 lg:bg-surface-container-lowest lg:shadow-card"
+			class="animate-page-in flex w-full flex-1 flex-col lg:mx-auto lg:w-full lg:max-w-4xl lg:flex-none lg:rounded-panel lg:border lg:border-hairline/70 lg:bg-surface-container-lowest lg:shadow-card"
 		>
 			{@render children()}
 		</div>

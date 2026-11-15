@@ -31,13 +31,25 @@
 	}: Props = $props();
 
 	const TONE_ACTIVE: Record<Tone, string> = {
-		neutral: 'bg-surface-container-lowest shadow-[0_1px_4px_rgba(19,27,46,0.10)]',
-		primary: 'bg-primary shadow-[0_2px_8px_rgba(0,131,88,0.28)]',
-		tertiary: 'bg-tertiary shadow-[0_2px_8px_rgba(190,40,80,0.24)]',
-		secondary: 'bg-secondary shadow-[0_2px_8px_rgba(60,90,220,0.24)]'
+		neutral: 'bg-surface-container-lowest shadow-card',
+		primary: 'bg-primary shadow-[0_2px_10px_-2px_var(--ff-glow)]',
+		tertiary: 'bg-tertiary shadow-card',
+		secondary: 'bg-secondary shadow-card'
 	};
 
-	const activeIndex = $derived(Math.max(0, options.findIndex((option) => option.value === value)));
+	const TONE_TEXT: Record<Tone, string> = {
+		neutral: 'text-ink',
+		primary: 'text-on-primary',
+		tertiary: 'text-on-tertiary',
+		secondary: 'text-on-secondary'
+	};
+
+	const activeIndex = $derived(
+		Math.max(
+			0,
+			options.findIndex((option) => option.value === value)
+		)
+	);
 	const columns = $derived(Math.max(1, options.length));
 </script>
 
@@ -59,11 +71,7 @@
 			class={cn(
 				'relative z-10 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-full font-semibold transition-colors active:opacity-75',
 				size === 'sm' ? 'h-8 text-label-sm' : 'h-11 text-label',
-				value === option.value
-					? tone === 'neutral'
-						? 'text-ink'
-						: 'text-white'
-					: 'text-on-surface-variant hover:text-on-surface'
+				value === option.value ? TONE_TEXT[tone] : 'text-on-surface-variant hover:text-on-surface'
 			)}
 		>
 			<input

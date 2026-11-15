@@ -6,13 +6,10 @@
 </script>
 
 <div class="flex min-h-dvh flex-col bg-background lg:grid lg:grid-cols-[1.05fr_1fr]">
-	<aside
-		class="hidden flex-col justify-between bg-inverse-surface p-12 text-inverse-on-surface lg:flex"
-		aria-hidden="true"
-	>
+	<aside class="hidden flex-col justify-between hero-surface p-12 lg:flex" aria-hidden="true">
 		<div class="flex items-center gap-3">
 			<span
-				class="flex size-11 items-center justify-center rounded-2xl bg-primary-container text-inverse-surface"
+				class="flex size-11 items-center justify-center rounded-card bg-primary-fixed text-on-primary-fixed"
 			>
 				<Icon name="account_balance_wallet" size={24} filled />
 			</span>
@@ -20,18 +17,18 @@
 		</div>
 
 		<div class="max-w-md">
-			<p class="text-label-sm font-semibold tracking-[0.18em] text-primary-container uppercase">
+			<p class="text-label-sm font-semibold tracking-[0.18em] text-primary-fixed uppercase">
 				Finanzas personales
 			</p>
 			<h2 class="mt-3 text-title-xl leading-tight font-bold">
 				Claridad total sobre tu dinero, en un solo lugar.
 			</h2>
-			<p class="mt-4 text-body-lg text-inverse-on-surface/70">
+			<p class="mt-4 text-body-lg text-hero-foreground/70">
 				Movimientos, presupuestos, metas y deudas conectados en un panel que te ayuda a decidir
 				mejor.
 			</p>
 
-			<ul class="mt-8 space-y-3 text-body text-inverse-on-surface/80">
+			<ul class="mt-8 space-y-3 text-body text-hero-foreground/80">
 				<li class="flex items-center gap-3">
 					<span
 						class="flex size-8 items-center justify-center rounded-full bg-primary/20 text-primary-fixed"
@@ -59,7 +56,7 @@
 			</ul>
 		</div>
 
-		<p class="flex items-center gap-2 text-label-sm text-inverse-on-surface/50">
+		<p class="flex items-center gap-2 text-label-sm text-hero-foreground/50">
 			<Icon name="lock" size={15} />
 			Tus datos financieros se procesan de forma privada.
 		</p>
@@ -68,7 +65,7 @@
 	<div class="flex min-h-dvh flex-col lg:min-h-0 lg:justify-center lg:py-10">
 		<header class="flex flex-col items-center gap-2.5 px-6 pt-12 pt-safe pb-6 text-center lg:pt-0">
 			<span
-				class="flex size-13 items-center justify-center rounded-2xl bg-primary text-on-primary shadow-fab lg:hidden"
+				class="flex size-13 items-center justify-center rounded-card bg-primary text-on-primary shadow-fab lg:hidden"
 			>
 				<Icon name="account_balance_wallet" size={26} filled />
 			</span>

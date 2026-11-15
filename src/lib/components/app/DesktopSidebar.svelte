@@ -46,16 +46,16 @@
 </script>
 
 <aside
-	class="fixed inset-y-0 left-0 z-40 hidden w-[280px] flex-col border-r border-hairline/60 bg-surface-container-lowest/75 px-4 pt-5 pb-4 backdrop-blur-xl lg:flex"
+	class="fixed inset-y-0 left-0 z-40 hidden w-[248px] flex-col border-r border-hairline/60 bg-surface-container-lowest/75 px-4 pt-5 pb-4 backdrop-blur-xl lg:flex"
 	aria-label="Navegación principal"
 >
 	<a
 		href="/"
-		class="flex items-center gap-3 rounded-xl px-2 py-1"
+		class="flex items-center gap-3 rounded-control px-2 py-1"
 		aria-label="Ir al inicio de FinFlow"
 	>
 		<span
-			class="flex size-10 items-center justify-center rounded-xl bg-primary text-on-primary shadow-fab"
+			class="flex size-10 items-center justify-center rounded-control bg-primary text-on-primary shadow-fab"
 		>
 			<Icon name="account_balance_wallet" size={22} filled />
 		</span>
@@ -70,9 +70,9 @@
 			<a
 				href={item.href}
 				class={cn(
-					'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-label font-medium transition-colors',
+					'group flex items-center gap-3 rounded-control px-3 py-2.5 text-label font-medium transition-colors',
 					isActive(item.href)
-						? 'bg-primary text-on-primary shadow-[0_8px_18px_-12px_rgba(0,108,73,0.9)]'
+						? 'bg-primary text-on-primary shadow-[0_8px_18px_-12px_var(--ff-glow)]'
 						: 'text-on-surface-variant hover:bg-level-1 hover:text-ink'
 				)}
 				aria-current={isActive(item.href) ? 'page' : undefined}
@@ -95,7 +95,7 @@
 
 	<a
 		href="/ajustes"
-		class="mt-4 flex items-center gap-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-3 transition hover:border-secondary/40"
+		class="mt-4 flex items-center gap-3 rounded-card border border-hairline/70 bg-surface-container-lowest p-3 transition hover:border-secondary/40"
 		aria-label="Abrir configuración de la cuenta"
 	>
 		{#if profile.avatarUrl}

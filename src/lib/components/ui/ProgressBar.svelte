@@ -11,7 +11,14 @@
 		label?: string;
 	}
 
-	let { value, tone = 'primary', color, size = 'md', class: className = '', label }: Props = $props();
+	let {
+		value,
+		tone = 'primary',
+		color,
+		size = 'md',
+		class: className = '',
+		label
+	}: Props = $props();
 
 	const clamped = $derived(Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0)));
 
@@ -21,7 +28,7 @@
 		primary: 'bg-primary',
 		secondary: 'bg-secondary',
 		tertiary: 'bg-tertiary',
-		warning: 'bg-amber-500',
+		warning: 'bg-warning',
 		custom: ''
 	} as const;
 </script>
@@ -35,7 +42,10 @@
 	aria-label={label}
 >
 	<div
-		class={cn('h-full rounded-full progress-grow transition-[width] duration-500 ease-out', TONES[tone])}
+		class={cn(
+			'progress-grow h-full rounded-full transition-[width] duration-500 ease-out',
+			TONES[tone]
+		)}
 		style="width:{clamped}%{color ? `;background-color:${color}` : ''}"
 	></div>
 </div>

@@ -59,7 +59,7 @@
 	let openTime = $state(false);
 
 	const CONTROL =
-		'flex w-full items-center gap-2.5 rounded-2xl border bg-surface-container-lowest p-3 text-left shadow-card transition hover:border-secondary/40 focus-visible:border-secondary';
+		'flex w-full items-center gap-2.5 rounded-card border bg-surface-container-lowest p-3 text-left shadow-card transition hover:border-secondary/40 focus-visible:border-secondary';
 </script>
 
 {#snippet control(
@@ -138,7 +138,7 @@
 		<div class={cn('grid gap-2', timeName ? 'grid-cols-2' : 'grid-cols-1')}>
 			<label
 				class={cn(
-					'flex items-center gap-2.5 rounded-2xl border bg-surface-container-lowest p-3 shadow-card transition focus-within:border-secondary',
+					'flex items-center gap-2.5 rounded-card border bg-surface-container-lowest p-3 shadow-card transition focus-within:border-secondary',
 					error ? 'border-tertiary/60' : 'border-hairline'
 				)}
 			>
@@ -161,7 +161,7 @@
 
 			{#if timeName}
 				<label
-					class="flex items-center gap-2.5 rounded-2xl border border-hairline bg-surface-container-lowest p-3 shadow-card transition focus-within:border-secondary"
+					class="flex items-center gap-2.5 rounded-card border border-hairline bg-surface-container-lowest p-3 shadow-card transition focus-within:border-secondary"
 				>
 					<span
 						class="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary/12 text-secondary"

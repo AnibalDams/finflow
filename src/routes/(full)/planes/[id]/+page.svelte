@@ -93,10 +93,10 @@
 
 <div class="space-y-4 px-4 pt-4 pb-10">
 	{#if data.imageUrl}
-		<img src={data.imageUrl} alt="" class="h-44 w-full rounded-2xl object-cover" />
+		<img src={data.imageUrl} alt="" class="h-44 w-full rounded-card object-cover" />
 	{/if}
 
-	<section class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4 shadow-card">
+	<section class="rounded-card border border-hairline/70 bg-surface-container-lowest p-4 shadow-card">
 		<div class="flex flex-wrap items-center gap-2">
 			<span class="rounded-full bg-secondary/10 px-2.5 py-1 text-label-sm font-semibold text-secondary">
 				{GOAL_CATEGORY_LABELS[goal.category]}
@@ -141,7 +141,7 @@
 
 	{#if form?.message}
 		<div
-			class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+			class="flex items-start gap-2 rounded-control bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
 			role="alert"
 		>
 			<Icon name="error" size={18} class="mt-0.5 shrink-0" />
@@ -149,7 +149,7 @@
 		</div>
 	{/if}
 
-	<section class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4">
+	<section class="rounded-card border border-hairline/70 bg-surface-container-lowest p-4">
 		<h2 class="text-title-sm text-ink">Registrar aportación</h2>
 
 		<form
@@ -200,7 +200,7 @@
 			<span class="text-label-sm text-muted">{data.contributions.length} registros</span>
 		</div>
 
-		<div class="mt-2 divide-y divide-hairline/70 rounded-2xl border border-hairline/70 bg-surface-container-lowest px-4">
+		<div class="mt-2 divide-y divide-hairline/70 rounded-card border border-hairline/70 bg-surface-container-lowest px-4">
 			{#each data.contributions as contribution (contribution.id)}
 				<div class="flex items-center gap-3 py-3">
 					<span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -224,7 +224,7 @@
 		</div>
 	</section>
 
-	<details class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4">
+	<details class="rounded-card border border-hairline/70 bg-surface-container-lowest p-4">
 		<summary class="flex cursor-pointer items-center gap-2 text-title-sm text-ink">
 			<Icon name="tune" size={18} class="text-secondary" />
 			Ajustar plan
@@ -289,7 +289,7 @@
 				error={previous.monthlyContribution}
 			/>
 
-			<div class="rounded-2xl bg-level-1/70 p-3">
+			<div class="rounded-card bg-level-1/70 p-3">
 				<Switch
 					name="reminderEnabled"
 					bind:checked={editReminder}
@@ -302,7 +302,7 @@
 						<button
 							type="button"
 							bind:this={reminderTrigger}
-							class="pressable flex items-center gap-1.5 rounded-xl border border-hairline bg-surface-container-lowest px-2.5 py-1.5 text-label font-medium text-ink"
+							class="pressable flex items-center gap-1.5 rounded-control border border-hairline bg-surface-container-lowest px-2.5 py-1.5 text-label font-medium text-ink"
 							aria-haspopup="listbox"
 							aria-expanded={reminderSheetOpen}
 							aria-label={`Día del recordatorio: ${editReminderDay}`}

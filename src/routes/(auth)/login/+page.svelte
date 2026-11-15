@@ -16,7 +16,7 @@
 
 <div class="space-y-4">
 	{#if confirmNotice}
-		<div class="flex items-start gap-2.5 rounded-2xl bg-amber-500/10 p-3.5 text-amber-800">
+		<div class="flex items-start gap-2.5 rounded-card bg-warning/10 p-3.5 text-warning-ink-strong">
 			<Icon name="mark_email_unread" size={20} />
 			<p class="text-body-sm">
 				No pudimos confirmar el enlace. Solicita uno nuevo desde

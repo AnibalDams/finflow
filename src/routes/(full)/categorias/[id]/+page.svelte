@@ -39,7 +39,7 @@
 <div class="space-y-4 px-4 pt-4 pb-10 lg:mx-auto lg:w-full lg:max-w-2xl lg:space-y-5 lg:px-8 lg:pb-12">
 	{#if form?.message}
 		<div
-			class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+			class="flex items-start gap-2 rounded-control bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
 			role="alert"
 		>
 			<Icon name="error" size={18} class="mt-0.5 shrink-0" />
@@ -48,7 +48,7 @@
 	{/if}
 
 	{#if category.isArchived}
-		<div class="flex items-center gap-2 rounded-xl bg-level-1 px-3 py-2.5 text-body-sm text-muted">
+		<div class="flex items-center gap-2 rounded-control bg-level-1 px-3 py-2.5 text-body-sm text-muted">
 			<Icon name="archive" size={18} />
 			Esta categoría está archivada y no aparece en los formularios.
 		</div>
@@ -97,7 +97,7 @@
 			<ColorPicker name="color" bind:value={color} error={previous.color} />
 		</section>
 
-		<div class="flex items-center gap-3 rounded-2xl bg-level-1/70 p-3">
+		<div class="flex items-center gap-3 rounded-card bg-level-1/70 p-3">
 			<span
 				class="flex size-11 items-center justify-center rounded-full text-white"
 				style="background-color:{color}"

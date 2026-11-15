@@ -161,7 +161,7 @@
 
 	{#if form?.message}
 		<div
-			class="mt-4 flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+			class="mt-4 flex items-start gap-2 rounded-control bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
 			role="alert"
 		>
 			<Icon name="error" size={18} class="mt-0.5 shrink-0" />
@@ -196,7 +196,7 @@
 	</section>
 
 	<section
-		class="mt-4 space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4"
+		class="mt-4 space-y-3 rounded-card border border-hairline/70 bg-surface-container-lowest p-4"
 	>
 		<header class="flex items-center justify-between gap-2">
 			<h2 class="flex items-center gap-2 text-title-sm text-ink">
@@ -253,7 +253,7 @@
 	</section>
 
 	<section
-		class="mt-4 space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4"
+		class="mt-4 space-y-3 rounded-card border border-hairline/70 bg-surface-container-lowest p-4"
 	>
 		<header class="flex items-center justify-between gap-2">
 			<h2 class="flex items-center gap-2 text-title-sm text-ink">
@@ -300,7 +300,7 @@
 			/>
 		</div>
 
-		<div class="flex items-center justify-between gap-3 rounded-2xl bg-secondary/6 px-3.5 py-3">
+		<div class="flex items-center justify-between gap-3 rounded-card bg-secondary/6 px-3.5 py-3">
 			<div class="min-w-0">
 				<p class="text-label-sm font-semibold text-on-surface-variant uppercase">
 					Cuota por periodo
@@ -353,7 +353,7 @@
 	</section>
 
 	<section
-		class="mt-4 space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4"
+		class="mt-4 space-y-3 rounded-card border border-hairline/70 bg-surface-container-lowest p-4"
 	>
 		<header class="flex items-center justify-between gap-2">
 			<h2 class="flex items-center gap-2 text-title-sm text-ink">
@@ -386,7 +386,7 @@
 			/>
 		</div>
 
-		<div class="rounded-2xl border border-hairline/70 bg-level-1/40 p-3">
+		<div class="rounded-card border border-hairline/70 bg-level-1/40 p-3">
 			<div class="flex items-center justify-between gap-2">
 				<p class="text-label-sm font-semibold text-on-surface-variant uppercase">Primeras cuotas</p>
 				<span class="text-label-sm text-muted">{paidCount} pagadas</span>
@@ -420,7 +420,7 @@
 			{/if}
 		</div>
 
-		<div class="rounded-2xl bg-level-1/70 p-3">
+		<div class="rounded-card bg-level-1/70 p-3">
 			<TextField
 				label="Avisarme antes"
 				name="alertDaysBefore"
@@ -435,7 +435,7 @@
 		</div>
 	</section>
 
-	<section class="mt-4 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4">
+	<section class="mt-4 rounded-card border border-hairline/70 bg-surface-container-lowest p-4">
 		<AccountSelect
 			name="accountId"
 			label="Cuenta de pago"
@@ -446,7 +446,7 @@
 		/>
 	</section>
 
-	<section class="mt-4 rounded-2xl bg-secondary/8 p-4">
+	<section class="mt-4 rounded-card bg-secondary/8 p-4">
 		<p class="text-label-sm font-semibold tracking-wide text-secondary uppercase">
 			Impacto en tu flujo de caja
 		</p>

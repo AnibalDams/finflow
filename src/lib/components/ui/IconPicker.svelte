@@ -92,7 +92,7 @@
 				onkeydown={preventSubmit}
 				placeholder="Buscar ícono o categoría"
 				aria-label="Buscar ícono"
-				class="w-full rounded-xl border border-hairline bg-surface-container-lowest py-2 pr-9 pl-9 text-body text-ink placeholder:text-muted-soft focus:border-secondary focus:ring-3 focus:ring-secondary/12 focus:outline-none"
+				class="w-full rounded-control border border-hairline bg-surface-container-lowest py-2 pr-9 pl-9 text-body text-ink placeholder:text-muted-soft focus:border-secondary focus:ring-3 focus:ring-secondary/12 focus:outline-none"
 			/>
 			{#if query}
 				<button
@@ -142,10 +142,12 @@
 
 	<!-- El filtro por grupo puede ocultar el icono elegido: se mantiene visible para no perderlo. -->
 	{#if value && !filteredGroups.some((group) => group.icons.includes(value))}
-		<div class="flex items-center gap-2 rounded-xl border border-secondary/40 bg-secondary/5 p-2">
+		<div
+			class="flex items-center gap-2 rounded-control border border-secondary/40 bg-secondary/5 p-2"
+		>
 			<span class="pl-1 text-label-sm font-medium text-muted">Seleccionado</span>
 			<label
-				class="flex size-11 cursor-pointer items-center justify-center rounded-xl border border-secondary bg-secondary/10 text-secondary"
+				class="flex size-11 cursor-pointer items-center justify-center rounded-control border border-secondary bg-secondary/10 text-secondary"
 				title={value}
 			>
 				<input type="radio" {name} {value} checked={true} class="sr-only" aria-label={value} />
@@ -155,7 +157,7 @@
 	{/if}
 
 	{#if filteredGroups.length > 0}
-		<div class="max-h-72 space-y-3 overflow-y-auto rounded-xl p-0.5 lg:max-h-80">
+		<div class="max-h-72 space-y-3 overflow-y-auto rounded-control p-0.5 lg:max-h-80">
 			{#each filteredGroups as group (group.id)}
 				<div class="space-y-1.5">
 					{#if grouped}
@@ -167,7 +169,7 @@
 						{#each group.icons as icon (icon)}
 							<label
 								class={cn(
-									'flex size-11 cursor-pointer items-center justify-center rounded-xl border transition',
+									'flex size-11 cursor-pointer items-center justify-center rounded-control border transition',
 									value === icon
 										? 'border-secondary bg-secondary/10 text-secondary'
 										: 'border-hairline bg-surface-container-lowest text-muted hover:border-outline-variant'
@@ -191,7 +193,7 @@
 			{/each}
 		</div>
 	{:else}
-		<p class="rounded-xl bg-level-1/70 px-3 py-4 text-center text-body-sm text-muted">
+		<p class="rounded-control bg-level-1/70 px-3 py-4 text-center text-body-sm text-muted">
 			No encontramos iconos para «{query.trim()}».
 		</p>
 	{/if}

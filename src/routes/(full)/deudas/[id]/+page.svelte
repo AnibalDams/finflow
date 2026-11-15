@@ -88,11 +88,11 @@
 
 <div class="space-y-4 px-4 pt-4 pb-10">
 	<section
-		class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4 shadow-card"
+		class="rounded-card border border-hairline/70 bg-surface-container-lowest p-4 shadow-card"
 	>
 		<div class="flex items-start gap-3">
 			<span
-				class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary"
+				class="flex size-11 shrink-0 items-center justify-center rounded-control bg-secondary/10 text-secondary"
 			>
 				<Icon name={debt.icon} size={22} />
 			</span>
@@ -182,7 +182,7 @@
 
 	{#if form?.message}
 		<div
-			class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+			class="flex items-start gap-2 rounded-control bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
 			role="alert"
 		>
 			<Icon name="error" size={18} class="mt-0.5 shrink-0" />
@@ -191,7 +191,7 @@
 	{/if}
 
 	{#if debt.isActive}
-		<section class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4">
+		<section class="rounded-card border border-hairline/70 bg-surface-container-lowest p-4">
 			<h2 class="text-title-sm text-ink">Registrar pago</h2>
 			<p class="mt-0.5 text-body-sm text-muted">
 				Se creará un gasto en la cuenta seleccionada automáticamente.
@@ -261,7 +261,7 @@
 		</div>
 
 		<div
-			class="mt-2 divide-y divide-hairline/70 rounded-2xl border border-hairline/70 bg-surface-container-lowest px-4"
+			class="mt-2 divide-y divide-hairline/70 rounded-card border border-hairline/70 bg-surface-container-lowest px-4"
 		>
 			{#each data.payments as payment (payment.id)}
 				<div class="flex items-center gap-3 py-3">
@@ -291,7 +291,7 @@
 		</div>
 	</section>
 
-	<details class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4">
+	<details class="rounded-card border border-hairline/70 bg-surface-container-lowest p-4">
 		<summary class="flex cursor-pointer items-center gap-2 text-title-sm text-ink">
 			<Icon name="tune" size={18} class="text-secondary" />
 			Ajustar deuda
@@ -400,7 +400,7 @@
 				error={previous.accountId}
 			/>
 
-			<div class="rounded-2xl bg-level-1/70 p-3">
+			<div class="rounded-card bg-level-1/70 p-3">
 				<TextField
 					label="Avisarme antes"
 					name="alertDaysBefore"
@@ -423,7 +423,7 @@
 					name="notes"
 					rows="2"
 					bind:value={editNotes}
-					class="w-full rounded-xl border border-hairline bg-surface-container-lowest px-3.5 py-2.5 text-body text-ink placeholder:text-muted-soft focus:border-secondary focus:ring-3 focus:ring-secondary/12 focus:outline-none"
+					class="w-full rounded-control border border-hairline bg-surface-container-lowest px-3.5 py-2.5 text-body text-ink placeholder:text-muted-soft focus:border-secondary focus:ring-3 focus:ring-secondary/12 focus:outline-none"
 					placeholder="Detalles del acuerdo"></textarea>
 			</div>
 

@@ -129,59 +129,59 @@
 		</a>
 	</header>
 
-	<section class="rounded-3xl bg-inverse-surface p-5 text-inverse-on-surface shadow-hero lg:hidden">
+	<section class="rounded-panel hero-surface p-5 shadow-hero lg:hidden">
 		<header class="flex items-center justify-between gap-2">
 			<span class="flex items-center gap-1.5 text-label-sm font-semibold tracking-wide uppercase">
-				<Icon name="account_balance" size={16} class="text-primary-container" />
+				<Icon name="account_balance" size={16} class="text-primary-fixed" />
 				Estado de amortización
 			</span>
 			<span
-				class="flex items-center gap-1.5 rounded-full bg-primary-container/20 px-2.5 py-1 text-label-sm font-semibold text-primary-container"
+				class="flex items-center gap-1.5 rounded-full bg-hero-overlay px-2.5 py-1 text-label-sm font-semibold text-primary-fixed"
 			>
 				<span class="size-1.5 rounded-full bg-primary-container" aria-hidden="true"></span>
 				En curso
 			</span>
 		</header>
 
-		<p class="mt-4 text-label-sm font-semibold tracking-wide text-inverse-on-surface/60 uppercase">
+		<p class="mt-4 text-label-sm font-semibold tracking-wide text-hero-foreground/60 uppercase">
 			Deuda total pendiente
 		</p>
 		<p class="mt-1 flex items-baseline gap-1.5 tnum">
 			<span class="text-[2rem] leading-none font-bold"
 				>{formatMoney(data.totals.remaining, data.currency)}</span
 			>
-			<span class="text-body-sm text-inverse-on-surface/60">{data.currency}</span>
+			<span class="text-body-sm text-hero-foreground/60">{data.currency}</span>
 		</p>
 
 		<div class="mt-4 grid grid-cols-2 gap-2">
-			<div class="rounded-2xl bg-white/8 p-3">
-				<p class="text-label-sm text-inverse-on-surface/60">Compromiso mensual</p>
+			<div class="rounded-card bg-hero-overlay p-3">
+				<p class="text-label-sm text-hero-foreground/60">Compromiso mensual</p>
 				<p class="mt-0.5 tnum text-title-sm font-bold">
 					{formatMoney(data.totals.monthly, data.currency)}
 				</p>
-				<p class="text-label-sm text-inverse-on-surface/60">
+				<p class="text-label-sm text-hero-foreground/60">
 					{data.active.length}
 					{data.active.length === 1 ? 'cuota activa' : 'cuotas activas'}
 				</p>
 			</div>
-			<div class="rounded-2xl bg-white/8 p-3">
-				<p class="text-label-sm text-inverse-on-surface/60">Total amortizado</p>
+			<div class="rounded-card bg-hero-overlay p-3">
+				<p class="text-label-sm text-hero-foreground/60">Total amortizado</p>
 				<p class="mt-0.5 tnum text-title-sm font-bold">
 					{formatMoney(data.totals.paid, data.currency)}
 				</p>
-				<p class="text-label-sm text-inverse-on-surface/60">
+				<p class="text-label-sm text-hero-foreground/60">
 					de {formatMoney(data.totals.historical, data.currency)} hist.
 				</p>
 			</div>
 		</div>
 
 		<div class="mt-4 flex items-center justify-between text-label-sm">
-			<span class="text-inverse-on-surface/70">Progreso de liberación</span>
-			<span class="font-semibold text-primary-container">
+			<span class="text-hero-foreground/70">Progreso de liberación</span>
+			<span class="font-semibold text-primary-fixed">
 				{Math.round(data.totals.progress)}% pagado
 			</span>
 		</div>
-		<div class="mt-1.5 h-2 overflow-hidden rounded-full bg-white/15" aria-hidden="true">
+		<div class="mt-1.5 h-2 overflow-hidden rounded-full bg-hero-overlay" aria-hidden="true">
 			<div
 				class="h-full rounded-full bg-primary-container"
 				style="width:{Math.min(100, data.totals.progress)}%"
@@ -195,11 +195,13 @@
 	>
 		{#each kpis as kpi (kpi.label)}
 			<article
-				class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-5 shadow-card"
+				class="rounded-card border border-hairline/70 bg-surface-container-lowest p-5 shadow-card"
 			>
 				<div class="flex items-center justify-between gap-2">
 					<p class="text-label font-medium text-on-surface-variant">{kpi.label}</p>
-					<span class="flex size-9 items-center justify-center rounded-xl {KPI_TONES[kpi.tone]}">
+					<span
+						class="flex size-9 items-center justify-center rounded-control {KPI_TONES[kpi.tone]}"
+					>
 						<Icon name={kpi.icon} size={19} />
 					</span>
 				</div>
@@ -220,14 +222,16 @@
 	</section>
 
 	<a href="/deudas/nueva" class={buttonClass('primary', 'lg', true, 'lg:hidden')}>
-		<span class="flex size-6 items-center justify-center rounded-full border-2 border-white/70">
+		<span
+			class="flex size-6 items-center justify-center rounded-full border-2 border-hero-foreground/70"
+		>
 			<Icon name="add" size={16} />
 		</span>
 		Registrar deuda / cuota
 	</a>
 
 	{#if data.alerts.length > 0}
-		<section class="rounded-2xl bg-secondary/6 p-3.5">
+		<section class="rounded-card bg-secondary/6 p-3.5">
 			<div class="flex items-start gap-3">
 				<span
 					class="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-container-lowest text-secondary"
@@ -258,7 +262,7 @@
 					<a
 						href={`/deudas/${alert.debt.id}`}
 						class={cn(
-							'flex shrink-0 items-center gap-1.5 rounded-lg border bg-surface-container-lowest px-2.5 py-1.5 text-label-sm font-semibold whitespace-nowrap',
+							'flex shrink-0 items-center gap-1.5 rounded-control border bg-surface-container-lowest px-2.5 py-1.5 text-label-sm font-semibold whitespace-nowrap',
 							alert.overdue ? 'border-tertiary/40 text-tertiary' : 'border-outline-variant text-ink'
 						)}
 					>
@@ -303,10 +307,12 @@
 				{@const status = statusOf(debt)}
 				{@const urgent = data.urgentIds.includes(debt.id)}
 				<article
-					class="rounded-2xl border border-l-4 border-hairline/70 {style.accent} bg-surface-container-lowest p-3.5 shadow-card lg:p-5"
+					class="rounded-card border border-l-4 border-hairline/70 {style.accent} bg-surface-container-lowest p-3.5 shadow-card lg:p-5"
 				>
 					<div class="flex items-start gap-3">
-						<span class="flex size-11 shrink-0 items-center justify-center rounded-xl {style.tile}">
+						<span
+							class="flex size-11 shrink-0 items-center justify-center rounded-control {style.tile}"
+						>
 							<Icon name={debt.icon} size={22} />
 						</span>
 						<div class="min-w-0 flex-1">
@@ -398,7 +404,7 @@
 						</form>
 						<a
 							href={`/deudas/${debt.id}`}
-							class="flex w-11 shrink-0 items-center justify-center rounded-xl border border-outline-variant bg-surface-container-lowest text-secondary"
+							class="flex w-11 shrink-0 items-center justify-center rounded-control border border-outline-variant bg-surface-container-lowest text-secondary"
 							aria-label={`Ver detalle de ${debt.name}`}
 						>
 							<Icon name="calendar_month" size={20} />
@@ -406,7 +412,7 @@
 					</div>
 				</article>
 			{:else}
-				<div class="rounded-2xl border border-dashed border-outline-variant px-4 py-8 text-center">
+				<div class="rounded-card border border-dashed border-outline-variant px-4 py-8 text-center">
 					<p class="text-body text-on-surface-variant">
 						{data.active.length === 0
 							? 'No tienes deudas activas. ¡Buen momento para planificar!'
@@ -423,7 +429,7 @@
 	</section>
 
 	{#if data.active.length > 0}
-		<section class="rounded-2xl bg-secondary/6 p-4">
+		<section class="rounded-card bg-secondary/6 p-4">
 			<div class="flex items-start justify-between gap-2">
 				<div>
 					<p class="text-title-sm text-ink">Proyección de cero deudas</p>

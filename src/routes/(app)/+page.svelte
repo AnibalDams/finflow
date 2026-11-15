@@ -97,10 +97,10 @@
 	] as const;
 
 	const TONE_CLASS: Record<string, string> = {
-		primary: 'text-primary',
-		tertiary: 'text-tertiary',
-		secondary: 'text-secondary',
-		ink: 'text-ink'
+		primary: 'bg-primary/10 text-primary',
+		tertiary: 'bg-tertiary/10 text-tertiary',
+		secondary: 'bg-secondary/10 text-secondary',
+		ink: 'bg-level-1 text-ink'
 	};
 
 	const expenseShare = $derived(
@@ -188,7 +188,7 @@
 	class="space-y-5 px-4 pt-4 lg:mx-auto lg:grid lg:max-w-[1440px] lg:grid-cols-12 lg:gap-6 lg:space-y-0 lg:px-8 lg:pt-8 lg:pb-10"
 >
 	<header
-		class="flex items-start justify-between gap-3 lg:col-span-12 lg:items-center lg:rounded-2xl lg:border lg:border-hairline/70 lg:bg-gradient-to-r lg:from-surface-container-high lg:via-surface-container lg:to-surface-container-low lg:p-6"
+		class="flex items-start justify-between gap-3 lg:col-span-12 lg:items-center lg:rounded-card lg:border lg:border-hairline/70 lg:bg-gradient-to-r lg:from-surface-container-high lg:via-surface-container lg:to-surface-container-low lg:p-6"
 	>
 		<div class="min-w-0">
 			<h1 class="text-title-lg whitespace-nowrap text-ink lg:text-title-xl">
@@ -254,9 +254,9 @@
 	/>
 
 	<!-- Resumen móvil -->
-	<section class="overflow-hidden rounded-3xl bg-inverse-surface p-5 shadow-hero lg:hidden">
+	<section class="overflow-hidden rounded-panel hero-surface p-5 shadow-hero lg:hidden">
 		<div class="flex items-start justify-between gap-3">
-			<p class="text-label-sm font-medium tracking-[0.14em] text-inverse-on-surface/60 uppercase">
+			<p class="text-label-sm font-medium tracking-[0.14em] text-hero-foreground/60 uppercase">
 				Balance disponible
 			</p>
 
@@ -268,15 +268,17 @@
 					{data.delta >= 0 ? '+' : ''}{formatPercent(data.delta, 1)}
 				</span>
 			{:else}
-				<span class="rounded-full bg-white/8 px-2.5 py-1 text-label-sm text-inverse-on-surface/70">
+				<span
+					class="rounded-full bg-hero-overlay px-2.5 py-1 text-label-sm text-hero-foreground/70"
+				>
 					{formatMonthName(data.monthStart)}
 				</span>
 			{/if}
 		</div>
 
-		<p class="mt-1.5 flex items-baseline gap-1.5 tnum text-title-xl text-inverse-on-surface">
+		<p class="mt-1.5 flex items-baseline gap-1.5 tnum text-title-xl text-hero-foreground">
 			{formatMoney(data.balance, data.currency)}
-			<span class="text-body font-medium text-inverse-on-surface/50">{data.currency}</span>
+			<span class="text-body font-medium text-hero-foreground/50">{data.currency}</span>
 		</p>
 
 		<div class="-mx-1 mt-1">
@@ -284,28 +286,28 @@
 		</div>
 
 		<div class="mt-3 grid grid-cols-2 gap-3">
-			<div class="rounded-2xl bg-white/8 p-3">
+			<div class="rounded-card bg-hero-overlay p-3">
 				<div class="flex items-center gap-2">
 					<span
 						class="flex size-7 items-center justify-center rounded-full bg-primary/25 text-primary-fixed"
 					>
 						<Icon name="arrow_downward_alt" size={16} />
 					</span>
-					<span class="text-label-sm text-inverse-on-surface/60">Ingresos (mes)</span>
+					<span class="text-label-sm text-hero-foreground/60">Ingresos (mes)</span>
 				</div>
 				<p class="mt-1.5 tnum text-title-sm text-primary-fixed">
 					+{formatMoney(data.income, data.currency)}
 				</p>
 			</div>
 
-			<div class="rounded-2xl bg-white/8 p-3">
+			<div class="rounded-card bg-hero-overlay p-3">
 				<div class="flex items-center gap-2">
 					<span
 						class="flex size-7 items-center justify-center rounded-full bg-tertiary/25 text-tertiary-fixed"
 					>
 						<Icon name="arrow_upward_alt" size={16} />
 					</span>
-					<span class="text-label-sm text-inverse-on-surface/60">Gastos (mes)</span>
+					<span class="text-label-sm text-hero-foreground/60">Gastos (mes)</span>
 				</div>
 				<p class="mt-1.5 tnum text-title-sm text-tertiary-fixed">
 					−{formatMoney(data.expense, data.currency)}
@@ -321,11 +323,13 @@
 	>
 		{#each kpis as kpi (kpi.label)}
 			<article
-				class="flex flex-col justify-between rounded-2xl border border-hairline/70 bg-surface-container-lowest p-5 shadow-card"
+				class="flex flex-col justify-between rounded-card border border-hairline/70 bg-surface-container-lowest p-5 shadow-card"
 			>
 				<div class="flex items-center justify-between gap-2">
 					<p class="text-label font-medium text-on-surface-variant">{kpi.label}</p>
-					<span class="flex size-9 items-center justify-center rounded-xl {KPI_TONES[kpi.tone]}">
+					<span
+						class="flex size-9 items-center justify-center rounded-control {KPI_TONES[kpi.tone]}"
+					>
 						<Icon name={kpi.icon} size={19} />
 					</span>
 				</div>
@@ -358,12 +362,10 @@
 		{#each quickActions as action (action.label)}
 			<a
 				href={action.href}
-				class="flex flex-col items-center gap-2 rounded-2xl py-1 transition active:scale-95"
+				class="flex flex-col items-center gap-2 rounded-card py-1 transition active:scale-95"
 			>
 				<span
-					class="flex size-12 items-center justify-center rounded-full border border-hairline bg-surface-container-lowest shadow-card {TONE_CLASS[
-						action.tone
-					]}"
+					class="flex size-12 items-center justify-center rounded-card {TONE_CLASS[action.tone]}"
 				>
 					<Icon name={action.icon} size={22} />
 				</span>
@@ -389,7 +391,7 @@
 	>
 		<div class="min-w-0 space-y-5 xl:col-span-8 xl:space-y-6">
 			<section
-				class="hidden rounded-2xl border border-hairline/70 bg-surface-container-lowest p-5 shadow-card lg:block"
+				class="hidden rounded-card border border-hairline/70 bg-surface-container-lowest p-5 shadow-card lg:block"
 			>
 				<header class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 					<div>
@@ -405,7 +407,7 @@
 							{formatMonthName(data.monthStart, true)} · Acumulado día a día
 						</p>
 					</div>
-					<div class="flex items-center gap-3 rounded-lg bg-level-1/70 px-3 py-1.5">
+					<div class="flex items-center gap-3 rounded-control bg-level-1/70 px-3 py-1.5">
 						<span class="flex items-center gap-1.5 text-label-sm text-on-surface">
 							<span class="size-2.5 rounded-full bg-primary-container"></span>
 							Ingresos
@@ -484,7 +486,7 @@
 					class="lg:max-w-xs"
 				/>
 
-				<div class="rounded-2xl border border-hairline/70 bg-surface-container-lowest shadow-card">
+				<div class="rounded-card border border-hairline/70 bg-surface-container-lowest shadow-card">
 					{#if data.recent.length === 0}
 						<EmptyState
 							icon="receipt_long"
@@ -533,7 +535,7 @@
 			/>
 
 			<section
-				class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-5 shadow-card"
+				class="rounded-card border border-hairline/70 bg-surface-container-lowest p-5 shadow-card"
 				aria-label="Próximo pago"
 			>
 				<header class="flex items-center justify-between gap-2">
@@ -547,11 +549,11 @@
 				</header>
 
 				{#if data.nextDue}
-					<div class="mt-4 rounded-xl bg-level-1/70 p-3.5">
+					<div class="mt-4 rounded-control bg-level-1/70 p-3.5">
 						<div class="flex items-start justify-between gap-3">
 							<div class="flex min-w-0 items-center gap-2.5">
 								<span
-									class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-surface-container-lowest text-primary"
+									class="flex size-9 shrink-0 items-center justify-center rounded-control bg-surface-container-lowest text-primary"
 								>
 									<Icon name={data.nextDue.icon} size={18} />
 								</span>
@@ -581,7 +583,7 @@
 						</div>
 					</div>
 				{:else}
-					<div class="mt-4 rounded-xl bg-level-1/70 p-4 text-body-sm text-on-surface-variant">
+					<div class="mt-4 rounded-control bg-level-1/70 p-4 text-body-sm text-on-surface-variant">
 						No tienes cuotas pendientes.
 						<a href="/deudas/nueva" class="font-semibold text-primary">Registrar deuda</a>
 					</div>
@@ -589,7 +591,7 @@
 			</section>
 
 			<section
-				class="relative overflow-hidden rounded-2xl border border-hairline/70 bg-gradient-to-br from-surface-container-lowest via-surface-container-low to-secondary-fixed/20 p-5 shadow-card"
+				class="relative overflow-hidden rounded-card border border-hairline/70 bg-gradient-to-br from-surface-container-lowest via-surface-container-low to-secondary-fixed/20 p-5 shadow-card"
 				aria-label="Meta destacada"
 			>
 				<header class="flex items-center justify-between gap-2">
@@ -631,7 +633,7 @@
 					</p>
 					<a
 						href={`/planes/${goal.id}`}
-						class="mt-4 flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-secondary text-label font-semibold text-on-secondary transition hover:bg-secondary/90"
+						class="mt-4 flex h-10 w-full items-center justify-center gap-2 rounded-control bg-secondary text-label font-semibold text-on-secondary transition hover:bg-secondary/90"
 					>
 						<Icon name="savings" size={17} />
 						Ver plan y aportar
@@ -642,7 +644,7 @@
 					</p>
 					<a
 						href="/planes/nuevo"
-						class="mt-4 flex h-10 items-center justify-center gap-2 rounded-xl bg-secondary text-label font-semibold text-on-secondary"
+						class="mt-4 flex h-10 items-center justify-center gap-2 rounded-control bg-secondary text-label font-semibold text-on-secondary"
 					>
 						<Icon name="add" size={17} />
 						Planificar nuevo gasto

@@ -60,7 +60,7 @@
 		type="button"
 		bind:this={trigger}
 		class={cn(
-			'pressable flex w-full items-center gap-3 rounded-2xl border bg-surface-container-lowest p-3 text-left shadow-card transition',
+			'pressable flex w-full items-center gap-3 rounded-card border bg-surface-container-lowest p-3 text-left shadow-card transition',
 			error ? 'border-tertiary/60' : 'border-hairline hover:border-outline-variant',
 			disabled && 'pointer-events-none opacity-60'
 		)}
@@ -81,7 +81,8 @@
 			</span>
 			{#if selected}
 				<span class="block text-body-sm font-medium text-primary">
-					{hintPrefix} {formatMoney(selected.balance, selected.currency)}
+					{hintPrefix}
+					{formatMoney(selected.balance, selected.currency)}
 				</span>
 			{/if}
 		</span>
@@ -98,7 +99,7 @@
 		{required}
 		returnFocus={trigger}
 		bind:value
-		options={options}
+		{options}
 	/>
 
 	{#if error}

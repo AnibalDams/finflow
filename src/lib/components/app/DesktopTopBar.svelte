@@ -80,13 +80,13 @@
 </script>
 
 <header
-	class="fixed top-0 right-0 left-[280px] z-40 hidden h-[72px] border-b border-hairline/60 bg-surface/85 backdrop-blur-xl lg:flex"
+	class="fixed top-0 right-0 left-[248px] z-40 hidden h-[72px] border-b border-hairline/60 bg-surface/85 backdrop-blur-xl lg:flex"
 >
 	<div class="mx-auto flex h-full w-full max-w-[1440px] items-center gap-4 px-8">
 		<button
 			type="button"
 			bind:this={accountTrigger}
-			class="pressable flex h-10 max-w-60 shrink-0 items-center gap-2 rounded-xl border border-hairline bg-surface-container-lowest px-3 text-label font-medium text-ink transition hover:border-secondary/40"
+			class="pressable flex h-10 max-w-60 shrink-0 items-center gap-2 rounded-control border border-hairline bg-surface-container-lowest px-3 text-label font-medium text-ink transition hover:border-secondary/40"
 			aria-haspopup="listbox"
 			aria-expanded={accountSheetOpen}
 			aria-label="Seleccionar cuenta"

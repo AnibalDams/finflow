@@ -30,7 +30,7 @@
 		{#each categories as category (category.id)}
 			<label
 				class={cn(
-					'flex cursor-pointer flex-col items-center gap-1.5 rounded-2xl border px-1 pt-2.5 pb-2 transition',
+					'flex cursor-pointer flex-col items-center gap-1.5 rounded-card border px-1 pt-2.5 pb-2 transition',
 					value === category.id
 						? 'border-transparent bg-primary/10'
 						: 'border-hairline bg-surface-container-lowest hover:border-outline-variant'
@@ -64,9 +64,11 @@
 		{#if createHref}
 			<a
 				href={createHref}
-				class="flex flex-col items-center gap-1.5 rounded-2xl border border-dashed border-outline-variant px-1 pt-2.5 pb-2 transition hover:bg-level-1/60"
+				class="flex flex-col items-center gap-1.5 rounded-card border border-dashed border-outline-variant px-1 pt-2.5 pb-2 transition hover:bg-level-1/60"
 			>
-				<span class="flex size-12 items-center justify-center rounded-full bg-level-1 text-on-surface-variant">
+				<span
+					class="flex size-12 items-center justify-center rounded-full bg-level-1 text-on-surface-variant"
+				>
 					<Icon name="add" size={22} />
 				</span>
 				<span class="truncate text-label-sm text-on-surface-variant">{createLabel}</span>

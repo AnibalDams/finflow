@@ -37,7 +37,7 @@
 
 <section
 	class={cn(
-		'rounded-2xl border border-hairline/70 bg-surface-container-lowest shadow-card',
+		'rounded-card border border-hairline/70 bg-surface-container-lowest shadow-card',
 		padded && 'p-4',
 		className
 	)}

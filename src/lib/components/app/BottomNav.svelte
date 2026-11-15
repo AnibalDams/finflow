@@ -28,7 +28,7 @@
 {#snippet tab(item: Tab)}
 	<a
 		href={item.href}
-		class="group relative flex h-12 w-15 flex-col items-center justify-center gap-1 rounded-2xl transition-[color,transform] duration-150 active:scale-95 {isActive(
+		class="group relative flex h-12 w-15 flex-col items-center justify-center gap-1 rounded-card transition-[color] duration-150 {isActive(
 			item.href
 		)
 			? 'text-primary'
@@ -41,11 +41,7 @@
 				aria-hidden="true"
 			></span>
 		{/if}
-		<span
-			class="transition-transform duration-200 {isActive(item.href)
-				? '-translate-y-px scale-110'
-				: 'group-active:scale-90'}"
-		>
+		<span>
 			<Icon name={item.icon} size={22} filled={isActive(item.href)} />
 		</span>
 		<span class="text-label-sm {isActive(item.href) ? 'font-semibold' : 'font-medium'}"

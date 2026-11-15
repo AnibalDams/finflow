@@ -44,7 +44,7 @@
 
 	{#if form?.message}
 		<div
-			class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+			class="flex items-start gap-2 rounded-control bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
 			role="alert"
 		>
 			<Icon name="error" size={18} class="mt-0.5 shrink-0" />
@@ -81,7 +81,7 @@
 		<ColorPicker name="color" bind:value={color} error={previous.color} />
 	</section>
 
-	<div class="flex items-center gap-3 rounded-2xl bg-level-1/70 p-3">
+	<div class="flex items-center gap-3 rounded-card bg-level-1/70 p-3">
 		<span
 			class="flex size-11 items-center justify-center rounded-full text-white"
 			style="background-color:{color}"

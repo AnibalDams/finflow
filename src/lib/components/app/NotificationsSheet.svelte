@@ -13,7 +13,7 @@
 
 	const TONES = {
 		danger: 'bg-tertiary/10 text-tertiary',
-		warning: 'bg-amber-500/12 text-amber-700',
+		warning: 'bg-warning/12 text-warning-ink',
 		info: 'bg-secondary/10 text-secondary',
 		success: 'bg-primary/10 text-primary'
 	} as const;
@@ -41,7 +41,7 @@
 		{:else}
 			{#each alerts as alert (alert.id)}
 				<article
-					class="flex gap-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-3.5"
+					class="flex gap-3 rounded-card border border-hairline/70 bg-surface-container-lowest p-3.5"
 				>
 					<span
 						class="flex size-10 shrink-0 items-center justify-center rounded-full {TONES[

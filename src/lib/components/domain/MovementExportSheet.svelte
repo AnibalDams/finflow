@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import Sheet from '#lib/components/ui/Sheet.svelte';
+	import { buildTokens, DEFAULT_THEME, type ThemePreference } from '#lib/theme/derive';
+	import { reportPaletteFromTokens } from '#lib/theme/report';
 	import { notifyError, notifySuccess } from '#lib/stores/toast.svelte';
 	import { formatFullDate, formatMonthName, toISODate } from '#lib/utils/dates';
 	import { downloadReport } from '#lib/utils/export';
@@ -20,6 +22,8 @@
 		/** Parámetros de la vista (mes y filtros activos). */
 		scopeQuery: string;
 		hasFilters: boolean;
+		/** Preferencia de apariencia: el informe hereda la marca del usuario. */
+		theme?: ThemePreference;
 	}
 
 	let {
@@ -30,8 +34,11 @@
 		currency,
 		profileName,
 		scopeQuery,
-		hasFilters
+		hasFilters,
+		theme = DEFAULT_THEME
 	}: Props = $props();
+
+	const reportPalette = $derived(reportPaletteFromTokens(buildTokens(theme, 'light')));
 
 	interface ExportPayload {
 		items: TransactionItem[];
@@ -72,7 +79,7 @@
 			label: 'HTML estilizado',
 			description: 'Página autocontenida con el diseño de FinFlow.',
 			icon: 'code',
-			tone: 'bg-amber-500/12 text-amber-700'
+			tone: 'bg-warning/12 text-warning-ink'
 		}
 	];
 
@@ -310,7 +317,7 @@
 				return;
 			}
 
-			await downloadReport(format, buildReport(payload.items));
+			await downloadReport(format, buildReport(payload.items), reportPalette);
 			notifySuccess(
 				`${format === 'xlsx' ? 'Excel' : format.toUpperCase()} descargado (${payload.items.length} movimientos)`
 			);
@@ -327,7 +334,7 @@
 
 <Sheet title="Exportar movimientos" subtitle={label} bind:open>
 	<div class="space-y-4 pb-2">
-		<div class="rounded-2xl bg-level-1/70 p-3">
+		<div class="rounded-card bg-level-1/70 p-3">
 			<p class="text-label font-semibold text-ink">
 				{total}
 				{total === 1 ? 'movimiento' : 'movimientos'}
@@ -338,7 +345,7 @@
 					: 'Todos los movimientos del periodo seleccionado.'}
 			</p>
 			{#if total > MAX_ROWS}
-				<p class="mt-2 flex items-start gap-1.5 text-body-sm text-amber-700">
+				<p class="mt-2 flex items-start gap-1.5 text-body-sm text-warning-ink">
 					<Icon name="info" size={16} class="mt-0.5 shrink-0" />
 					Se exportarán los primeros {MAX_ROWS} de {total} movimientos.
 				</p>
@@ -355,12 +362,14 @@
 			{#each FORMATS as option (option.value)}
 				<button
 					type="button"
-					class="flex items-center gap-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest px-3 py-3 text-left transition hover:bg-level-1/60 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+					class="flex items-center gap-3 rounded-card border border-hairline/70 bg-surface-container-lowest px-3 py-3 text-left transition hover:bg-level-1/60 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
 					disabled={busy !== null || total === 0}
 					aria-busy={busy === option.value}
 					onclick={() => exportAs(option.value)}
 				>
-					<span class="flex size-10 shrink-0 items-center justify-center rounded-xl {option.tone}">
+					<span
+						class="flex size-10 shrink-0 items-center justify-center rounded-control {option.tone}"
+					>
 						{#if busy === option.value}
 							<Icon name="progress_activity" size={20} class="animate-spin" />
 						{:else}

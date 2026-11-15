@@ -8,6 +8,7 @@
 import { buildReportHtml } from './export-html';
 import { downloadReportPdf } from './export-pdf';
 import { buildReportXlsx } from './export-xlsx';
+import { DEFAULT_REPORT_PALETTE, type ReportPalette } from '#lib/theme/report';
 import { isReportNumber, type ReportCell, type ReportDocument, type ReportFormat } from './report';
 
 export type CsvCell = string | number | null | undefined;
@@ -89,7 +90,11 @@ export function reportToCsv(report: ReportDocument): CsvCell[][] {
 }
 
 /** Genera y descarga el informe en el formato pedido. */
-export async function downloadReport(format: ReportFormat, report: ReportDocument): Promise<void> {
+export async function downloadReport(
+	format: ReportFormat,
+	report: ReportDocument,
+	palette: ReportPalette = DEFAULT_REPORT_PALETTE
+): Promise<void> {
 	const base = report.fileName.replace(/\.(pdf|xlsx|csv|html)$/i, '');
 
 	switch (format) {
@@ -97,7 +102,11 @@ export async function downloadReport(format: ReportFormat, report: ReportDocumen
 			downloadFile(`${base}.csv`, `\uFEFF${toCsv(reportToCsv(report))}`, 'text/csv;charset=utf-8');
 			return;
 		case 'html':
-			downloadFile(`${base}.html`, buildReportHtml(report), 'text/html;charset=utf-8');
+			downloadFile(
+				`${base}.html`,
+				buildReportHtml(report, new Date(), palette),
+				'text/html;charset=utf-8'
+			);
 			return;
 		case 'xlsx':
 			downloadBinary(`${base}.xlsx`, buildReportXlsx(report), XLSX_MIME);

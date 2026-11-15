@@ -67,13 +67,13 @@
 
 <div class="space-y-4 px-4 pt-4 lg:mx-auto lg:max-w-[1440px] lg:space-y-6 lg:px-8 lg:pt-8 lg:pb-10">
 	<header
-		class="hidden gap-6 rounded-3xl border border-hairline/70 bg-surface-container-lowest p-6 shadow-card lg:grid lg:grid-cols-1 lg:items-center xl:grid-cols-12"
+		class="hidden gap-6 rounded-panel border border-hairline/70 bg-surface-container-lowest p-6 shadow-card lg:grid lg:grid-cols-1 lg:items-center xl:grid-cols-12"
 	>
 		<div class="xl:col-span-6">
 			<p
 				class="flex items-center gap-2 text-label-sm font-semibold tracking-[0.16em] text-primary uppercase"
 			>
-				<span class="size-1.5 rounded-full bg-primary-container" aria-hidden="true"></span>
+				<span class="size-1.5 rounded-full bg-primary" aria-hidden="true"></span>
 				Planificación estratégica
 			</p>
 			<h1 class="mt-2 text-title-xl leading-tight tracking-tight text-ink">
@@ -89,7 +89,7 @@
 			</a>
 		</div>
 
-		<div class="rounded-2xl bg-level-1/70 p-4 xl:col-span-3">
+		<div class="rounded-card bg-level-1/70 p-4 xl:col-span-3">
 			<p class="text-label-sm text-muted">Progreso global</p>
 			<p class="mt-1 tnum text-title-md font-bold text-ink">
 				{formatPercent(overallPercent, 0)}
@@ -108,7 +108,7 @@
 			</div>
 		</div>
 
-		<div class="rounded-2xl bg-secondary/8 p-4 xl:col-span-3">
+		<div class="rounded-card bg-secondary/8 p-4 xl:col-span-3">
 			<p class="text-label-sm text-muted">Cadencia de ahorro</p>
 			<p class="mt-1 flex items-center gap-1.5 tnum text-title-md font-bold text-secondary">
 				<Icon name="trending_up" size={19} />
@@ -121,13 +121,13 @@
 		</div>
 	</header>
 
-	<section class="rounded-3xl bg-inverse-surface p-5 text-inverse-on-surface shadow-hero lg:hidden">
+	<section class="rounded-panel hero-surface p-5 shadow-hero lg:hidden">
 		<header class="flex items-center justify-between gap-2">
 			<span class="flex items-center gap-1.5 text-label-sm font-semibold tracking-wide uppercase">
-				<span class="size-1.5 rounded-full bg-primary-container" aria-hidden="true"></span>
+				<span class="size-1.5 rounded-full bg-primary-fixed" aria-hidden="true"></span>
 				Planes y metas futuras
 			</span>
-			<span class="rounded-full bg-white/10 px-2.5 py-1 text-label-sm font-semibold">
+			<span class="rounded-full bg-hero-overlay px-2.5 py-1 text-label-sm font-semibold">
 				{formatPercent(overallPercent, 0)} completado
 			</span>
 		</header>
@@ -136,28 +136,28 @@
 			<span class="tnum text-[2rem] leading-none font-bold">
 				{formatMoney(data.totalSaved)}
 			</span>
-			<span class="text-body-sm text-inverse-on-surface/60">
+			<span class="text-body-sm text-hero-foreground/60">
 				/ {formatMoney(data.totalTarget)} meta
 			</span>
 		</p>
 
-		<p class="mt-1.5 text-body-sm text-inverse-on-surface/70">
+		<p class="mt-1.5 text-body-sm text-hero-foreground/70">
 			Ahorro total reservado para tus proyectos
 		</p>
 
-		<div class="mt-4 h-2 overflow-hidden rounded-full bg-white/15" aria-hidden="true">
+		<div class="mt-4 h-2 overflow-hidden rounded-full bg-hero-overlay" aria-hidden="true">
 			<div
-				class="h-full rounded-full bg-primary-container"
+				class="h-full rounded-full bg-primary-fixed"
 				style="width:{Math.min(100, overallPercent)}%"
 			></div>
 		</div>
 
 		<div class="mt-3 flex items-center justify-between gap-2 text-label-sm">
-			<span class="text-inverse-on-surface/70">
+			<span class="text-hero-foreground/70">
 				{activeGoals.length}
 				{activeGoals.length === 1 ? 'objetivo activo' : 'objetivos activos'}
 			</span>
-			<span class="flex items-center gap-1 font-semibold text-primary-container">
+			<span class="flex items-center gap-1 font-semibold text-primary-fixed">
 				<Icon name="trending_up" size={16} />
 				+{formatMoney(data.monthlySaving)}/mes
 			</span>
@@ -192,19 +192,19 @@
 			{@const pace = goalPace(goal, now)}
 			<a
 				href={`/planes/${goal.id}`}
-				class="group pressable block rounded-2xl border border-hairline/70 bg-surface-container-lowest p-3.5 shadow-card hover:border-outline-variant lg:flex lg:flex-col lg:p-5"
+				class="group pressable block rounded-card border border-hairline/70 bg-surface-container-lowest p-3.5 shadow-card hover:border-outline-variant lg:flex lg:flex-col lg:p-5"
 			>
 				<div class="flex gap-3 lg:w-full lg:flex-col">
 					{#if data.images[goal.id]}
 						<img
 							src={data.images[goal.id]}
 							alt=""
-							class="size-24 shrink-0 rounded-2xl object-cover lg:h-36 lg:w-full lg:rounded-xl"
+							class="size-24 shrink-0 rounded-card object-cover lg:h-36 lg:w-full lg:rounded-control"
 							loading="lazy"
 						/>
 					{:else}
 						<span
-							class="flex size-24 shrink-0 items-center justify-center rounded-2xl bg-secondary/10 text-secondary lg:h-36 lg:w-full lg:rounded-xl"
+							class="flex size-24 shrink-0 items-center justify-center rounded-card bg-secondary/10 text-secondary lg:h-36 lg:w-full lg:rounded-control"
 							aria-hidden="true"
 						>
 							<Icon name={GOAL_CATEGORY_ICONS[goal.category]} size={32} />
@@ -271,7 +271,7 @@
 
 				{#if pace === 'behind' && plan.monthlyAmount > 0}
 					<p
-						class="mt-2 rounded-xl bg-level-1/70 px-2.5 py-1.5 text-label-sm text-on-surface-variant"
+						class="mt-2 rounded-control bg-level-1/70 px-2.5 py-1.5 text-label-sm text-on-surface-variant"
 					>
 						Cuota sugerida:
 						<span class="tnum font-semibold text-ink">{formatMoney(plan.monthlyAmount)} / mes</span>
@@ -279,14 +279,14 @@
 				{/if}
 
 				<span
-					class="mt-3 hidden h-10 w-full items-center justify-center gap-2 rounded-xl bg-primary text-label font-semibold text-on-primary transition group-hover:bg-primary/90 lg:flex"
+					class="mt-3 hidden h-10 w-full items-center justify-center gap-2 rounded-control bg-primary text-label font-semibold text-on-primary transition group-hover:bg-primary/90 lg:flex"
 				>
 					<Icon name="savings" size={17} />
 					Aportar capital
 				</span>
 			</a>
 		{:else}
-			<div class="rounded-2xl border border-dashed border-outline-variant px-4 py-8 text-center">
+			<div class="rounded-card border border-dashed border-outline-variant px-4 py-8 text-center">
 				<p class="text-body text-on-surface-variant">
 					{data.filter === 'active'
 						? 'No tienes planes activos.'
@@ -304,7 +304,7 @@
 	</div>
 
 	<div class="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
-		<section class="rounded-2xl bg-secondary/8 p-4 lg:p-5">
+		<section class="rounded-card bg-secondary/8 p-4 lg:p-5">
 			<div class="flex items-start gap-3">
 				<span
 					class="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary/15 text-secondary"
@@ -349,13 +349,13 @@
 		</section>
 
 		<section
-			class="hidden rounded-2xl border border-hairline/70 bg-surface-container-lowest p-5 shadow-card lg:flex lg:flex-col"
+			class="hidden rounded-card border border-hairline/70 bg-surface-container-lowest p-5 shadow-card lg:flex lg:flex-col"
 			aria-label="Hitos alcanzados"
 		>
 			<header class="flex items-start justify-between gap-3">
 				<div class="flex items-center gap-3">
 					<span
-						class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"
+						class="flex size-10 shrink-0 items-center justify-center rounded-control bg-primary/10 text-primary"
 					>
 						<Icon name="emoji_events" size={20} />
 					</span>
@@ -375,18 +375,18 @@
 				{#each recentCompleted as completed (completed.id)}
 					<a
 						href={`/planes/${completed.id}`}
-						class="flex items-center gap-3 rounded-xl bg-level-1/60 p-2.5 transition hover:bg-level-1"
+						class="flex items-center gap-3 rounded-control bg-level-1/60 p-2.5 transition hover:bg-level-1"
 					>
 						{#if data.images[completed.id]}
 							<img
 								src={data.images[completed.id]}
 								alt=""
-								class="size-11 shrink-0 rounded-lg object-cover"
+								class="size-11 shrink-0 rounded-control object-cover"
 								loading="lazy"
 							/>
 						{:else}
 							<span
-								class="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
+								class="flex size-11 shrink-0 items-center justify-center rounded-control bg-primary/10 text-primary"
 							>
 								<Icon name={GOAL_CATEGORY_ICONS[completed.category]} size={20} />
 							</span>
@@ -408,7 +408,7 @@
 						</span>
 					</a>
 				{:else}
-					<p class="rounded-xl bg-level-1/60 p-3 text-body-sm text-muted">
+					<p class="rounded-control bg-level-1/60 p-3 text-body-sm text-muted">
 						Todavía no completas ningún plan. Cuando lo hagas, aparecerá aquí como hito.
 					</p>
 				{/each}

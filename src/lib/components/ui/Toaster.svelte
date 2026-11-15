@@ -19,7 +19,7 @@
 >
 	{#each toasts.items as toast (toast.id)}
 		<div
-			class="pointer-events-auto relative flex w-full items-center gap-2.5 overflow-hidden rounded-xl px-3.5 py-2.5 text-label shadow-elevated {TONES[
+			class="pointer-events-auto relative flex w-full items-center gap-2.5 overflow-hidden rounded-control px-3.5 py-2.5 text-label shadow-elevated {TONES[
 				toast.tone
 			].klass}"
 			transition:fly={{ y: 14, duration: motionDuration(200), easing: cubicOut }}

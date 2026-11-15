@@ -18,7 +18,14 @@
 		class?: string;
 	}
 
-	let { options, value = $bindable(''), name, columns = 2, error, class: className = '' }: Props = $props();
+	let {
+		options,
+		value = $bindable(''),
+		name,
+		columns = 2,
+		error,
+		class: className = ''
+	}: Props = $props();
 </script>
 
 <div class={cn('space-y-1.5', className)}>
@@ -26,7 +33,7 @@
 		{#each options as option (option.value)}
 			<label
 				class={cn(
-					'flex cursor-pointer items-start gap-2.5 rounded-2xl border p-3 transition',
+					'flex cursor-pointer items-start gap-2.5 rounded-card border p-3 transition',
 					value === option.value
 						? 'border-secondary bg-secondary/6 shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-secondary)_12%,transparent)]'
 						: 'border-hairline bg-surface-container-lowest hover:border-outline-variant'

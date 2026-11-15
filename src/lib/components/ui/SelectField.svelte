@@ -56,7 +56,7 @@
 		id={triggerId}
 		bind:this={trigger}
 		class={cn(
-			'pressable relative flex h-12 w-full items-center gap-2 rounded-xl border bg-surface-container-lowest pr-3 text-left text-body-lg text-ink transition',
+			'pressable relative flex h-12 w-full items-center gap-2 rounded-control border bg-surface-container-lowest pr-3 text-left text-body-lg text-ink transition',
 			leadingIcon ? 'pl-10.5' : 'pl-3.5',
 			error ? 'border-tertiary/60' : 'border-hairline hover:border-outline-variant',
 			disabled && 'pointer-events-none opacity-60',

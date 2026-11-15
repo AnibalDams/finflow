@@ -70,7 +70,7 @@
 	}
 </script>
 
-<div class="space-y-3 rounded-xl bg-level-1/70 p-3">
+<div class="space-y-3 rounded-control bg-level-1/70 p-3">
 	<div class="flex items-start gap-3">
 		<span
 			class="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/10 text-secondary"

@@ -113,7 +113,7 @@
 		></button>
 
 		<div
-			class="relative z-10 flex max-h-[86dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-surface-container-lowest shadow-sheet outline-none lg:max-h-[80dvh] lg:max-w-lg lg:rounded-3xl lg:border lg:border-hairline/60 lg:shadow-elevated"
+			class="relative z-10 flex max-h-[86dvh] w-full flex-col overflow-hidden rounded-t-panel bg-surface-container-lowest shadow-sheet outline-none lg:max-h-[80dvh] lg:max-w-lg lg:rounded-panel lg:border lg:border-hairline/60 lg:shadow-elevated"
 			role="dialog"
 			aria-modal="true"
 			aria-label={title}

@@ -32,7 +32,7 @@
 	}
 </script>
 
-<section class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4">
+<section class="space-y-3 rounded-card border border-hairline/70 bg-surface-container-lowest p-4">
 	<h2 class="flex items-center gap-2 text-title-sm text-ink">
 		<Icon name="account_circle" size={18} class="text-secondary" />
 		Foto de perfil

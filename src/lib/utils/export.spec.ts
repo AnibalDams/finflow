@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DEFAULT_REPORT_PALETTE } from '#lib/theme/report';
 import { buildReportHtml } from './export-html';
 import { buildReportXlsx } from './export-xlsx';
 import { csvNumber, reportToCsv, toCsv } from './export';
@@ -141,6 +142,22 @@ describe('buildReportHtml', () => {
 		expect(html).toContain('circle.dot-marker');
 		expect(html).not.toContain("querySelectorAll('circle')");
 		expect(html).not.toContain("querySelectorAll('path[stroke]')");
+	});
+
+	it('usa la paleta activa del usuario cuando se indica', () => {
+		const palette = {
+			...DEFAULT_REPORT_PALETTE,
+			primary: '#820ad1',
+			heroFrom: '#5a0793',
+			incomeText: '#0f766e'
+		};
+
+		const html = buildReportHtml(REPORT, new Date('2026-10-25T12:00:00.000Z'), palette);
+
+		expect(html).toContain('--primary: #820ad1');
+		expect(html).toContain('--hero-from: #5a0793');
+		expect(html).toContain('--income-text: #0f766e');
+		expect(html).not.toContain('--primary: #006c49');
 	});
 });
 

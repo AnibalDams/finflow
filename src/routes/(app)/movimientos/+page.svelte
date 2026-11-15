@@ -141,7 +141,7 @@
 		</a>
 	</header>
 
-	<section class="rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4 lg:p-5">
+	<section class="rounded-card border border-hairline/70 bg-surface-container-lowest p-4 lg:p-5">
 		<div class="grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-5">
 			<div class="min-w-0">
 				<p class="flex items-center gap-1.5 text-label-xs tracking-wide text-muted uppercase">
@@ -236,7 +236,7 @@
 	</div>
 
 	{#if data.items.length === 0}
-		<div class="rounded-2xl border border-hairline/70 bg-surface-container-lowest">
+		<div class="rounded-card border border-hairline/70 bg-surface-container-lowest">
 			<EmptyState
 				icon="receipt_long"
 				title={data.hasFilters ? 'Sin resultados' : 'Aún no hay movimientos'}
@@ -254,7 +254,7 @@
 		</div>
 	{:else}
 		<div
-			class="hidden overflow-hidden rounded-2xl border border-hairline/70 bg-surface-container-lowest lg:block"
+			class="hidden overflow-hidden rounded-card border border-hairline/70 bg-surface-container-lowest lg:block"
 		>
 			<TransactionsTable items={data.items} currency={data.profile.currency} showDate showAccount />
 		</div>
@@ -269,7 +269,7 @@
 						<span class="tnum text-label-sm text-muted">{signedTotal(group.total)}</span>
 					</header>
 
-					<div class="rounded-2xl border border-hairline/70 bg-surface-container-lowest px-4">
+					<div class="rounded-card border border-hairline/70 bg-surface-container-lowest px-4">
 						<ul>
 							{#each group.items as item, index (item.id)}
 								<li
@@ -328,7 +328,7 @@
 		<div class="space-y-1.5">
 			<span class="block text-label-sm font-medium text-on-surface-variant">Cuenta</span>
 			<details
-				class="group overflow-hidden rounded-xl border border-hairline bg-surface-container-lowest"
+				class="group overflow-hidden rounded-control border border-hairline bg-surface-container-lowest"
 			>
 				<summary
 					class="flex h-12 cursor-pointer list-none items-center gap-2 px-3 text-body text-ink [&::-webkit-details-marker]:hidden"
@@ -344,7 +344,7 @@
 
 				<div class="max-h-56 overflow-y-auto border-t border-hairline p-1.5">
 					<label
-						class="flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 transition hover:bg-level-1/60 {accountFilter ===
+						class="flex cursor-pointer items-center gap-2.5 rounded-control px-2.5 py-2 transition hover:bg-level-1/60 {accountFilter ===
 						''
 							? 'bg-primary/8'
 							: ''}"
@@ -359,7 +359,7 @@
 
 					{#each data.accounts as account (account.id)}
 						<label
-							class="flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 transition hover:bg-level-1/60 {accountFilter ===
+							class="flex cursor-pointer items-center gap-2.5 rounded-control px-2.5 py-2 transition hover:bg-level-1/60 {accountFilter ===
 							account.id
 								? 'bg-primary/8'
 								: ''}"
@@ -385,7 +385,7 @@
 		<div class="space-y-1.5">
 			<span class="block text-label-sm font-medium text-on-surface-variant">Categoría</span>
 			<details
-				class="group overflow-hidden rounded-xl border border-hairline bg-surface-container-lowest"
+				class="group overflow-hidden rounded-control border border-hairline bg-surface-container-lowest"
 			>
 				<summary
 					class="flex h-12 cursor-pointer list-none items-center gap-2 px-3 text-body text-ink [&::-webkit-details-marker]:hidden"
@@ -401,7 +401,7 @@
 
 				<div class="max-h-56 overflow-y-auto border-t border-hairline p-1.5">
 					<label
-						class="flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 transition hover:bg-level-1/60 {categoryFilter ===
+						class="flex cursor-pointer items-center gap-2.5 rounded-control px-2.5 py-2 transition hover:bg-level-1/60 {categoryFilter ===
 						''
 							? 'bg-primary/8'
 							: ''}"
@@ -424,7 +424,7 @@
 
 					{#each data.categories as category (category.id)}
 						<label
-							class="flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 transition hover:bg-level-1/60 {categoryFilter ===
+							class="flex cursor-pointer items-center gap-2.5 rounded-control px-2.5 py-2 transition hover:bg-level-1/60 {categoryFilter ===
 							category.id
 								? 'bg-primary/8'
 								: ''}"
@@ -437,7 +437,7 @@
 								class="sr-only"
 							/>
 							<span
-								class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-level-1"
+								class="flex size-7 shrink-0 items-center justify-center rounded-control bg-level-1"
 								style="color:{category.color}"
 							>
 								<Icon name={category.icon} size={16} />
@@ -473,4 +473,5 @@
 	profileName={data.profile.fullName}
 	scopeQuery={exportQuery}
 	hasFilters={data.hasFilters}
+	theme={data.profile.theme}
 />
