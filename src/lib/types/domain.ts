@@ -1,3 +1,4 @@
+import type { ThemePreference } from '#lib/theme/derive';
 import type { Database } from './database.types';
 
 export type Enums = Database['public']['Enums'];
@@ -31,6 +32,8 @@ export interface Profile {
 	pushEnabled: boolean;
 	/** Hora local (`HH:MM`) a la que quiere recibir los avisos. */
 	pushTime: string;
+	/** Preferencia de apariencia: paleta del catálogo y modo de color. */
+	theme: ThemePreference;
 	/** Minutos por detrás de UTC de su zona (Caracas = 240). */
 	tzOffset: number;
 }

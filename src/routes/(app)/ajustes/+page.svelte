@@ -86,10 +86,10 @@
 		</p>
 	</header>
 
-	<section class="rounded-3xl bg-inverse-surface p-5 text-inverse-on-surface shadow-hero lg:p-6">
+	<section class="rounded-panel hero-surface p-5 shadow-hero lg:p-6">
 		<div class="flex items-center gap-3">
 			<span
-				class="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-container text-title-sm font-bold text-inverse-surface"
+				class="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-fixed text-title-sm font-bold text-on-primary-fixed"
 			>
 				{#if profile.avatarUrl}
 					<img src={profile.avatarUrl} alt="" class="size-full object-cover" />
@@ -99,16 +99,16 @@
 			</span>
 			<div class="min-w-0">
 				<p class="truncate text-title-sm font-semibold">{profile.fullName || 'Tu perfil'}</p>
-				<p class="truncate text-body-sm text-inverse-on-surface/70">{data.email}</p>
+				<p class="truncate text-body-sm text-hero-foreground/70">{data.email}</p>
 			</div>
 		</div>
 
 		<div class="mt-4 grid grid-cols-4 gap-2">
 			{#each stats as stat (stat.label)}
-				<div class="rounded-2xl bg-white/8 p-2 text-center">
-					<Icon name={stat.icon} size={18} class="mx-auto text-primary-container" />
+				<div class="rounded-card bg-hero-overlay p-2 text-center">
+					<Icon name={stat.icon} size={18} class="mx-auto text-primary-fixed" />
 					<p class="mt-1 tnum text-title-sm font-bold">{stat.value}</p>
-					<p class="text-[10px] leading-tight text-inverse-on-surface/60">{stat.label}</p>
+					<p class="text-[10px] leading-tight text-hero-foreground/60">{stat.label}</p>
 				</div>
 			{/each}
 		</div>
@@ -123,10 +123,10 @@
 
 		<a
 			href={resolve('/(app)/cuentas')}
-			class="flex items-center gap-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-3.5 shadow-card transition hover:border-secondary/40"
+			class="flex items-center gap-3 rounded-card border border-hairline/70 bg-surface-container-lowest p-3.5 shadow-card transition hover:border-secondary/40"
 		>
 			<span
-				class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary"
+				class="flex size-10 shrink-0 items-center justify-center rounded-control bg-secondary/10 text-secondary"
 			>
 				<Icon name="account_balance_wallet" size={20} />
 			</span>
@@ -136,11 +136,27 @@
 			</div>
 			<Icon name="chevron_right" size={20} class="shrink-0 text-muted" />
 		</a>
+
+		<a
+			href={resolve('/(full)/apariencia')}
+			class="flex items-center gap-3 rounded-card border border-hairline/70 bg-surface-container-lowest p-3.5 shadow-card transition hover:border-primary/40"
+		>
+			<span
+				class="flex size-10 shrink-0 items-center justify-center rounded-control bg-primary/10 text-primary"
+			>
+				<Icon name="palette" size={20} />
+			</span>
+			<div class="min-w-0 flex-1">
+				<p class="text-body font-medium text-ink">Apariencia</p>
+				<p class="text-body-sm text-muted">Paleta, modo claro/oscuro y contraste</p>
+			</div>
+			<Icon name="chevron_right" size={20} class="shrink-0 text-muted" />
+		</a>
 	</div>
 
 	<div class="space-y-4">
 		<section
-			class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4 lg:p-5"
+			class="space-y-3 rounded-card border border-hairline/70 bg-surface-container-lowest p-4 lg:p-5"
 		>
 			<h2 class="flex items-center gap-2 text-title-sm text-ink">
 				<Icon name="person" size={18} class="text-secondary" />
@@ -149,7 +165,7 @@
 
 			{#if form?.intent === 'profile' && form.message}
 				<div
-					class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+					class="flex items-start gap-2 rounded-control bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
 					role="alert"
 				>
 					<Icon name="error" size={18} class="mt-0.5 shrink-0" />
@@ -205,7 +221,7 @@
 		</section>
 
 		<section
-			class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4"
+			class="space-y-3 rounded-card border border-hairline/70 bg-surface-container-lowest p-4"
 		>
 			<h2 class="flex items-center gap-2 text-title-sm text-ink">
 				<Icon name="currency_exchange" size={18} class="text-secondary" />
@@ -214,7 +230,7 @@
 
 			{#if form?.intent === 'currencies' && form.message}
 				<div
-					class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+					class="flex items-start gap-2 rounded-control bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
 					role="alert"
 				>
 					<Icon name="error" size={18} class="mt-0.5 shrink-0" />
@@ -229,9 +245,9 @@
 
 			<ul class="space-y-2">
 				{#each data.currencies as item (item.code)}
-					<li class="flex items-center gap-2 rounded-xl bg-level-1/60 px-3 py-2">
+					<li class="flex items-center gap-2 rounded-control bg-level-1/60 px-3 py-2">
 						<span
-							class="shrink-0 rounded-lg bg-secondary/10 px-2 py-1 text-label-sm font-semibold text-secondary"
+							class="shrink-0 rounded-control bg-secondary/10 px-2 py-1 text-label-sm font-semibold text-secondary"
 						>
 							{item.code}
 						</span>
@@ -255,11 +271,11 @@
 									maxlength={60}
 									required
 									aria-label={`Nombre de ${item.code}`}
-									class="h-9 min-w-0 flex-1 rounded-lg border border-hairline bg-surface-container-lowest px-2 text-body-sm text-ink focus:border-secondary focus:ring-3 focus:ring-secondary/12 focus:outline-none"
+									class="h-9 min-w-0 flex-1 rounded-control border border-hairline bg-surface-container-lowest px-2 text-body-sm text-ink focus:border-secondary focus:ring-3 focus:ring-secondary/12 focus:outline-none"
 								/>
 								<button
 									type="submit"
-									class="flex size-8 shrink-0 items-center justify-center rounded-lg text-secondary transition hover:bg-secondary/10 disabled:opacity-40"
+									class="flex size-8 shrink-0 items-center justify-center rounded-control text-secondary transition hover:bg-secondary/10 disabled:opacity-40"
 									disabled={savingCurrency}
 									aria-label={`Guardar nombre de ${item.code}`}
 								>
@@ -267,7 +283,7 @@
 								</button>
 								<button
 									type="button"
-									class="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-level-1"
+									class="flex size-8 shrink-0 items-center justify-center rounded-control text-muted transition hover:bg-level-1"
 									onclick={() => (editingCode = null)}
 									aria-label={`Cancelar edición de ${item.code}`}
 								>
@@ -286,7 +302,7 @@
 
 							<button
 								type="button"
-								class="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-secondary/10 hover:text-secondary"
+								class="flex size-8 shrink-0 items-center justify-center rounded-control text-muted transition hover:bg-secondary/10 hover:text-secondary"
 								onclick={() => {
 									editingCode = item.code;
 									editingName = item.name;
@@ -308,7 +324,7 @@
 								<input type="hidden" name="code" value={item.code} />
 								<button
 									type="submit"
-									class="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-tertiary/10 hover:text-tertiary disabled:pointer-events-none disabled:opacity-40"
+									class="flex size-8 shrink-0 items-center justify-center rounded-control text-muted transition hover:bg-tertiary/10 hover:text-tertiary disabled:pointer-events-none disabled:opacity-40"
 									disabled={usedCurrencies.has(item.code)}
 									title={usedCurrencies.has(item.code) ? 'Moneda en uso' : 'Eliminar moneda'}
 									aria-label={`Eliminar ${item.code}`}
@@ -369,7 +385,7 @@
 		</section>
 
 		<section
-			class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4"
+			class="space-y-3 rounded-card border border-hairline/70 bg-surface-container-lowest p-4"
 		>
 			<h2 class="flex items-center gap-2 text-title-sm text-ink">
 				<Icon name="notifications" size={18} class="text-secondary" />
@@ -378,7 +394,7 @@
 
 			{#if form?.intent === 'notifications' && form.message}
 				<div
-					class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+					class="flex items-start gap-2 rounded-control bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
 					role="alert"
 				>
 					<Icon name="error" size={18} class="mt-0.5 shrink-0" />
@@ -435,7 +451,7 @@
 		</section>
 
 		<section
-			class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4"
+			class="space-y-3 rounded-card border border-hairline/70 bg-surface-container-lowest p-4"
 		>
 			<h2 class="flex items-center gap-2 text-title-sm text-ink">
 				<Icon name="lock" size={18} class="text-secondary" />
@@ -444,7 +460,7 @@
 
 			{#if form?.intent === 'password' && form.message}
 				<div
-					class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+					class="flex items-start gap-2 rounded-control bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
 					role="alert"
 				>
 					<Icon name="error" size={18} class="mt-0.5 shrink-0" />

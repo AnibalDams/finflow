@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { normalizeHex } from '#lib/theme/color';
+import { validPaletteIds } from '#lib/theme/derive';
 import { parseAmountInput } from './money';
 
 export type FieldErrors = Record<string, string>;
@@ -259,6 +261,45 @@ export const profileSchema = z.object({
 	currency: currencyCodeSchema,
 	monthlyBudget: money('el presupuesto mensual', { allowZero: true })
 });
+
+/** Color hexadecimal del selector de apariencia (`#rgb` o `#rrggbb`). */
+const hexColor = z
+	.string()
+	.trim()
+	.regex(/^#?(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, 'Usa un color válido (#rrggbb)')
+	.transform((value) => normalizeHex(value) ?? '#000000');
+
+/** Apariencia: paleta del catálogo (o `custom`) y modo de color. */
+export const themeSchema = z
+	.object({
+		palette: z.string().trim().min(2, 'Elige una paleta').max(24),
+		mode: z.enum(['light', 'dark', 'system'], { message: 'Elige un modo de color' }),
+		customPrimary: hexColor.optional(),
+		customSecondary: hexColor.optional(),
+		customTertiary: hexColor.optional(),
+		customNeutral: z.enum(['cool', 'neutral', 'warm']).optional()
+	})
+	.superRefine((data, ctx) => {
+		if (!validPaletteIds().includes(data.palette)) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['palette'],
+				message: 'Elige una paleta del catálogo'
+			});
+		}
+
+		if (data.palette !== 'custom') return;
+
+		const required = [
+			['customPrimary', 'Elige el color de marca'],
+			['customSecondary', 'Elige el color de planes'],
+			['customTertiary', 'Elige el color de gastos']
+		] as const;
+
+		for (const [key, message] of required) {
+			if (!data[key]) ctx.addIssue({ code: 'custom', path: [key], message });
+		}
+	});
 
 export const changePasswordSchema = z
 	.object({

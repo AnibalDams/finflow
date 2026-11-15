@@ -27,6 +27,18 @@
 	});
 </script>
 
+<svelte:head>
+	<!--
+		Tema resuelto en el servidor (`resolveTheme`). Sin JavaScript: el modo
+		`sistema` se decide con `prefers-color-scheme` y la especificidad
+		`:root:root` evita depender del orden de inserción del CSS.
+	-->
+	<svelte:element this={"style"} id="ff-theme">{data.theme.css}</svelte:element>
+	{#each data.theme.meta as entry (entry.media ?? 'default')}
+		<meta name="theme-color" media={entry.media} content={entry.color} />
+	{/each}
+</svelte:head>
+
 <div
 	class="relative mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-background lg:max-w-none"
 >
