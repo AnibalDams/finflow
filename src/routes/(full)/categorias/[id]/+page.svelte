@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import PageHeader from '#lib/components/app/PageHeader.svelte';
+	import ColorPicker from '#lib/components/ui/ColorPicker.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import IconPicker from '#lib/components/ui/IconPicker.svelte';
 	import SegmentedControl from '#lib/components/ui/SegmentedControl.svelte';
@@ -9,7 +10,6 @@
 	import { enhanceForm } from '#lib/utils/enhance';
 	import type { FormState } from '#lib/utils/forms';
 	import { CATEGORY_ICON_GROUPS } from '#lib/utils/icons';
-	import { COLOR_PALETTE } from '#lib/utils/labels';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
@@ -36,7 +36,7 @@
 
 <PageHeader title={category.name} backHref={data.volver} />
 
-<div class="space-y-4 px-4 pt-4 pb-10">
+<div class="space-y-4 px-4 pt-4 pb-10 lg:mx-auto lg:w-full lg:max-w-2xl lg:space-y-5 lg:px-8 lg:pb-12">
 	{#if form?.message}
 		<div
 			class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
@@ -94,30 +94,7 @@
 
 		<section class="space-y-2">
 			<h2 class="text-label-sm font-medium text-on-surface-variant">Color</h2>
-			<div class="grid grid-cols-6 gap-2.5">
-				{#each COLOR_PALETTE as swatch (swatch)}
-					<label
-						class="relative flex aspect-square cursor-pointer items-center justify-center rounded-full transition"
-						style="background-color:{swatch}"
-						title={swatch}
-					>
-						<input
-							type="radio"
-							name="color"
-							value={swatch}
-							checked={color === swatch}
-							class="sr-only"
-							onchange={() => (color = swatch)}
-						/>
-						{#if color === swatch}
-							<Icon name="check" size={20} class="text-white" />
-						{/if}
-					</label>
-				{/each}
-			</div>
-			{#if previous.color}
-				<p class="text-body-sm font-medium text-tertiary">{previous.color}</p>
-			{/if}
+			<ColorPicker name="color" bind:value={color} error={previous.color} />
 		</section>
 
 		<div class="flex items-center gap-3 rounded-2xl bg-level-1/70 p-3">

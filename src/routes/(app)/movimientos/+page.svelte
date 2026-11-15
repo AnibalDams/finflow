@@ -294,7 +294,7 @@
 			<a
 				href={withParams({ limit: String(data.limit + 25) })}
 				data-sveltekit-noscroll
-				class={buttonClass('tonal', 'lg', true, 'lg:max-w-sm')}
+				class={buttonClass('tonal', 'lg', true)}
 			>
 				Ver {Math.min(25, remaining)} más
 				<span class="text-label-sm font-normal text-muted">({remaining} restantes)</span>
