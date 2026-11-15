@@ -524,6 +524,9 @@ export type Database = {
           monthly_budget: number
           push_enabled: boolean
           push_time: string
+          theme_custom: Json | null
+          theme_mode: string
+          theme_palette: string
           tz_offset: number
           updated_at: string
         }
@@ -536,6 +539,9 @@ export type Database = {
           monthly_budget?: number
           push_enabled?: boolean
           push_time?: string
+          theme_custom?: Json | null
+          theme_mode?: string
+          theme_palette?: string
           tz_offset?: number
           updated_at?: string
         }
@@ -548,6 +554,9 @@ export type Database = {
           monthly_budget?: number
           push_enabled?: boolean
           push_time?: string
+          theme_custom?: Json | null
+          theme_mode?: string
+          theme_palette?: string
           tz_offset?: number
           updated_at?: string
         }
