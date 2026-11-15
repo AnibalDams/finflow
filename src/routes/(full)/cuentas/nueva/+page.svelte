@@ -14,7 +14,6 @@
 	import {
 		ACCOUNT_KIND_ICONS,
 		ACCOUNT_KIND_LABELS,
-		CURRENCY_OPTIONS,
 		ICON_CHOICES,
 		currencyIcon
 	} from '#lib/utils/labels';
@@ -43,11 +42,13 @@
 		})
 	);
 
-	const currencyOptions = CURRENCY_OPTIONS.map((option) => ({
-		value: option.code,
-		label: option.label,
-		icon: currencyIcon(option.code)
-	}));
+	const currencyOptions = $derived(
+		data.currencies.map((option) => ({
+			value: option.code,
+			label: `${option.code} · ${option.name}`,
+			icon: currencyIcon(option.code)
+		}))
+	);
 
 	// Sugerimos el ícono de la familia elegida mientras el usuario no lo personalice.
 	let suggestedKind = kind;
@@ -128,6 +129,7 @@
 			options={currencyOptions}
 			bind:value={currency}
 			error={previous.currency}
+			hint="¿Falta una? Agrégala en Ajustes → Monedas"
 		/>
 
 		<AmountField

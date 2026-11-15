@@ -17,6 +17,7 @@ import type {
 	BudgetItem,
 	Category,
 	ClaimedNotification,
+	Currency,
 	Debt,
 	DebtPayment,
 	Goal,
@@ -107,6 +108,10 @@ export function mapAccount(row: View<'account_balances'>): Account {
 		openingBalance: toNumber(row.opening_balance),
 		balance: toNumber(row.balance)
 	};
+}
+
+export function mapCurrency(row: Row<'currencies'>): Currency {
+	return { code: row.code, name: row.name };
 }
 
 export function mapCategory(row: Row<'categories'>): Category {

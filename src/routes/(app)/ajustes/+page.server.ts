@@ -7,6 +7,8 @@ import { requireAuth } from '#lib/server/results';
 import { formValues, readFile, readString } from '#lib/utils/forms';
 import {
 	changePasswordSchema,
+	currencyCatalogSchema,
+	currencyCodeSchema,
 	fieldErrors,
 	notificationPrefsSchema,
 	profileSchema
@@ -14,15 +16,24 @@ import {
 import type { Actions, PageServerLoad } from './$types';
 
 const PROFILE_VALUES = ['fullName', 'currency', 'monthlyBudget'] as const;
+const CURRENCY_VALUES = ['code', 'name'] as const;
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = requireAuth(locals.user);
 	const [accounts, categories, goals, debts] = await Promise.all([
-		getAccounts(locals.supabase),
+		getAccounts(locals.supabase, { includeArchived: true }),
 		getCategories(locals.supabase),
 		getGoals(locals.supabase),
 		getDebts(locals.supabase)
 	]);
+
+	// Una moneda en uso no se puede borrar; se marca también la de cuentas archivadas.
+	const usedCurrencies = Array.from(
+		new Set([
+			...(locals.profile ? [locals.profile.currency] : []),
+			...accounts.map((account) => account.currency)
+		])
+	);
 
 	return {
 		email: user.email ?? '',
@@ -31,7 +42,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			categories: categories.length,
 			goals: goals.filter((goal) => goal.status === 'active').length,
 			debts: debts.filter((debt) => debt.isActive).length
-		}
+		},
+		usedCurrencies
 	};
 };
 
@@ -68,12 +80,114 @@ export const actions: Actions = {
 		if (error) {
 			return fail(400, {
 				intent: 'profile',
-				message: mutationMessage(error.message, 'No pudimos guardar tu perfil.'),
+				message:
+					error.code === '23503'
+						? 'Esa moneda no está en tu catálogo. Agrégala en la sección Monedas.'
+						: mutationMessage(error.message, 'No pudimos guardar tu perfil.'),
 				values
 			});
 		}
 
 		return { ok: true };
+	},
+
+	currencyAdd: async ({ request, locals }) => {
+		const user = requireAuth(locals.user);
+		const form = await request.formData();
+		const values = formValues(form, CURRENCY_VALUES);
+
+		const parsed = currencyCatalogSchema.safeParse({
+			code: readString(form, 'code'),
+			name: readString(form, 'name')
+		});
+
+		if (!parsed.success) {
+			return fail(400, {
+				intent: 'currencies',
+				message: 'Revisa los datos de la moneda.',
+				errors: fieldErrors(parsed.error),
+				values
+			});
+		}
+
+		const { error } = await locals.supabase.from('currencies').insert({
+			user_id: user.id,
+			code: parsed.data.code,
+			name: parsed.data.name
+		});
+
+		if (error) {
+			return fail(400, {
+				intent: 'currencies',
+				message:
+					error.code === '23505'
+						? 'Esa moneda ya está en tu catálogo.'
+						: mutationMessage(error.message, 'No pudimos agregar la moneda.'),
+				values
+			});
+		}
+
+		return { intent: 'currencies', ok: true };
+	},
+
+	currencyRename: async ({ request, locals }) => {
+		requireAuth(locals.user);
+		const form = await request.formData();
+		const values = formValues(form, CURRENCY_VALUES);
+
+		const parsed = currencyCatalogSchema.safeParse({
+			code: readString(form, 'code'),
+			name: readString(form, 'name')
+		});
+
+		if (!parsed.success) {
+			return fail(400, {
+				intent: 'currencies',
+				message: 'Revisa el nombre de la moneda.',
+				errors: fieldErrors(parsed.error),
+				values
+			});
+		}
+
+		const { error } = await locals.supabase
+			.from('currencies')
+			.update({ name: parsed.data.name })
+			.eq('code', parsed.data.code);
+
+		if (error) {
+			return fail(400, {
+				intent: 'currencies',
+				message: mutationMessage(error.message, 'No pudimos renombrar la moneda.'),
+				values
+			});
+		}
+
+		return { intent: 'currencies', ok: true };
+	},
+
+	currencyRemove: async ({ request, locals }) => {
+		requireAuth(locals.user);
+		const form = await request.formData();
+
+		const parsed = currencyCodeSchema.safeParse(readString(form, 'code'));
+
+		if (!parsed.success) {
+			return fail(400, { intent: 'currencies', message: 'Moneda inválida.' });
+		}
+
+		const { error } = await locals.supabase.from('currencies').delete().eq('code', parsed.data);
+
+		if (error) {
+			return fail(400, {
+				intent: 'currencies',
+				message:
+					error.code === '23503'
+						? 'Esa moneda está en uso. Cambia la moneda principal o archiva las cuentas que la usan.'
+						: mutationMessage(error.message, 'No pudimos eliminar la moneda.')
+			});
+		}
+
+		return { intent: 'currencies', ok: true };
 	},
 
 	avatar: async ({ request, locals }) => {

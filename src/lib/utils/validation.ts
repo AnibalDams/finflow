@@ -59,6 +59,19 @@ const isoDateTime = z.string().trim().min(10, 'Selecciona una fecha válida');
 
 const uuid = z.uuid({ message: 'Selecciona una opción válida' });
 
+/** Código ISO de tres letras, tal como se guarda en la base (`USD`). */
+export const currencyCodeSchema = z
+	.string()
+	.trim()
+	.toUpperCase()
+	.regex(/^[A-Z]{3}$/, 'Usa un código de 3 letras');
+
+/** Entrada del catálogo de monedas del usuario. */
+export const currencyCatalogSchema = z.object({
+	code: currencyCodeSchema,
+	name: z.string().trim().min(2, 'Escribe un nombre').max(60, 'El nombre es demasiado largo')
+});
+
 /* ==========================================================================
    Autenticación
    ========================================================================== */
@@ -74,7 +87,7 @@ export const registerSchema = z
 		email,
 		password,
 		passwordConfirm: z.string(),
-		currency: z.string().trim().length(3, 'Selecciona una moneda').toUpperCase()
+		currency: currencyCodeSchema
 	})
 	.refine((data) => data.password === data.passwordConfirm, {
 		message: 'Las contraseñas no coinciden',
@@ -215,7 +228,7 @@ export const paymentSchema = z.object({
 export const accountSchema = z.object({
 	name: z.string().trim().min(2, 'Escribe un nombre').max(60),
 	kind: z.enum(['checking', 'savings', 'pocket', 'cash', 'credit']),
-	currency: z.string().trim().length(3, 'Moneda inválida').toUpperCase(),
+	currency: currencyCodeSchema,
 	openingBalance: money('el saldo inicial', { allowZero: true }),
 	icon: z.string().trim().min(1).max(40).default('account_balance'),
 	isPrimary: z
@@ -243,7 +256,7 @@ export const budgetSchema = z.object({
 
 export const profileSchema = z.object({
 	fullName: z.string().trim().min(2, 'Escribe tu nombre').max(80),
-	currency: z.string().trim().length(3, 'Moneda inválida').toUpperCase(),
+	currency: currencyCodeSchema,
 	monthlyBudget: money('el presupuesto mensual', { allowZero: true })
 });
 

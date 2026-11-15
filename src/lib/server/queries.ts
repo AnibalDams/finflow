@@ -5,6 +5,7 @@ import type {
 	Analytics,
 	BudgetItem,
 	Category,
+	Currency,
 	Debt,
 	DebtPayment,
 	Goal,
@@ -18,6 +19,7 @@ import {
 	mapAnalytics,
 	mapBudget,
 	mapCategory,
+	mapCurrency,
 	mapDebt,
 	mapDebtPayment,
 	mapGoal,
@@ -82,6 +84,24 @@ export async function getCategories(
 export async function getTags(db: Db): Promise<Tag[]> {
 	const data = unwrap(await db.from('tags').select('*').order('name'), 'tags');
 	return data.map(mapTag);
+}
+
+/** Monedas base del catálogo; el resto se ordena alfabéticamente. */
+const BASE_CURRENCIES = ['USD', 'EUR'];
+
+export async function getCurrencies(db: Db): Promise<Currency[]> {
+	const data = unwrap(await db.from('currencies').select('*'), 'currencies');
+
+	return data.map(mapCurrency).sort((a, b) => {
+		const aBase = BASE_CURRENCIES.indexOf(a.code);
+		const bBase = BASE_CURRENCIES.indexOf(b.code);
+		if (aBase !== bBase)
+			return (
+				(aBase === -1 ? BASE_CURRENCIES.length : aBase) -
+				(bBase === -1 ? BASE_CURRENCIES.length : bBase)
+			);
+		return a.code.localeCompare(b.code);
+	});
 }
 
 /** Filas por lectura: suficiente para exportar sin saturar una respuesta. */

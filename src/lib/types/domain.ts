@@ -48,6 +48,12 @@ export interface Account {
 	balance: number;
 }
 
+/** Moneda del catálogo del usuario (las base son USD y EUR). */
+export interface Currency {
+	code: string;
+	name: string;
+}
+
 export interface Category {
 	id: string;
 	name: string;
