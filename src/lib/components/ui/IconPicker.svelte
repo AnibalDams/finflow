@@ -145,7 +145,7 @@
 		<div class="flex items-center gap-2 rounded-xl border border-secondary/40 bg-secondary/5 p-2">
 			<span class="pl-1 text-label-sm font-medium text-muted">Seleccionado</span>
 			<label
-				class="flex aspect-square cursor-pointer items-center justify-center rounded-xl border border-secondary bg-secondary/10 text-secondary"
+				class="flex size-11 cursor-pointer items-center justify-center rounded-xl border border-secondary bg-secondary/10 text-secondary"
 				title={value}
 			>
 				<input type="radio" {name} {value} checked={true} class="sr-only" aria-label={value} />
@@ -155,7 +155,7 @@
 	{/if}
 
 	{#if filteredGroups.length > 0}
-		<div class="max-h-72 space-y-3 overflow-y-auto rounded-xl p-0.5">
+		<div class="max-h-72 space-y-3 overflow-y-auto rounded-xl p-0.5 lg:max-h-80">
 			{#each filteredGroups as group (group.id)}
 				<div class="space-y-1.5">
 					{#if grouped}
@@ -163,11 +163,11 @@
 							{group.label}
 						</p>
 					{/if}
-					<div class="grid grid-cols-6 gap-2" role="radiogroup" aria-label={group.label}>
+					<div class="flex flex-wrap gap-2" role="radiogroup" aria-label={group.label}>
 						{#each group.icons as icon (icon)}
 							<label
 								class={cn(
-									'flex aspect-square cursor-pointer items-center justify-center rounded-xl border transition',
+									'flex size-11 cursor-pointer items-center justify-center rounded-xl border transition',
 									value === icon
 										? 'border-secondary bg-secondary/10 text-secondary'
 										: 'border-hairline bg-surface-container-lowest text-muted hover:border-outline-variant'
