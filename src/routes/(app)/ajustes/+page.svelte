@@ -12,7 +12,7 @@
 	import { buttonClass } from '#lib/components/ui/button-styles';
 	import { enhanceForm } from '#lib/utils/enhance';
 	import type { FormState } from '#lib/utils/forms';
-	import { CURRENCY_OPTIONS, currencyIcon } from '#lib/utils/labels';
+	import { currencyIcon } from '#lib/utils/labels';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
@@ -38,6 +38,14 @@
 	let pushTime = $state(profile.pushTime);
 	let savingNotifications = $state(false);
 
+	let newCurrencyCode = $state('');
+	let newCurrencyName = $state('');
+	let editingCode = $state<string | null>(null);
+	let editingName = $state('');
+	let savingCurrency = $state(false);
+
+	const usedCurrencies = $derived(new Set(data.usedCurrencies));
+
 	const initials = $derived(
 		profile.fullName
 			.trim()
@@ -47,11 +55,13 @@
 			.join('') || 'FF'
 	);
 
-	const currencyOptions = CURRENCY_OPTIONS.map((option) => ({
-		value: option.code,
-		label: option.label,
-		icon: currencyIcon(option.code)
-	}));
+	const currencyOptions = $derived(
+		data.currencies.map((option) => ({
+			value: option.code,
+			label: `${option.code} · ${option.name}`,
+			icon: currencyIcon(option.code)
+		}))
+	);
 
 	const stats = $derived([
 		{ label: 'Cuentas', value: data.counts.accounts, icon: 'account_balance_wallet' },
@@ -190,6 +200,170 @@
 						<Icon name="check" size={18} />
 					{/if}
 					Guardar perfil
+				</button>
+			</form>
+		</section>
+
+		<section
+			class="space-y-3 rounded-2xl border border-hairline/70 bg-surface-container-lowest p-4"
+		>
+			<h2 class="flex items-center gap-2 text-title-sm text-ink">
+				<Icon name="currency_exchange" size={18} class="text-secondary" />
+				Monedas
+			</h2>
+
+			{#if form?.intent === 'currencies' && form.message}
+				<div
+					class="flex items-start gap-2 rounded-xl bg-tertiary/8 px-3 py-2.5 text-body-sm font-medium text-tertiary"
+					role="alert"
+				>
+					<Icon name="error" size={18} class="mt-0.5 shrink-0" />
+					{form.message}
+				</div>
+			{/if}
+
+			<p class="text-body-sm text-muted">
+				Agrega las monedas con las que trabajas. USD y EUR vienen incluidas; una moneda en uso no se
+				puede eliminar.
+			</p>
+
+			<ul class="space-y-2">
+				{#each data.currencies as item (item.code)}
+					<li class="flex items-center gap-2 rounded-xl bg-level-1/60 px-3 py-2">
+						<span
+							class="shrink-0 rounded-lg bg-secondary/10 px-2 py-1 text-label-sm font-semibold text-secondary"
+						>
+							{item.code}
+						</span>
+
+						{#if editingCode === item.code}
+							<form
+								method="POST"
+								action="?/currencyRename"
+								class="flex min-w-0 flex-1 items-center gap-1"
+								use:enhance={enhanceForm({
+									success: 'Moneda actualizada',
+									onSuccess: () => (editingCode = null),
+									onStart: () => (savingCurrency = true),
+									onFinish: () => (savingCurrency = false)
+								})}
+							>
+								<input type="hidden" name="code" value={item.code} />
+								<input
+									name="name"
+									bind:value={editingName}
+									maxlength={60}
+									required
+									aria-label={`Nombre de ${item.code}`}
+									class="h-9 min-w-0 flex-1 rounded-lg border border-hairline bg-surface-container-lowest px-2 text-body-sm text-ink focus:border-secondary focus:ring-3 focus:ring-secondary/12 focus:outline-none"
+								/>
+								<button
+									type="submit"
+									class="flex size-8 shrink-0 items-center justify-center rounded-lg text-secondary transition hover:bg-secondary/10 disabled:opacity-40"
+									disabled={savingCurrency}
+									aria-label={`Guardar nombre de ${item.code}`}
+								>
+									<Icon name="check" size={18} />
+								</button>
+								<button
+									type="button"
+									class="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-level-1"
+									onclick={() => (editingCode = null)}
+									aria-label={`Cancelar edición de ${item.code}`}
+								>
+									<Icon name="close" size={18} />
+								</button>
+							</form>
+						{:else}
+							<span class="min-w-0 flex-1 truncate text-body-sm text-ink">
+								{item.name}
+								{#if item.code === profile.currency}
+									<span class="text-label-sm text-muted"> · Principal</span>
+								{:else if usedCurrencies.has(item.code)}
+									<span class="text-label-sm text-muted"> · En uso</span>
+								{/if}
+							</span>
+
+							<button
+								type="button"
+								class="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-secondary/10 hover:text-secondary"
+								onclick={() => {
+									editingCode = item.code;
+									editingName = item.name;
+								}}
+								aria-label={`Renombrar ${item.code}`}
+							>
+								<Icon name="edit" size={18} />
+							</button>
+
+							<form
+								method="POST"
+								action="?/currencyRemove"
+								use:enhance={enhanceForm({
+									success: 'Moneda eliminada',
+									onStart: () => (savingCurrency = true),
+									onFinish: () => (savingCurrency = false)
+								})}
+							>
+								<input type="hidden" name="code" value={item.code} />
+								<button
+									type="submit"
+									class="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-tertiary/10 hover:text-tertiary disabled:pointer-events-none disabled:opacity-40"
+									disabled={usedCurrencies.has(item.code)}
+									title={usedCurrencies.has(item.code) ? 'Moneda en uso' : 'Eliminar moneda'}
+									aria-label={`Eliminar ${item.code}`}
+								>
+									<Icon name="delete" size={18} />
+								</button>
+							</form>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+
+			<form
+				method="POST"
+				action="?/currencyAdd"
+				class="space-y-3 border-t border-hairline/60 pt-3"
+				use:enhance={enhanceForm({
+					success: 'Moneda agregada',
+					onSuccess: () => {
+						newCurrencyCode = '';
+						newCurrencyName = '';
+					},
+					onStart: () => (savingCurrency = true),
+					onFinish: () => (savingCurrency = false)
+				})}
+			>
+				<TextField
+					label="Código"
+					name="code"
+					placeholder="Ej. GBP"
+					maxlength={3}
+					autocapitalize="characters"
+					bind:value={newCurrencyCode}
+					error={errors.code}
+					hint="Tres letras, como GBP o JPY"
+				/>
+				<TextField
+					label="Nombre"
+					name="name"
+					placeholder="Ej. Libra esterlina"
+					bind:value={newCurrencyName}
+					error={errors.name}
+				/>
+
+				<button
+					type="submit"
+					class={buttonClass('secondary', 'md', true)}
+					disabled={savingCurrency}
+				>
+					{#if savingCurrency}
+						<Icon name="progress_activity" size={18} class="animate-spin" />
+					{:else}
+						<Icon name="add" size={18} />
+					{/if}
+					Agregar moneda
 				</button>
 			</form>
 		</section>

@@ -46,6 +46,13 @@ describe('formato de montos', () => {
 		expect(formatMoney(10, 'EUR')).toBe('€10.00');
 	});
 
+	it('resuelve monedas agregadas al catálogo con Intl', () => {
+		expect(currencySymbol('GBP')).toBe('£');
+		expect(currencySymbol('JPY')).toBe('¥');
+		expect(formatMoney(10, 'GBP')).toBe('£10.00');
+		expect(currencySymbol('ZZZ')).toBe('ZZZ');
+	});
+
 	it('aplica el signo según el tipo de movimiento', () => {
 		expect(formatSignedAmount(3200, 'income')).toBe('+$3,200.00');
 		expect(formatSignedAmount(142.8, 'expense')).toBe('−$142.80');

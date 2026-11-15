@@ -45,12 +45,50 @@ export function round2(amount: number): number {
 	return fromCents(toCents(amount));
 }
 
+/** Caché por código: `Intl` es barato, pero se llama en cada monto renderizado. */
+const SYMBOL_CACHE = new Map<string, string>();
+
 export function currencySymbol(currency = 'USD'): string {
-	return SYMBOLS[currency.toUpperCase()] ?? currency.toUpperCase();
+	const code = currency.toUpperCase();
+	const cached = SYMBOL_CACHE.get(code);
+	if (cached !== undefined) return cached;
+
+	const symbol = resolveSymbol(code);
+	SYMBOL_CACHE.set(code, symbol);
+	return symbol;
+}
+
+/**
+ * Los códigos conocidos usan el símbolo del diseño. El resto se resuelve con
+ * `Intl` (cubre cualquier moneda ISO 4217, incluidas las que el usuario agregue
+ * a su catálogo) y, si el código no es válido, se muestra tal cual.
+ */
+function resolveSymbol(code: string): string {
+	const known = SYMBOLS[code];
+	if (known) return known;
+	if (!/^[A-Z]{3}$/.test(code)) return code;
+
+	try {
+		const part = new Intl.NumberFormat('es', {
+			style: 'currency',
+			currency: code,
+			currencyDisplay: 'narrowSymbol'
+		})
+			.formatToParts(0)
+			.find((item) => item.type === 'currency');
+
+		return part && part.value !== code ? part.value : code;
+	} catch {
+		return code;
+	}
 }
 
 /** `$8,450.20` · `-S/1,200.00` */
-export function formatMoney(amount: number, currency = 'USD', options: { sign?: boolean } = {}): string {
+export function formatMoney(
+	amount: number,
+	currency = 'USD',
+	options: { sign?: boolean } = {}
+): string {
 	const negative = amount < 0;
 	const absolute = NUMBER_FORMAT.format(Math.abs(amount));
 	const prefix = negative ? '−' : options.sign ? '+' : '';
@@ -60,7 +98,11 @@ export function formatMoney(amount: number, currency = 'USD', options: { sign?: 
 export type AmountDirection = 'income' | 'expense' | 'transfer';
 
 /** Monto con signo según el tipo de movimiento: `+$3,200.00` · `-$142.80`. */
-export function formatSignedAmount(amount: number, type: AmountDirection, currency = 'USD'): string {
+export function formatSignedAmount(
+	amount: number,
+	type: AmountDirection,
+	currency = 'USD'
+): string {
 	if (type === 'transfer') return formatMoney(amount, currency);
 	return `${type === 'income' ? '+' : '−'}${currencySymbol(currency)}${NUMBER_FORMAT.format(Math.abs(amount))}`;
 }

@@ -5,6 +5,8 @@ import {
 	categorySchema,
 	changePasswordSchema,
 	contributionSchema,
+	currencyCatalogSchema,
+	currencyCodeSchema,
 	debtSchema,
 	fieldErrors,
 	goalSchema,
@@ -315,5 +317,21 @@ describe('cuentas, categorías y perfil', () => {
 		expect(
 			profileSchema.safeParse({ fullName: 'S', currency: 'MXN', monthlyBudget: '0' }).success
 		).toBe(false);
+	});
+});
+
+describe('catálogo de monedas', () => {
+	it('normaliza el código a mayúsculas y exige tres letras', () => {
+		expect(currencyCodeSchema.parse(' gbp ')).toBe('GBP');
+		expect(currencyCodeSchema.safeParse('GB').success).toBe(false);
+		expect(currencyCodeSchema.safeParse('G8P').success).toBe(false);
+	});
+
+	it('exige un nombre para la moneda', () => {
+		expect(currencyCatalogSchema.parse({ code: 'jpy', name: ' Yen japonés ' })).toEqual({
+			code: 'JPY',
+			name: 'Yen japonés'
+		});
+		expect(currencyCatalogSchema.safeParse({ code: 'JPY', name: ' ' }).success).toBe(false);
 	});
 });

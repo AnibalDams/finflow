@@ -71,7 +71,10 @@ export const actions: Actions = {
 
 		if (error) {
 			return fail(400, {
-				message: mutationMessage(error.message, 'No pudimos crear la cuenta.'),
+				message:
+					error.code === '23503'
+						? 'Esa moneda no está en tu catálogo.'
+						: mutationMessage(error.message, 'No pudimos crear la cuenta.'),
 				values
 			});
 		}

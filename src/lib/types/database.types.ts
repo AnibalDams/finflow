@@ -57,7 +57,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "accounts_currency_fk"
+            columns: ["user_id", "currency"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["user_id", "code"]
+          },
+        ]
       }
       budgets: {
         Row: {
@@ -230,6 +238,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      currencies: {
+        Row: {
+          code: string
+          created_at: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       debts: {
         Row: {
@@ -522,7 +551,15 @@ export type Database = {
           tz_offset?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_currency_fk"
+            columns: ["id", "currency"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["user_id", "code"]
+          },
+        ]
       }
       push_subscriptions: {
         Row: {
@@ -712,6 +749,13 @@ export type Database = {
             referencedRelation: "accounts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "transactions_currency_fk"
+            columns: ["user_id", "currency"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["user_id", "code"]
+          },
         ]
       }
     }
@@ -732,7 +776,15 @@ export type Database = {
           updated_at: string | null
           user_id: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "accounts_currency_fk"
+            columns: ["user_id", "currency"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["user_id", "code"]
+          },
+        ]
       }
       debt_progress: {
         Row: {
@@ -888,6 +940,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "accounts"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_currency_fk"
+            columns: ["user_id", "currency"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["user_id", "code"]
           },
         ]
       }
