@@ -22,6 +22,7 @@ test('cambia paleta, modo y paleta personalizada, y persiste tras recargar', asy
 	await login(page);
 	await page.goto('/apariencia');
 
+	await expect(page).toHaveTitle('Apariencia · FinFlow');
 	await expect(page.getByRole('heading', { name: 'Apariencia' })).toBeVisible();
 	expect(await themeVar(page, '--ff-primary')).toBe(DEFAULT_PRIMARY);
 
