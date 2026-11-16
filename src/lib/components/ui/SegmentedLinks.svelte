@@ -17,13 +17,18 @@
 
 	let { options, value, class: className = '', size = 'md' }: Props = $props();
 
-	const activeIndex = $derived(Math.max(0, options.findIndex((option) => option.value === value)));
+	const activeIndex = $derived(
+		Math.max(
+			0,
+			options.findIndex((option) => option.value === value)
+		)
+	);
 	const columns = $derived(Math.max(1, options.length));
 </script>
 
 <nav class={cn('relative flex rounded-full bg-level-1 p-1', className)}>
 	<span
-		class="absolute top-1 bottom-1 rounded-full bg-surface-container-lowest shadow-[0_1px_4px_rgba(19,27,46,0.10)] transition-transform duration-200 ease-out"
+		class="absolute top-1 bottom-1 rounded-full bg-surface-container-lowest shadow-card transition-transform duration-200 ease-out"
 		style="left:4px;width:calc((100% - 8px)/{columns});transform:translateX(calc({activeIndex} * 100%))"
 		aria-hidden="true"
 	></span>

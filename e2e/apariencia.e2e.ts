@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { login, submitForm } from './helpers';
 
 // Valor de `--ff-primary` de la paleta por defecto (`esmeralda`, claro).
@@ -10,6 +10,21 @@ function themeVar(page: Page, name: string): Promise<string> {
 		(varName) => getComputedStyle(document.documentElement).getPropertyValue(varName).trim(),
 		name
 	);
+}
+
+/**
+ * Comprueba que el `box-shadow` del elemento use el color primario del tema.
+ * Protege contra glows hardcodeados (por ejemplo, un verde fijo de la marca).
+ */
+function shadowFollowsPrimary(locator: Locator): Promise<boolean> {
+	return locator.evaluate((node) => {
+		const primary = getComputedStyle(document.documentElement)
+			.getPropertyValue('--ff-primary')
+			.trim();
+		const digits = primary.replace('#', '');
+		const channels = [0, 2, 4].map((index) => Number.parseInt(digits.slice(index, index + 2), 16));
+		return getComputedStyle(node).boxShadow.includes(channels.join(', '));
+	});
 }
 
 function colorScheme(page: Page): Promise<string> {
@@ -46,6 +61,19 @@ test('cambia paleta, modo y paleta personalizada, y persiste tras recargar', asy
 		await submitForm(page, 'Guardar apariencia');
 		await page.reload();
 		await expect.poll(() => themeVar(page, '--ff-primary')).toBe(nubankPrimary);
+
+		// El glow de los botones sigue la paleta, también en escritorio.
+		await expect
+			.poll(() => shadowFollowsPrimary(page.getByRole('button', { name: 'Guardar apariencia' })))
+			.toBe(true);
+
+		await page.setViewportSize({ width: 1440, height: 900 });
+		await page.goto('/');
+		await expect
+			.poll(() => shadowFollowsPrimary(page.getByRole('link', { name: 'Registrar / Nuevo' })))
+			.toBe(true);
+		await page.setViewportSize({ width: 390, height: 844 });
+		await page.goto('/apariencia');
 
 		// 4. Modo oscuro explícito.
 		await page.getByRole('radio', { name: /Noche/ }).click({ force: true });

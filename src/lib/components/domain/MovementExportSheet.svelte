@@ -117,16 +117,6 @@
 		return payload;
 	}
 
-	const CHART_COLORS = [
-		'#006c49',
-		'#4648d4',
-		'#bc0b3b',
-		'#b45309',
-		'#0e7490',
-		'#7c3aed',
-		'#64748b'
-	];
-
 	/** Gráficos del informe con lo que realmente se exporta. */
 	function buildCharts(items: TransactionItem[], income: number, expense: number): ReportChart[] {
 		if (income === 0 && expense === 0) return [];
@@ -145,8 +135,8 @@
 				subtitle: 'Comparativa del periodo',
 				currency,
 				items: [
-					{ label: 'Ingresos', value: income, color: '#006c49' },
-					{ label: 'Gastos', value: expense, color: '#bc0b3b' }
+					{ label: 'Ingresos', value: income, color: reportPalette.primary },
+					{ label: 'Gastos', value: expense, color: reportPalette.tertiary }
 				],
 				note: balanceNote
 			}
@@ -168,14 +158,14 @@
 			const donutItems = top.map(([name, entry], index) => ({
 				label: name,
 				value: entry.value,
-				color: entry.color ?? CHART_COLORS[index % CHART_COLORS.length]
+				color: entry.color ?? reportPalette.series[index % reportPalette.series.length]
 			}));
 
 			if (rest.length > 0) {
 				donutItems.push({
 					label: rest.length === 1 ? rest[0][0] : 'Otras categorías',
 					value: rest.reduce((sum, [, entry]) => sum + entry.value, 0),
-					color: rest.length === 1 ? (rest[0][1].color ?? '#94a3b8') : '#94a3b8'
+					color: rest.length === 1 ? (rest[0][1].color ?? reportPalette.muted) : reportPalette.muted
 				});
 			}
 
@@ -209,8 +199,8 @@
 				currency,
 				labels: Array.from({ length: days }, (_, index) => String(index + 1)),
 				series: [
-					{ label: 'Ingresos', values: dailyIncome, color: '#006c49' },
-					{ label: 'Gastos', values: dailyExpense, color: '#bc0b3b' }
+					{ label: 'Ingresos', values: dailyIncome, color: reportPalette.primary },
+					{ label: 'Gastos', values: dailyExpense, color: reportPalette.tertiary }
 				]
 			});
 		} else {
@@ -237,12 +227,12 @@
 						{
 							label: 'Ingresos',
 							values: keys.map((key) => byMonth.get(key)?.income ?? 0),
-							color: '#006c49'
+							color: reportPalette.primary
 						},
 						{
 							label: 'Gastos',
 							values: keys.map((key) => byMonth.get(key)?.expense ?? 0),
-							color: '#bc0b3b'
+							color: reportPalette.tertiary
 						}
 					]
 				});

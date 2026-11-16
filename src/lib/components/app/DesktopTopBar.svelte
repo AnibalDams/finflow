@@ -135,7 +135,7 @@
 
 			<a
 				href="/movimientos/nuevo"
-				class="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-label font-semibold text-on-primary shadow-[0_8px_18px_-10px_rgba(0,108,73,0.75)] transition hover:bg-primary/90"
+				class="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-label font-semibold text-on-primary shadow-[0_8px_18px_-10px_var(--ff-glow)] transition hover:bg-primary/90"
 				aria-label="Registrar / Nuevo"
 			>
 				<Icon name="add" size={19} />
