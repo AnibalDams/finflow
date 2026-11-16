@@ -71,10 +71,6 @@
 	]);
 </script>
 
-<svelte:head>
-	<title>Configuración · FinFlow</title>
-</svelte:head>
-
 <div
 	class="space-y-4 px-4 pt-4 pb-10 lg:mx-auto lg:max-w-3xl lg:space-y-6 lg:px-8 lg:pt-8 lg:pb-10"
 >
