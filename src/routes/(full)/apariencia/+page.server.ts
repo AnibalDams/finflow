@@ -15,6 +15,7 @@ import type { Actions, PageServerLoad } from './$types';
 const VALUES = [
 	'palette',
 	'mode',
+	'seasonal',
 	'customPrimary',
 	'customSecondary',
 	'customTertiary',
@@ -26,6 +27,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	return {
 		theme: locals.profile?.theme ?? DEFAULT_THEME,
+		seasonal: locals.profile?.seasonal ?? 'auto',
 		palettes: PALETTES.map((palette) => ({
 			id: palette.id,
 			name: palette.name,
@@ -45,6 +47,7 @@ export const actions: Actions = {
 		const parsed = themeSchema.safeParse({
 			palette: readString(form, 'palette'),
 			mode: readString(form, 'mode'),
+			seasonal: readString(form, 'seasonal') || 'auto',
 			customPrimary: readString(form, 'customPrimary') || undefined,
 			customSecondary: readString(form, 'customSecondary') || undefined,
 			customTertiary: readString(form, 'customTertiary') || undefined,
@@ -78,6 +81,7 @@ export const actions: Actions = {
 			.update({
 				theme_palette: preference.palette,
 				theme_mode: preference.mode,
+				seasonal_theme: parsed.data.seasonal,
 				theme_custom: custom
 					? {
 							primary: custom.primary,

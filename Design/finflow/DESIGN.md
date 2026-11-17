@@ -91,7 +91,32 @@ AA sin cambiar el tono.
 5. Selectores de la app con `OptionSheet`; nunca `<select>` nativo.
 6. Todo flujo remoto necesita `loading`, `error` y `empty`.
 
-## 8. Informes exportados
+## 8. Temporadas
+
+Un **pack** de temporada decora la app entera durante una ventana de fechas y
+se puede apagar o forzar por usuario.
+
+- Motor: `src/lib/theme/seasons.ts`. Un pack declara `id`, `name`, `greeting`,
+  `window` (mes/día, puede cruzar el año) y una paleta sugerida.
+- Preferencia: `profiles.seasonal_theme` → `auto` | `off` | `<id>`.
+  `auto` respeta la ventana; un id fuerza el pack (vista previa/QA).
+- Resolución: el layout raíz usa la fecha **local** (`dateAtOffset`) y expone
+  `data-season` en el contenedor y `data.season` a las páginas.
+- Decoración: `src/lib/components/seasonal/` (nieve, guirnalda, sprites pixel
+  art y escena) + `src/routes/seasons.css` con todo lo animado.
+- La UI de Apariencia permite apagar la decoración o forzarla con «Ver ahora».
+
+### Añadir otra fiesta
+
+1. Crea el pack en `SEASONAL_THEMES` con su ventana.
+2. Añade sus sprites en `seasonal/sprites.ts` (todas las filas del mismo ancho;
+   `sprites.spec.ts` lo verifica).
+3. Añade su bloque `[data-season='<id>']` en `seasons.css` y, si necesita un
+   efecto ambiental propio, su rama en `SeasonalLayer.svelte`.
+4. Opcional: una paleta en `palettes.ts` y su referencia en `palette`.
+5. No hay que tocar la base: el id viaja en `seasonal_theme`.
+
+## 9. Informes exportados
 
 `export-html.ts` recibe un `ReportPalette` (`theme/report.ts`). El informe se
 genera **siempre en claro** —se comparte y se imprime— y hereda del tema activo

@@ -150,6 +150,21 @@ export const PALETTES: PaletteDefinition[] = [
 		}
 	},
 	{
+		id: 'navidad',
+		name: 'Navidad',
+		description: 'Verde pino, oro y rojo: la paleta del plan navideño.',
+		reference: 'starbucks',
+		seeds: {
+			primary: '#0b6b3a',
+			secondary: '#a16207',
+			tertiary: '#c1121f',
+			neutralHue: 62,
+			neutralChroma: 0.009,
+			heroLight: '#123524',
+			heroDark: '#0d2419'
+		}
+	},
+	{
 		id: 'terracota',
 		name: 'Terracota',
 		description: 'Cálido y humano: teal sereno, neutros de papel y hero de madera.',

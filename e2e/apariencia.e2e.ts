@@ -96,3 +96,47 @@ test('cambia paleta, modo y paleta personalizada, y persiste tras recargar', asy
 		await submitForm(page, 'Guardar apariencia').catch(() => undefined);
 	}
 });
+
+test('la decoración de temporada se fuerza y se restaura', async ({ page }) => {
+	await login(page);
+	await page.goto('/apariencia');
+
+	const toggle = page.getByRole('switch');
+	const seasonRoot = page.locator('[data-season]');
+
+	try {
+		// Estado conocido sin decoración, sea cual sea la fecha de ejecución.
+		if (await toggle.isChecked()) {
+			await page.getByText('Decoración de temporada').click();
+			await submitForm(page, 'Guardar apariencia');
+			await page.reload();
+		}
+		await expect(seasonRoot).toHaveCount(0);
+
+		// Forzar Navidad fuera de temporada.
+		await page.getByRole('button', { name: 'Ver ahora' }).click();
+		await submitForm(page, 'Guardar apariencia');
+		await page.reload();
+
+		await expect(page.locator('[data-season="navidad"]')).toHaveCount(1);
+		await expect(page.locator('.season-snow')).toHaveCount(1);
+
+		// La decoración acompaña a la navegación y aparece en el chrome de la app.
+		await page.goto('/');
+		await expect(page.locator('[data-season="navidad"]')).toHaveCount(1);
+		await expect(page.locator('.season-garland').first()).toBeAttached();
+		await expect(page.getByText('Feliz Navidad')).toBeVisible();
+
+		// Restaurar automático.
+		await page.goto('/apariencia');
+		await page.getByRole('button', { name: 'Volver a automático' }).click();
+		await submitForm(page, 'Guardar apariencia');
+		await page.reload();
+		await expect(page.getByRole('switch')).toBeChecked();
+	} finally {
+		await page.goto('/apariencia');
+		const forced = page.getByRole('button', { name: 'Volver a automático' });
+		if (await forced.isVisible().catch(() => false)) await forced.click();
+		await submitForm(page, 'Guardar apariencia').catch(() => undefined);
+	}
+});

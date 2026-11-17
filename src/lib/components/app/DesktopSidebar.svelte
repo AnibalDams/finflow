@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import PixelSprite from '#lib/components/seasonal/PixelSprite.svelte';
+	import SeasonalGarland from '#lib/components/seasonal/SeasonalGarland.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import { cn } from '#lib/utils/cn';
 	import type { Profile } from '#lib/types/domain';
@@ -8,9 +10,10 @@
 		profile: Profile;
 		activeGoals: number;
 		activeDebts: number;
+		season?: string | null;
 	}
 
-	let { profile, activeGoals, activeDebts }: Props = $props();
+	let { profile, activeGoals, activeDebts, season = null }: Props = $props();
 
 	interface NavItem {
 		href: string;
@@ -54,16 +57,31 @@
 		class="flex items-center gap-3 rounded-control px-2 py-1"
 		aria-label="Ir al inicio de FinFlow"
 	>
-		<span
-			class="flex size-10 items-center justify-center rounded-control bg-primary text-on-primary shadow-fab"
-		>
-			<Icon name="account_balance_wallet" size={22} filled />
+		<span class="relative inline-flex shrink-0">
+			<span
+				class="flex size-10 items-center justify-center rounded-control bg-primary text-on-primary shadow-fab"
+			>
+				<Icon name="account_balance_wallet" size={22} filled />
+			</span>
+			{#if season === 'navidad'}
+				<PixelSprite
+					name="hat"
+					size={20}
+					class="pointer-events-none absolute -top-2.5 -right-2 rotate-12"
+				/>
+			{/if}
 		</span>
 		<span class="flex flex-col">
 			<span class="text-title-md leading-none font-bold tracking-tight text-ink">FinFlow</span>
 			<span class="mt-0.5 text-label-sm font-medium text-muted">Finanzas personales</span>
 		</span>
 	</a>
+
+	{#if season === 'navidad'}
+		<div class="relative mt-2 h-3.5">
+			<SeasonalGarland height={14} />
+		</div>
+	{/if}
 
 	<nav class="mt-8 flex-1 space-y-1 overflow-y-auto">
 		{#each items as item (item.href)}
@@ -92,6 +110,14 @@
 			</a>
 		{/each}
 	</nav>
+
+	{#if season === 'navidad'}
+		<div class="mt-3 flex items-end justify-center gap-2 opacity-90" aria-hidden="true">
+			<PixelSprite name="tree" size={44} motion="bob" />
+			<PixelSprite name="gift" size={22} />
+			<PixelSprite name="boot" size={20} />
+		</div>
+	{/if}
 
 	<a
 		href="/ajustes"

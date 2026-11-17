@@ -28,14 +28,20 @@
 
 <NavProgress top="calc(env(safe-area-inset-top) + 64px)" topLg="0px" />
 
-<AppTopBar {section} profile={data.profile} alerts={data.alerts} />
+<AppTopBar {section} profile={data.profile} alerts={data.alerts} season={data.season?.id ?? null} />
 
 <DesktopSidebar
 	profile={data.profile}
 	activeGoals={data.summaries.goals.active}
 	activeDebts={data.summaries.debts.count}
+	season={data.season?.id ?? null}
 />
-<DesktopTopBar accounts={data.accounts} profile={data.profile} alerts={data.alerts} />
+<DesktopTopBar
+	accounts={data.accounts}
+	profile={data.profile}
+	alerts={data.alerts}
+	season={data.season?.id ?? null}
+/>
 
 <main
 	class="flex w-full flex-1 flex-col pt-16 pb-28 transition-opacity duration-150 lg:pt-[72px] lg:pb-0 lg:pl-[248px]"
@@ -49,4 +55,4 @@
 	{/key}
 </main>
 
-<BottomNav />
+<BottomNav season={data.season?.id ?? null} />

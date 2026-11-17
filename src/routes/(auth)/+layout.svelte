@@ -1,8 +1,10 @@
 <script lang="ts">
 	import Icon from '#lib/components/ui/Icon.svelte';
+	import PixelSprite from '#lib/components/seasonal/PixelSprite.svelte';
+	import SeasonalScene from '#lib/components/seasonal/SeasonalScene.svelte';
 	import type { LayoutProps } from './$types';
 
-	let { children }: LayoutProps = $props();
+	let { data, children }: LayoutProps = $props();
 </script>
 
 <div class="flex min-h-dvh flex-col bg-background lg:grid lg:grid-cols-[1.05fr_1fr]">
@@ -54,6 +56,10 @@
 					Control de cuotas y fechas de pago
 				</li>
 			</ul>
+
+			{#if data.season}
+				<SeasonalScene class="mt-10 max-w-sm" />
+			{/if}
 		</div>
 
 		<p class="flex items-center gap-2 text-label-sm text-hero-foreground/50">
@@ -64,10 +70,19 @@
 
 	<div class="flex min-h-dvh flex-col lg:min-h-0 lg:justify-center lg:py-10">
 		<header class="flex flex-col items-center gap-2.5 px-6 pt-12 pt-safe pb-6 text-center lg:pt-0">
-			<span
-				class="flex size-13 items-center justify-center rounded-card bg-primary text-on-primary shadow-fab lg:hidden"
-			>
-				<Icon name="account_balance_wallet" size={26} filled />
+			<span class="relative inline-flex lg:hidden">
+				<span
+					class="flex size-13 items-center justify-center rounded-card bg-primary text-on-primary shadow-fab"
+				>
+					<Icon name="account_balance_wallet" size={26} filled />
+				</span>
+				{#if data.season}
+					<PixelSprite
+						name="hat"
+						size={26}
+						class="pointer-events-none absolute top-0 -right-1.5 rotate-12"
+					/>
+				{/if}
 			</span>
 			<div>
 				<h1 class="text-title-lg tracking-tight text-ink lg:text-title-xl">FinFlow</h1>
@@ -80,5 +95,11 @@
 		>
 			{@render children()}
 		</div>
+
+		{#if data.season}
+			<div class="px-5 pb-8 lg:hidden">
+				<SeasonalScene class="justify-center opacity-95" />
+			</div>
+		{/if}
 	</div>
 </div>

@@ -3,7 +3,9 @@
 	import { invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import PageHeader from '#lib/components/app/PageHeader.svelte';
+	import PixelSprite from '#lib/components/seasonal/PixelSprite.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
+	import Switch from '#lib/components/ui/Switch.svelte';
 	import { buttonClass } from '#lib/components/ui/button-styles';
 	import {
 		fitCustomPalette,
@@ -44,7 +46,8 @@
 		primary: values.customPrimary ?? data.theme.custom?.primary ?? '#006c49',
 		secondary: values.customSecondary ?? data.theme.custom?.secondary ?? '#4648d4',
 		tertiary: values.customTertiary ?? data.theme.custom?.tertiary ?? '#bc0b3b',
-		neutral: values.customNeutral ?? data.theme.custom?.neutral ?? 'neutral'
+		neutral: values.customNeutral ?? data.theme.custom?.neutral ?? 'neutral',
+		seasonal: values.seasonal ?? data.seasonal
 	};
 
 	let palette = $state(initial.palette);
@@ -53,6 +56,26 @@
 	let customSecondary = $state(initial.secondary);
 	let customTertiary = $state(initial.tertiary);
 	let neutral = $state(initial.neutral);
+
+	// La temporada se guarda como `auto`, `off` o el id de un pack (forzado).
+	let seasonalOn = $state(initial.seasonal !== 'off');
+	let seasonalForced = $state(initial.seasonal === 'navidad');
+
+	$effect(() => {
+		if (!seasonalOn) seasonalForced = false;
+	});
+
+	const seasonal = $derived(!seasonalOn ? 'off' : seasonalForced ? 'navidad' : 'auto');
+
+	const seasonStatus = $derived(
+		seasonal === 'off'
+			? 'Desactivada. La app se verá igual todo el año.'
+			: seasonal === 'navidad'
+				? 'Vista previa forzada: se aplicará al guardar.'
+				: data.season
+					? 'Activa ahora. Se apaga sola el 7 de enero.'
+					: 'Se activa sola del 1 de diciembre al 6 de enero.'
+	);
 
 	let saving = $state(false);
 	let saved = $state(false);
@@ -235,6 +258,48 @@
 		<p class="text-body-sm text-muted">
 			«Sistema» sigue el modo claro u oscuro de tu dispositivo, sin recargar.
 		</p>
+	</fieldset>
+
+	<fieldset class="space-y-3 rounded-card border border-hairline bg-surface-container-lowest p-4">
+		<legend class="sr-only">Temporada</legend>
+
+		<Switch label="Decoración de temporada" description={seasonStatus} bind:checked={seasonalOn} />
+		<input type="hidden" name="seasonal" value={seasonal} />
+
+		{#if seasonal === 'navidad' || data.season?.id === 'navidad'}
+			<div class="flex items-end gap-2 rounded-control bg-level-1/60 px-3 py-2">
+				<PixelSprite name="tree" size={34} motion="bob" />
+				<PixelSprite name="santa" size={28} motion="bob" />
+				<PixelSprite name="gift" size={20} />
+				<PixelSprite name="boot" size={18} />
+				<span class="ml-auto text-right text-body-sm text-muted">Navidad<br />1 dic – 6 ene</span>
+			</div>
+		{/if}
+
+		<div class="flex flex-wrap gap-2">
+			{#if seasonal === 'navidad'}
+				<button
+					type="button"
+					class={buttonClass('tonal', 'sm')}
+					onclick={() => (seasonalForced = false)}
+				>
+					<Icon name="restart_alt" size={16} />
+					Volver a automático
+				</button>
+			{:else if !data.season}
+				<button
+					type="button"
+					class={buttonClass('tonal', 'sm')}
+					onclick={() => {
+						seasonalOn = true;
+						seasonalForced = true;
+					}}
+				>
+					<Icon name="celebration" size={16} />
+					Ver ahora
+				</button>
+			{/if}
+		</div>
 	</fieldset>
 
 	<fieldset class="space-y-2">

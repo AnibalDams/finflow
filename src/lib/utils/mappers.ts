@@ -93,6 +93,7 @@ export function mapProfile(row: Row<'profiles'>): Profile {
 		pushEnabled: toBoolean(row.push_enabled),
 		pushTime: toTimeValue(row.push_time, '09:00'),
 		theme: parseThemePreference(row.theme_palette, row.theme_mode, row.theme_custom),
+		seasonal: toStringValue(row.seasonal_theme, 'auto'),
 		tzOffset: toNumber(row.tz_offset)
 	};
 }

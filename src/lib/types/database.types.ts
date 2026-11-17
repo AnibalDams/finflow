@@ -524,6 +524,7 @@ export type Database = {
           monthly_budget: number
           push_enabled: boolean
           push_time: string
+          seasonal_theme: string
           theme_custom: Json | null
           theme_mode: string
           theme_palette: string
@@ -539,6 +540,7 @@ export type Database = {
           monthly_budget?: number
           push_enabled?: boolean
           push_time?: string
+          seasonal_theme?: string
           theme_custom?: Json | null
           theme_mode?: string
           theme_palette?: string
@@ -554,6 +556,7 @@ export type Database = {
           monthly_budget?: number
           push_enabled?: boolean
           push_time?: string
+          seasonal_theme?: string
           theme_custom?: Json | null
           theme_mode?: string
           theme_palette?: string
