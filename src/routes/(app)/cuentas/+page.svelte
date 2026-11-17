@@ -195,7 +195,7 @@
 		{/if}
 	</div>
 
-	<SegmentedControl options={tabs} bind:value={tab} size="sm" class="lg:max-w-md" />
+	<SegmentedControl options={tabs} bind:value={tab} size="sm" />
 
 	{#if form?.message}
 		<div

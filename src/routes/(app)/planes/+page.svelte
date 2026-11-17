@@ -183,7 +183,6 @@
 			},
 			{ value: 'paused', label: `En pausa (${data.counts.paused})`, href: '/planes?estado=pausa' }
 		]}
-		class="lg:max-w-xl"
 	/>
 
 	<div class="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 xl:grid-cols-3">
