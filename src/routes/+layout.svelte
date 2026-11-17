@@ -4,6 +4,7 @@
 	import { afterNavigate, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import UpdateBanner from '#lib/components/app/UpdateBanner.svelte';
+	import SeasonalLayer from '#lib/components/seasonal/SeasonalLayer.svelte';
 	import Toaster from '#lib/components/ui/Toaster.svelte';
 	import { swUpdate } from '#lib/stores/sw-update.svelte';
 	import { pageTitle } from '#lib/utils/titles';
@@ -46,9 +47,12 @@
 
 <div
 	class="relative mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-background lg:max-w-none"
+	data-season={data.season?.id}
 >
 	{@render children()}
 </div>
+
+<SeasonalLayer season={data.season?.id ?? null} />
 
 <UpdateBanner />
 <Toaster />

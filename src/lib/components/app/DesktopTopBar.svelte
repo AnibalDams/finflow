@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import SeasonalGarland from '#lib/components/seasonal/SeasonalGarland.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import OptionSheet from '#lib/components/ui/OptionSheet.svelte';
 	import type { Account, DashboardAlert, Profile } from '#lib/types/domain';
@@ -10,9 +11,10 @@
 		accounts: Account[];
 		profile: Profile;
 		alerts: DashboardAlert[];
+		season?: string | null;
 	}
 
-	let { accounts, profile, alerts }: Props = $props();
+	let { accounts, profile, alerts, season = null }: Props = $props();
 
 	let notificationsOpen = $state(false);
 	let accountSheetOpen = $state(false);
@@ -163,6 +165,12 @@
 			</a>
 		</div>
 	</div>
+
+	{#if season === 'navidad'}
+		<div class="relative h-3">
+			<SeasonalGarland height={12} />
+		</div>
+	{/if}
 </header>
 
 <OptionSheet

@@ -7,6 +7,7 @@
 	import TransactionsTable from '#lib/components/domain/TransactionsTable.svelte';
 	import TransactionRow from '#lib/components/domain/TransactionRow.svelte';
 	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import PixelSprite from '#lib/components/seasonal/PixelSprite.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import OptionSheet from '#lib/components/ui/OptionSheet.svelte';
 	import SegmentedLinks from '#lib/components/ui/SegmentedLinks.svelte';
@@ -201,6 +202,12 @@
 						? 'Tu salud financiera va en verde'
 						: 'Tus gastos crecieron este mes'}
 			</p>
+			{#if data.season}
+				<div class="mt-2.5 flex items-center gap-1.5">
+					<PixelSprite name="tree" size={22} motion="bob" />
+					<span class="text-label-sm font-semibold text-primary">{data.season.greeting}</span>
+				</div>
+			{/if}
 			<div class="mt-3 hidden flex-wrap items-center gap-2 lg:flex">
 				<span
 					class="rounded-full bg-primary-fixed/50 px-3 py-1 text-label-sm font-semibold tracking-wide text-on-primary-fixed-variant uppercase"
@@ -254,7 +261,7 @@
 	/>
 
 	<!-- Resumen móvil -->
-	<section class="overflow-hidden rounded-panel hero-surface p-5 shadow-hero lg:hidden">
+	<section class="season-hero overflow-hidden rounded-panel hero-surface p-5 shadow-hero lg:hidden">
 		<div class="flex items-start justify-between gap-3">
 			<p class="text-label-sm font-medium tracking-[0.14em] text-hero-foreground/60 uppercase">
 				Balance disponible

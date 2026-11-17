@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import PixelSprite from '#lib/components/seasonal/PixelSprite.svelte';
+	import SeasonalGarland from '#lib/components/seasonal/SeasonalGarland.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 	import type { DashboardAlert, Profile } from '#lib/types/domain';
 	import NotificationsSheet from './NotificationsSheet.svelte';
@@ -8,9 +10,10 @@
 		section: string;
 		profile: Profile;
 		alerts: DashboardAlert[];
+		season?: string | null;
 	}
 
-	let { section, profile, alerts }: Props = $props();
+	let { section, profile, alerts, season = null }: Props = $props();
 
 	let notificationsOpen = $state(false);
 
@@ -33,10 +36,19 @@
 			class="flex items-center gap-2.5 rounded-control"
 			aria-label="Ir al inicio de FinFlow"
 		>
-			<span
-				class="flex size-8 items-center justify-center rounded-control bg-primary text-on-primary"
-			>
-				<Icon name="account_balance_wallet" size={18} filled />
+			<span class="relative inline-flex shrink-0">
+				<span
+					class="flex size-8 items-center justify-center rounded-control bg-primary text-on-primary"
+				>
+					<Icon name="account_balance_wallet" size={18} filled />
+				</span>
+				{#if season === 'navidad'}
+					<PixelSprite
+						name="hat"
+						size={16}
+						class="pointer-events-none absolute -top-2 -right-1.5 rotate-12"
+					/>
+				{/if}
 			</span>
 			<span class="flex flex-col">
 				<span class="text-title-sm leading-none tracking-tight text-ink">FinFlow</span>
@@ -82,6 +94,12 @@
 			</a>
 		</div>
 	</div>
+
+	{#if season === 'navidad'}
+		<div class="relative h-3">
+			<SeasonalGarland height={12} />
+		</div>
+	{/if}
 </header>
 
 <NotificationsSheet bind:open={notificationsOpen} {alerts} />

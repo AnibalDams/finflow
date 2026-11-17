@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import PixelSprite from '#lib/components/seasonal/PixelSprite.svelte';
 	import Icon from '#lib/components/ui/Icon.svelte';
 
 	interface Tab {
@@ -7,6 +8,12 @@
 		icon: string;
 		label: string;
 	}
+
+	interface Props {
+		season?: string | null;
+	}
+
+	let { season = null }: Props = $props();
 
 	const LEFT: Tab[] = [
 		{ href: '/', icon: 'grid_view', label: 'Inicio' },
@@ -67,6 +74,13 @@
 			>
 				<Icon name="add" size={26} />
 			</a>
+			{#if season === 'navidad'}
+				<PixelSprite
+					name="hat"
+					size={24}
+					class="pointer-events-none absolute -top-2.5 right-0.5 rotate-12"
+				/>
+			{/if}
 		</div>
 
 		{#each RIGHT as item (item.href)}

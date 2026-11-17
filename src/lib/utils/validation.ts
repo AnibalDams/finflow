@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { normalizeHex } from '#lib/theme/color';
 import { validPaletteIds } from '#lib/theme/derive';
+import { isSeasonPreference } from '#lib/theme/seasons';
 import { parseAmountInput } from './money';
 
 export type FieldErrors = Record<string, string>;
@@ -274,6 +275,7 @@ export const themeSchema = z
 	.object({
 		palette: z.string().trim().min(2, 'Elige una paleta').max(24),
 		mode: z.enum(['light', 'dark', 'system'], { message: 'Elige un modo de color' }),
+		seasonal: z.string().trim().min(2, 'Elige una temporada').max(24),
 		customPrimary: hexColor.optional(),
 		customSecondary: hexColor.optional(),
 		customTertiary: hexColor.optional(),
@@ -285,6 +287,14 @@ export const themeSchema = z
 				code: 'custom',
 				path: ['palette'],
 				message: 'Elige una paleta del catálogo'
+			});
+		}
+
+		if (!isSeasonPreference(data.seasonal)) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['seasonal'],
+				message: 'Temporada no válida'
 			});
 		}
 
