@@ -483,7 +483,6 @@
 						{ value: 'income', label: 'Ingresos', href: withParams({ tipo: 'income' }) },
 						{ value: 'expense', label: 'Gastos', href: withParams({ tipo: 'expense' }) }
 					]}
-					class="lg:max-w-xs"
 				/>
 
 				<div class="rounded-card border border-hairline/70 bg-surface-container-lowest shadow-card">

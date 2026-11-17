@@ -332,7 +332,6 @@
 			{ value: 'quarter', label: 'Trimestre', href: withParams({ periodo: 'quarter' }) },
 			{ value: 'year', label: 'Año', href: withParams({ periodo: 'year' }) }
 		]}
-		class="lg:max-w-xl"
 	/>
 
 	<section
