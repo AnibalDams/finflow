@@ -1,4 +1,4 @@
-import type { ThemePreference } from '#lib/theme/derive';
+import type { ThemePreference, ThemeSchedule } from '#lib/theme/derive';
 import type { Database } from './database.types';
 
 export type Enums = Database['public']['Enums'];
@@ -34,6 +34,8 @@ export interface Profile {
 	pushTime: string;
 	/** Preferencia de apariencia: paleta del catálogo y modo de color. */
 	theme: ThemePreference;
+	/** Franja horaria del modo `schedule`, en minutos desde medianoche. */
+	schedule: ThemeSchedule;
 	/** Preferencia de temporada visual: `auto`, `off` o el id de un pack. */
 	seasonal: string;
 	/** Minutos por detrás de UTC de su zona (Caracas = 240). */

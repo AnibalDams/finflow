@@ -2,8 +2,14 @@ import { describe, expect, test } from 'vitest';
 import { contrastRatio, hexToOklch } from './color';
 import {
 	buildTokens,
+	DEFAULT_SCHEDULE,
 	DEFAULT_THEME,
+	formatTimeOfDay,
+	modeForMinutes,
+	nextScheduleChangeDelay,
 	parseThemePreference,
+	parseThemeSchedule,
+	parseTimeOfDay,
 	resolveTheme,
 	themeContrast,
 	themeCss,
@@ -110,6 +116,79 @@ describe('parseThemePreference', () => {
 
 	test('incluye custom en los ids válidos', () => {
 		expect(validPaletteIds()).toContain('custom');
+	});
+
+	test('acepta el modo por franja horaria', () => {
+		expect(parseThemePreference('esmeralda', 'schedule', null).mode).toBe('schedule');
+	});
+});
+
+describe('franja horaria', () => {
+	test('respeta los bordes 07:00 y 18:00', () => {
+		expect(modeForMinutes(DEFAULT_SCHEDULE, 6 * 60 + 59)).toBe('dark');
+		expect(modeForMinutes(DEFAULT_SCHEDULE, 7 * 60)).toBe('light');
+		expect(modeForMinutes(DEFAULT_SCHEDULE, 17 * 60 + 59)).toBe('light');
+		expect(modeForMinutes(DEFAULT_SCHEDULE, 18 * 60)).toBe('dark');
+	});
+
+	test('acepta una franja que cruza la medianoche', () => {
+		const schedule = { lightStart: 20 * 60, darkStart: 6 * 60 };
+		expect(modeForMinutes(schedule, 21 * 60)).toBe('light');
+		expect(modeForMinutes(schedule, 3 * 60)).toBe('light');
+		expect(modeForMinutes(schedule, 12 * 60)).toBe('dark');
+	});
+
+	test('calcula el próximo cambio de franja', () => {
+		const at = (hours: number, minutes = 0): Date => new Date(2026, 10, 22, hours, minutes);
+
+		expect(nextScheduleChangeDelay(DEFAULT_SCHEDULE, at(10))).toBe(8 * 3_600_000);
+		expect(nextScheduleChangeDelay(DEFAULT_SCHEDULE, at(19))).toBe(12 * 3_600_000);
+		expect(nextScheduleChangeDelay({ lightStart: 20 * 60, darkStart: 6 * 60 }, at(12))).toBe(
+			8 * 3_600_000
+		);
+	});
+
+	test('parsea y formatea horas locales', () => {
+		expect(parseTimeOfDay('07:30')).toBe(450);
+		expect(parseTimeOfDay('7:05')).toBe(425);
+		expect(parseTimeOfDay('24:00')).toBeNull();
+		expect(formatTimeOfDay(1080)).toBe('18:00');
+	});
+
+	test('la franja guardada cae en la de por defecto si es inválida', () => {
+		expect(parseThemeSchedule({ lightStart: 480, darkStart: 1200 })).toEqual({
+			lightStart: 480,
+			darkStart: 1200
+		});
+		expect(parseThemeSchedule(null)).toEqual(DEFAULT_SCHEDULE);
+		expect(parseThemeSchedule({ lightStart: 480, darkStart: 480 })).toEqual(DEFAULT_SCHEDULE);
+	});
+
+	test('el CSS pinta un único modo, sin media query', () => {
+		const css = themeCss({ palette: 'esmeralda', mode: 'schedule', custom: null }, 'dark');
+		expect(css.startsWith(':root:root{')).toBe(true);
+		expect(css).toContain('color-scheme:dark');
+		expect(css).not.toContain('@media');
+		for (const name of TOKEN_NAMES) {
+			expect(css).toContain(`${TOKEN_VARS[name]}:`);
+		}
+	});
+
+	test('resolveTheme resuelve el modo según la hora local', () => {
+		const preference: ThemePreference = {
+			palette: 'esmeralda',
+			mode: 'schedule',
+			custom: null
+		};
+
+		const day = resolveTheme(preference, { schedule: DEFAULT_SCHEDULE, minutes: 8 * 60 });
+		expect(day.mode).toBe('light');
+		expect(day.active).toEqual(day.light);
+		expect(day.meta).toHaveLength(1);
+
+		const night = resolveTheme(preference, { schedule: DEFAULT_SCHEDULE, minutes: 20 * 60 });
+		expect(night.mode).toBe('dark');
+		expect(night.active).toEqual(night.dark);
 	});
 });
 

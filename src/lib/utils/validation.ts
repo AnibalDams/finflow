@@ -270,12 +270,22 @@ const hexColor = z
 	.regex(/^#?(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, 'Usa un color válido (#rrggbb)')
 	.transform((value) => normalizeHex(value) ?? '#000000');
 
+/** Hora local `HH:MM` de la franja del modo `schedule`. */
+const timeOfDay = z
+	.string()
+	.trim()
+	.regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Usa una hora válida (HH:MM)');
+
 /** Apariencia: paleta del catálogo (o `custom`) y modo de color. */
 export const themeSchema = z
 	.object({
 		palette: z.string().trim().min(2, 'Elige una paleta').max(24),
-		mode: z.enum(['light', 'dark', 'system'], { message: 'Elige un modo de color' }),
+		mode: z.enum(['light', 'dark', 'schedule', 'system'], {
+			message: 'Elige un modo de color'
+		}),
 		seasonal: z.string().trim().min(2, 'Elige una temporada').max(24),
+		scheduleLightStart: timeOfDay.optional(),
+		scheduleDarkStart: timeOfDay.optional(),
 		customPrimary: hexColor.optional(),
 		customSecondary: hexColor.optional(),
 		customTertiary: hexColor.optional(),
@@ -296,6 +306,29 @@ export const themeSchema = z
 				path: ['seasonal'],
 				message: 'Temporada no válida'
 			});
+		}
+
+		if (data.mode === 'schedule') {
+			const required = [
+				['scheduleLightStart', 'Elige cuándo empieza el tema claro'],
+				['scheduleDarkStart', 'Elige cuándo empieza el tema oscuro']
+			] as const;
+
+			for (const [key, message] of required) {
+				if (!data[key]) ctx.addIssue({ code: 'custom', path: [key], message });
+			}
+
+			if (
+				data.scheduleLightStart &&
+				data.scheduleDarkStart &&
+				data.scheduleLightStart === data.scheduleDarkStart
+			) {
+				ctx.addIssue({
+					code: 'custom',
+					path: ['scheduleDarkStart'],
+					message: 'Las horas deben ser distintas'
+				});
+			}
 		}
 
 		if (data.palette !== 'custom') return;

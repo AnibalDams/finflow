@@ -7,6 +7,7 @@
 	import SeasonalLayer from '#lib/components/seasonal/SeasonalLayer.svelte';
 	import Toaster from '#lib/components/ui/Toaster.svelte';
 	import { swUpdate } from '#lib/stores/sw-update.svelte';
+	import { startScheduledTheme } from '#lib/theme/theme.svelte';
 	import { pageTitle } from '#lib/utils/titles';
 	import { currentTimezoneOffset, setTimezoneCookie } from '#lib/utils/timezone';
 	import type { LayoutProps } from './$types';
@@ -29,6 +30,15 @@
 		if (data.tzOffset !== offset) {
 			void invalidateAll();
 		}
+	});
+
+	// El modo «Horario» se mantiene al día en el navegador: el servidor pintó el
+	// primer render y este temporizador cambia el tema al cruzar la franja.
+	$effect(() => {
+		const preference = data.theme.preference;
+		if (preference.mode !== 'schedule') return;
+
+		return startScheduledTheme(preference, data.theme.schedule);
 	});
 </script>
 

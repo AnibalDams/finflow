@@ -528,6 +528,7 @@ export type Database = {
           theme_custom: Json | null
           theme_mode: string
           theme_palette: string
+          theme_schedule: Json
           tz_offset: number
           updated_at: string
         }
@@ -544,6 +545,7 @@ export type Database = {
           theme_custom?: Json | null
           theme_mode?: string
           theme_palette?: string
+          theme_schedule?: Json
           tz_offset?: number
           updated_at?: string
         }
@@ -560,6 +562,7 @@ export type Database = {
           theme_custom?: Json | null
           theme_mode?: string
           theme_palette?: string
+          theme_schedule?: Json
           tz_offset?: number
           updated_at?: string
         }

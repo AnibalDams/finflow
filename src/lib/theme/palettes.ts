@@ -11,7 +11,7 @@
  * contenedores y estados.
  */
 
-export type ThemeMode = 'light' | 'dark' | 'system';
+export type ThemeMode = 'light' | 'dark' | 'schedule' | 'system';
 export type NeutralTemperature = 'cool' | 'neutral' | 'warm';
 
 export interface PaletteSeeds {
