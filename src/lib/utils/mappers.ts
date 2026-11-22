@@ -6,7 +6,7 @@
  * única vez para que el resto de la aplicación trabaje con tipos estrictos.
  */
 
-import { parseThemePreference } from '#lib/theme/derive';
+import { parseThemePreference, parseThemeSchedule } from '#lib/theme/derive';
 import type { Json } from '#lib/types/database.types';
 import type {
 	Account,
@@ -93,6 +93,7 @@ export function mapProfile(row: Row<'profiles'>): Profile {
 		pushEnabled: toBoolean(row.push_enabled),
 		pushTime: toTimeValue(row.push_time, '09:00'),
 		theme: parseThemePreference(row.theme_palette, row.theme_mode, row.theme_custom),
+		schedule: parseThemeSchedule(row.theme_schedule),
 		seasonal: toStringValue(row.seasonal_theme, 'auto'),
 		tzOffset: toNumber(row.tz_offset)
 	};

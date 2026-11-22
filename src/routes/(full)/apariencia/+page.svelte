@@ -8,10 +8,15 @@
 	import Switch from '#lib/components/ui/Switch.svelte';
 	import { buttonClass } from '#lib/components/ui/button-styles';
 	import {
+		DEFAULT_SCHEDULE,
 		fitCustomPalette,
+		formatTimeOfDay,
+		modeForMinutes,
+		parseTimeOfDay,
 		themeContrast,
 		type CustomPalette,
-		type ThemePreference
+		type ThemePreference,
+		type ThemeSchedule
 	} from '#lib/theme/derive';
 	import type { ThemeMode } from '#lib/theme/palettes';
 	import { clearThemePreview, previewTheme } from '#lib/theme/theme.svelte';
@@ -29,6 +34,7 @@
 	const MODES = [
 		{ value: 'light', label: 'Claro', icon: 'light_mode' },
 		{ value: 'dark', label: 'Noche', icon: 'dark_mode' },
+		{ value: 'schedule', label: 'Horario', icon: 'schedule' },
 		{ value: 'system', label: 'Sistema', icon: 'brightness_auto' }
 	] as const;
 
@@ -47,6 +53,8 @@
 		secondary: values.customSecondary ?? data.theme.custom?.secondary ?? '#4648d4',
 		tertiary: values.customTertiary ?? data.theme.custom?.tertiary ?? '#bc0b3b',
 		neutral: values.customNeutral ?? data.theme.custom?.neutral ?? 'neutral',
+		scheduleLight: values.scheduleLightStart ?? formatTimeOfDay(data.schedule.lightStart),
+		scheduleDark: values.scheduleDarkStart ?? formatTimeOfDay(data.schedule.darkStart),
 		seasonal: values.seasonal ?? data.seasonal
 	};
 
@@ -56,6 +64,8 @@
 	let customSecondary = $state(initial.secondary);
 	let customTertiary = $state(initial.tertiary);
 	let neutral = $state(initial.neutral);
+	let scheduleLight = $state(initial.scheduleLight);
+	let scheduleDark = $state(initial.scheduleDark);
 
 	// La temporada se guarda como `auto`, `off` o el id de un pack (forzado).
 	let seasonalOn = $state(initial.seasonal !== 'off');
@@ -80,6 +90,9 @@
 	let saving = $state(false);
 	let saved = $state(false);
 	let systemDark = $state(false);
+	// Reloj local redondeado al minuto: mantiene la vista previa al día cuando el
+	// modo es «Horario» y se cruza una franja con la pantalla abierta.
+	let clock = $state(new Date());
 
 	onMount(() => {
 		const query = window.matchMedia('(prefers-color-scheme: dark)');
@@ -89,11 +102,30 @@
 			systemDark = event.matches;
 		};
 		query.addEventListener('change', listen);
-		return () => query.removeEventListener('change', listen);
+
+		const ticker = setInterval(() => (clock = new Date()), 30_000);
+
+		return () => {
+			query.removeEventListener('change', listen);
+			clearInterval(ticker);
+		};
+	});
+
+	const schedulePreference = $derived<ThemeSchedule>({
+		lightStart: parseTimeOfDay(scheduleLight) ?? DEFAULT_SCHEDULE.lightStart,
+		darkStart: parseTimeOfDay(scheduleDark) ?? DEFAULT_SCHEDULE.darkStart
 	});
 
 	const resolvedMode = $derived<'light' | 'dark'>(
-		mode === 'dark' ? 'dark' : mode === 'light' ? 'light' : systemDark ? 'dark' : 'light'
+		mode === 'schedule'
+			? modeForMinutes(schedulePreference, clock.getHours() * 60 + clock.getMinutes())
+			: mode === 'dark'
+				? 'dark'
+				: mode === 'light'
+					? 'light'
+					: systemDark
+						? 'dark'
+						: 'light'
 	);
 
 	const custom = $derived<CustomPalette>({
@@ -117,7 +149,7 @@
 
 	// La vista previa se aplica al documento y se retira al salir de la pantalla.
 	$effect(() => {
-		previewTheme(preference);
+		previewTheme(preference, schedulePreference);
 		return clearThemePreview;
 	});
 
@@ -241,7 +273,7 @@
 		<legend class="text-label-sm font-semibold tracking-[0.14em] text-muted uppercase">
 			Modo de color
 		</legend>
-		<div class="grid grid-cols-3 gap-1 rounded-full bg-level-1 p-1">
+		<div class="grid grid-cols-4 gap-1 rounded-full bg-level-1 p-1">
 			{#each MODES as option (option.value)}
 				<label
 					class="flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-full text-label-sm font-semibold transition-colors {mode ===
@@ -255,9 +287,44 @@
 				</label>
 			{/each}
 		</div>
-		<p class="text-body-sm text-muted">
-			«Sistema» sigue el modo claro u oscuro de tu dispositivo, sin recargar.
-		</p>
+
+		{#if mode === 'schedule'}
+			<div class="grid grid-cols-2 gap-2">
+				<label class="rounded-control border border-hairline bg-surface-container-lowest px-3 py-2">
+					<span class="block text-label-sm font-medium text-muted">Claro desde</span>
+					<input
+						type="time"
+						name="scheduleLightStart"
+						bind:value={scheduleLight}
+						class="mt-1 w-full bg-transparent tnum text-body font-medium text-ink focus-visible:outline-none"
+					/>
+				</label>
+				<label class="rounded-control border border-hairline bg-surface-container-lowest px-3 py-2">
+					<span class="block text-label-sm font-medium text-muted">Oscuro desde</span>
+					<input
+						type="time"
+						name="scheduleDarkStart"
+						bind:value={scheduleDark}
+						class="mt-1 w-full bg-transparent tnum text-body font-medium text-ink focus-visible:outline-none"
+					/>
+				</label>
+			</div>
+			{#if errors.scheduleLightStart || errors.scheduleDarkStart}
+				<p class="text-body-sm font-medium text-tertiary">
+					{errors.scheduleLightStart ?? errors.scheduleDarkStart}
+				</p>
+			{/if}
+			<p class="text-body-sm text-muted">
+				Claro de {scheduleLight} a {scheduleDark} y oscuro el resto del día, según la hora de tu dispositivo.
+				Cambia solo, sin recargar.
+			</p>
+		{:else}
+			<input type="hidden" name="scheduleLightStart" value={scheduleLight} />
+			<input type="hidden" name="scheduleDarkStart" value={scheduleDark} />
+			<p class="text-body-sm text-muted">
+				«Sistema» sigue el modo claro u oscuro de tu dispositivo, sin recargar.
+			</p>
+		{/if}
 	</fieldset>
 
 	<fieldset class="space-y-3 rounded-card border border-hairline bg-surface-container-lowest p-4">

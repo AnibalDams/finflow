@@ -304,7 +304,9 @@ Si faltan `E2E_EMAIL`/`E2E_PASSWORD`, los casos con sesión se omiten.
   `NotificationsSheet` reutiliza el mismo componente con su animación de salida.
 - El tema se resuelve en el servidor y se aplica sin parpadeo: las paletas viven en
   `src/lib/theme/palettes.ts`, los tokens se derivan con contraste AA y la preferencia
-  (`theme_palette`, `theme_mode`, `theme_custom`, `seasonal_theme`) se guarda en `profiles`.
+  (`theme_palette`, `theme_mode`, `theme_custom`, `theme_schedule`, `seasonal_theme`) se guarda en
+  `profiles`. El modo `schedule` alterna claro/oscuro según la franja configurada (por defecto
+  07:00–18:00) y un temporizador del layout lo cambia sin recargar.
 
 ## Seguridad en producción
 

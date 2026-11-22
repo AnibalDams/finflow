@@ -31,6 +31,19 @@ import {
 
 export type ResolvedMode = 'light' | 'dark';
 
+/**
+ * Franja horaria del modo `schedule`, en minutos desde medianoche local.
+ * El tema claro va de `lightStart` (incluido) a `darkStart` (excluido); si
+ * `lightStart > darkStart` la ventana cruza la medianoche.
+ */
+export interface ThemeSchedule {
+	lightStart: number;
+	darkStart: number;
+}
+
+/** 07:00 → 18:00 (claro de día, oscuro de noche). */
+export const DEFAULT_SCHEDULE: ThemeSchedule = { lightStart: 7 * 60, darkStart: 18 * 60 };
+
 export interface CustomPalette {
 	primary: string;
 	secondary: string;
@@ -51,7 +64,7 @@ export const DEFAULT_THEME: ThemePreference = {
 	custom: null
 };
 
-export const THEME_MODES: ThemeMode[] = ['light', 'dark', 'system'];
+export const THEME_MODES: ThemeMode[] = ['light', 'dark', 'schedule', 'system'];
 
 /** Mapa explícito: cada token del sistema, con su variable CSS. */
 export const TOKEN_VARS = {
@@ -152,6 +165,8 @@ export interface ResolvedTheme {
 	meta: Array<{ color: string; media?: string }>;
 	/** Tokens del modo activo (o claro si es `system`, para la vista previa). */
 	active: ThemeTokens;
+	/** Modo concreto; `null` en `system`, donde decide el dispositivo. */
+	mode: ResolvedMode | null;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -159,7 +174,7 @@ export interface ResolvedTheme {
 /* -------------------------------------------------------------------------- */
 
 function isThemeMode(value: unknown): value is ThemeMode {
-	return value === 'light' || value === 'dark' || value === 'system';
+	return value === 'light' || value === 'dark' || value === 'schedule' || value === 'system';
 }
 
 function isNeutralTemperature(value: unknown): value is NeutralTemperature {
@@ -196,6 +211,84 @@ export function parseCustomPalette(value: unknown): CustomPalette | null {
 	if (!primary || !secondary || !tertiary) return null;
 
 	return { primary, secondary, tertiary, neutral };
+}
+
+/* -------------------------------------------------------------------------- */
+/* Franja horaria                                                              */
+/* -------------------------------------------------------------------------- */
+
+/** `HH:MM` → minutos desde medianoche. `null` si la hora no es válida. */
+export function parseTimeOfDay(value: string): number | null {
+	const match = /^(\d{1,2}):([0-5]\d)$/.exec(value.trim());
+	if (!match) return null;
+
+	const hours = Number(match[1]);
+	const minutes = Number(match[2]);
+	if (hours > 23) return null;
+
+	return hours * 60 + minutes;
+}
+
+/** Minutos desde medianoche → `HH:MM` (para `input[type=time]`). */
+export function formatTimeOfDay(minutes: number): string {
+	const total = ((Math.trunc(minutes) % 1440) + 1440) % 1440;
+	const hours = Math.floor(total / 60);
+	const mins = total % 60;
+	return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+}
+
+function readMinutes(value: unknown): number | null {
+	if (typeof value === 'number') {
+		return Number.isInteger(value) && value >= 0 && value < 1440 ? value : null;
+	}
+	if (typeof value === 'string') return parseTimeOfDay(value);
+	return null;
+}
+
+/** Lectura defensiva del `jsonb` guardado en `profiles.theme_schedule`. */
+export function parseThemeSchedule(value: unknown): ThemeSchedule {
+	if (!value || typeof value !== 'object') return DEFAULT_SCHEDULE;
+
+	const record = value as Record<string, unknown>;
+	const lightStart = readMinutes(record.lightStart);
+	const darkStart = readMinutes(record.darkStart);
+	if (lightStart === null || darkStart === null || lightStart === darkStart) {
+		return DEFAULT_SCHEDULE;
+	}
+
+	return { lightStart, darkStart };
+}
+
+/** Modo que corresponde a una hora local (minutos desde medianoche). */
+export function modeForMinutes(schedule: ThemeSchedule, minutes: number): ResolvedMode {
+	const time = ((Math.trunc(minutes) % 1440) + 1440) % 1440;
+	const { lightStart, darkStart } = schedule;
+
+	// Ventana normal (07:00–18:00) o cruzando la medianoche (20:00–06:00).
+	const inLight =
+		lightStart < darkStart
+			? time >= lightStart && time < darkStart
+			: time >= lightStart || time < darkStart;
+
+	return inLight ? 'light' : 'dark';
+}
+
+/** Milisegundos desde `now` hasta el próximo inicio de franja. */
+export function nextScheduleChangeDelay(schedule: ThemeSchedule, now: Date): number {
+	const day = 86_400_000;
+	const elapsed =
+		now.getHours() * 3_600_000 +
+		now.getMinutes() * 60_000 +
+		now.getSeconds() * 1_000 +
+		now.getMilliseconds();
+
+	const delays = [schedule.lightStart, schedule.darkStart].map((minute) => {
+		let delta = minute * 60_000 - elapsed;
+		if (delta <= 0) delta += day;
+		return delta;
+	});
+
+	return Math.min(...delays);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -563,7 +656,10 @@ function declarations(tokens: ThemeTokens): string {
  * El modo `system` delega la decisión en `prefers-color-scheme`: así no hay
  * parpadeo ni hace falta JavaScript para el primer render.
  */
-export function themeCss(preference: ThemePreference): string {
+export function themeCss(
+	preference: ThemePreference,
+	resolvedMode: ResolvedMode = 'light'
+): string {
 	const isDefault = preference.custom === null && preference.palette === DEFAULT_PALETTE_ID;
 	const light = buildTokens(preference, 'light');
 	const dark = buildTokens(preference, 'dark');
@@ -576,33 +672,55 @@ export function themeCss(preference: ThemePreference): string {
 			return isDefault ? ':root:root{color-scheme:light}' : lightBlock;
 		case 'dark':
 			return `:root:root{${declarations(dark)};color-scheme:dark}`;
+		case 'schedule': {
+			// La hora la resuelve el servidor (y el temporizador del cliente): sin
+			// media query no hay forma de expresarlo en CSS.
+			const tokens = resolvedMode === 'dark' ? dark : light;
+			return `:root:root{${declarations(tokens)};color-scheme:${resolvedMode}}`;
+		}
 		case 'system':
 			return isDefault ? darkBlock : `${lightBlock}${darkBlock}`;
 	}
 }
 
+export interface ThemeResolutionOptions {
+	/** Franja configurada por el usuario (solo aplica al modo `schedule`). */
+	schedule?: ThemeSchedule | null;
+	/** Minuto local del día (0–1439) para resolver el modo `schedule`. */
+	minutes?: number;
+}
+
 /** Resuelve todo lo que necesita el layout raíz en una sola llamada. */
-export function resolveTheme(preference: ThemePreference): ResolvedTheme {
+export function resolveTheme(
+	preference: ThemePreference,
+	options: ThemeResolutionOptions = {}
+): ResolvedTheme {
 	const light = buildTokens(preference, 'light');
 	const dark = buildTokens(preference, 'dark');
 
+	const mode: ResolvedMode | null =
+		preference.mode === 'schedule'
+			? modeForMinutes(options.schedule ?? DEFAULT_SCHEDULE, options.minutes ?? 0)
+			: preference.mode === 'system'
+				? null
+				: preference.mode;
+
 	const meta: Array<{ color: string; media?: string }> =
-		preference.mode === 'light'
-			? [{ color: light.background }]
-			: preference.mode === 'dark'
-				? [{ color: dark.background }]
-				: [
-						{ color: light.background, media: '(prefers-color-scheme: light)' },
-						{ color: dark.background, media: '(prefers-color-scheme: dark)' }
-					];
+		mode === null
+			? [
+					{ color: light.background, media: '(prefers-color-scheme: light)' },
+					{ color: dark.background, media: '(prefers-color-scheme: dark)' }
+				]
+			: [{ color: (mode === 'dark' ? dark : light).background }];
 
 	return {
 		preference,
 		light,
 		dark,
-		css: themeCss(preference),
+		css: themeCss(preference, mode ?? 'light'),
 		meta,
-		active: preference.mode === 'dark' ? dark : light
+		active: mode === 'dark' ? dark : light,
+		mode
 	};
 }
 
